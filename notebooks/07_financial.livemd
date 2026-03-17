@@ -1,0 +1,1474 @@
+# Financial Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Financial Charts > Basic Waterfall Chart
+
+`Waterfall.new(x:, y:, measure:)` — `measure` is a list of strings:
+- `"relative"` — bar height = the y value (positive or negative increment)
+- `"total"` — bar shows the running total (y value ignored; set to 0)
+- `"absolute"` — bar starts from zero (used for the initial bar)
+
+`connector: %{line:}` styles the horizontal lines connecting bar tops.
+`textposition: "outside"` and `text:` add value labels above/below each bar.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    name: "2018",
+    orientation: "v",
+    measure: ["relative", "relative", "total", "relative", "relative", "total"],
+    x: ["Sales", "Consulting", "Net revenue", "Purchases", "Other expenses", "Profit before tax"],
+    textposition: "outside",
+    text: ["+60", "+80", "", "-40", "-20", "Total"],
+    y: [60, 80, 0, -40, -20, 0],
+    connector: %{line: %{color: "rgb(63, 63, 63)"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Profit and Loss Statement 2018",
+  xaxis: %{type: "category"},
+  yaxis: %{type: "linear"},
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Multi Category Waterfall Chart
+
+Hierarchical `x:` uses a list of two lists — outer and inner category labels — creating
+a multi-level x-axis. `base: 1000` shifts the starting value of all bars. `nil` (nil in
+Elixir) as a `y` value for `"total"` bars lets Plotly compute the running total automatically.
+`layout.waterfallgroupgap:` controls spacing between groups.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+outer = ["2016", "2017", "2017", "2017", "2017", "2018", "2018", "2018", "2018"]
+inner = ["initial", "q1", "q2", "q3", "total", "q1", "q2", "q3", "total"]
+
+measure = [
+  "absolute",
+  "relative",
+  "relative",
+  "relative",
+  "total",
+  "relative",
+  "relative",
+  "relative",
+  "total"
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    x: [outer, inner],
+    measure: measure,
+    y: [1, 2, 3, -1, nil, 1, 2, -4, nil],
+    base: 1000
+  )
+)
+|> Figure.add_trace(
+  Waterfall.new(
+    x: [outer, inner],
+    measure: measure,
+    y: [1.1, 2.2, 3.3, -1.1, nil, 1.1, 2.2, -4.4, nil],
+    base: 1000
+  )
+)
+|> Figure.update_layout(
+  waterfallgroupgap: 0.5,
+  xaxis: %{title: %{text: "MULTI-CATEGORY"}, tickfont: %{size: 16}, ticks: "outside"}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Horizontal Waterfall Chart
+
+`orientation: "h"` flips the waterfall chart horizontally. Roles are swapped:
+`y:` holds the category labels, `x:` holds the numeric values. `nil` y values for `"total"`
+bars still work the same way. `connector: %{mode: "between", line:}` draws connector lines
+between bar ends. `yaxis.autorange: "reversed"` lists categories top-to-bottom.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    name: "2018",
+    orientation: "h",
+    measure: [
+      "relative",
+      "relative",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "relative",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "total"
+    ],
+    y: [
+      "Sales",
+      "Consulting",
+      "Maintenance",
+      "Other revenue",
+      "Net revenue",
+      "Purchases",
+      "Material expenses",
+      "Personnel expenses",
+      "Other expenses",
+      "Operating profit",
+      "Investment income",
+      "Financial income",
+      "Profit before tax",
+      "Income tax (15%)",
+      "Profit after tax"
+    ],
+    x: [375, 128, 78, 27, nil, -327, -12, -78, -12, nil, 32, 89, nil, -45, nil],
+    connector: %{
+      mode: "between",
+      line: %{width: 4, color: "rgb(0, 0, 0)", dash: 0}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Profit and Loss Statement 2018",
+  yaxis: %{type: "category", autorange: "reversed"},
+  xaxis: %{type: "linear"},
+  margin: %{l: 150},
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Style Waterfall Chart
+
+`decreasing:`, `increasing:`, and `totals:` maps each accept a `marker:` field with
+`color:` and `line:` for per-type bar styling. `layout.waterfallgap:` sets the gap fraction
+between bars (0–1). This allows full visual differentiation between positive, negative, and
+summary bars without needing to style each bar individually.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    x: [
+      ["2016", "2017", "2017", "2017", "2017", "2018", "2018", "2018", "2018"],
+      ["initial", "q1", "q2", "q3", "total", "q1", "q2", "q3", "total"]
+    ],
+    measure: [
+      "absolute",
+      "relative",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "relative",
+      "relative",
+      "total"
+    ],
+    y: [10, 20, 30, -10, nil, 10, 20, -40, nil],
+    base: 300,
+    decreasing: %{marker: %{color: "Maroon", line: %{color: "red", width: 2}}},
+    increasing: %{marker: %{color: "Teal"}},
+    totals: %{marker: %{color: "deep sky blue", line: %{color: "blue", width: 3}}}
+  )
+)
+|> Figure.update_layout(
+  title: "Profit and Loss Statement",
+  waterfallgap: 0.3,
+  xaxis: %{tickfont: %{size: 15}, ticks: "outside"}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Indicators Overview
+
+`Indicator` traces display key metrics as numbers, deltas, or gauges. `mode:` is a `"+"` joined
+string combining `"number"`, `"delta"`, and/or `"gauge"`. Multiple indicators share a grid via
+`layout.grid` with `domain: %{row:, column:}` per trace.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta+gauge",
+    value: 200,
+    delta: %{reference: 160},
+    gauge: %{axis: %{visible: false, range: [0, 250]}},
+    domain: %{row: 0, column: 0}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 120,
+    gauge: %{shape: "bullet", axis: %{visible: false, range: [-200, 200]}},
+    domain: %{x: [0.1, 0.5], y: [0.15, 0.35]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 300,
+    domain: %{row: 0, column: 1}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "delta",
+    value: 40,
+    domain: %{row: 1, column: 1}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 400,
+  margin: %{t: 25, b: 25, l: 25, r: 25},
+  grid: %{rows: 2, columns: 2, pattern: "independent"},
+  template: %{
+    data: %{
+      indicator: [%{
+        title: %{text: "Speed"},
+        mode: "number+delta+gauge",
+        delta: %{reference: 90}
+      }]
+    }
+  }
+)
+|> Plotly.show()
+```
+
+## Financial Charts > A Single Angular Gauge Chart
+
+An angular gauge uses `mode: "gauge+number"`. `gauge.axis.range: [min, max]` sets the scale.
+`delta.reference:` shows the change from a baseline value. `nil` as the lower bound lets Plotly
+auto-determine it (equivalent to JS `null`).
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "gauge+number",
+    value: 450,
+    title: %{text: "Speed"},
+    delta: %{reference: 400},
+    gauge: %{axis: %{range: [nil, 500]}},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 400)
+|> Plotly.show()
+```
+
+## Financial Charts > Bullet Gauge
+
+A bullet gauge uses `gauge: %{shape: "bullet"}` — it renders as a horizontal bar rather than
+an angular arc. `mode: "number+gauge+delta"` shows the numeric value, bullet bar, and delta
+from the reference all in one compact widget.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Profit"},
+    delta: %{reference: 300},
+    gauge: %{shape: "bullet"},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 250)
+|> Plotly.show()
+```
+
+## Financial Charts > Showing Information above Your Chart
+
+An `Indicator` trace can be positioned over other chart types by giving it a `domain` that
+occupies the upper portion of the plot area. A regular `Scatter` trace fills the lower portion.
+Both share the same figure; the indicator overlays as a floating label.
+
+```elixir
+alias Plotly.{Figure, Indicator, Scatter}
+
+y_data = [325, 324, 405, 400, 424, 404, 417, 432, 419, 394, 410, 426, 413, 419, 404,
+          408, 401, 377, 368, 361, 356, 359, 375, 397, 394, 418, 437, 450, 430, 442,
+          424, 443, 420, 418, 423, 423, 426, 440, 437, 436, 447, 460, 478, 472, 450,
+          456, 436, 418, 429, 412, 429, 442, 464, 447, 434, 457, 474, 480, 499, 497,
+          480, 502, 512, 492]
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 492,
+    title: %{text: "Users online"},
+    delta: %{reference: 512, valueformat: ".0f"},
+    domain: %{y: [0, 1], x: [0.25, 0.75]}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(y: y_data)
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 450,
+  xaxis: %{range: [0, 62]}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Data Cards / Big Numbers
+
+`number: %{prefix: "$"}` adds a currency prefix. `delta: %{position: "top"}` places the change
+indicator above the main value. `delta: %{relative: true}` shows percentage change. Multiple
+indicators tiled via `domain: %{x:, y:}` create a KPI dashboard layout. HTML in `title.text`
+allows multi-line subtitles with inline styles.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+# Single big number card
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 400,
+    number: %{prefix: "$"},
+    delta: %{position: "top", reference: 320},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  paper_bgcolor: "lightgray",
+  width: 600,
+  height: 200,
+  margin: %{t: 0, b: 0, l: 0, r: 0}
+)
+|> Plotly.show()
+```
+
+```elixir
+# Multiple KPI cards in a grid
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 200,
+    delta: %{reference: 400, relative: true, position: "top"},
+    domain: %{x: [0, 0.5], y: [0, 0.5]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 350,
+    delta: %{reference: 400, relative: true},
+    domain: %{x: [0, 0.5], y: [0.5, 1]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 450,
+    title: %{text: "Accounts<br><span style='font-size:0.8em;color:gray'>Subtitle</span>"},
+    delta: %{reference: 400, relative: true},
+    domain: %{x: [0.6, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 400,
+  margin: %{t: 25, r: 25, l: 25, b: 25}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Simple Candlestick Chart
+
+`Candlestick.new(x:, open:, high:, low:, close:)` — `x` is a list of date strings (ISO 8601).
+By default a rangeslider appears below the x-axis. `increasing:` and `decreasing:` style the
+up and down bars respectively.
+
+```elixir
+alias Plotly.{Figure, Candlestick}
+
+Figure.new()
+|> Figure.add_trace(
+  Candlestick.new(
+    x: ["2017-01-04","2017-01-05","2017-01-06","2017-01-09","2017-01-10",
+        "2017-01-11","2017-01-12","2017-01-13","2017-01-17","2017-01-18",
+        "2017-01-19","2017-01-20","2017-01-23","2017-01-24","2017-01-25",
+        "2017-01-26","2017-01-27","2017-01-30","2017-01-31","2017-02-01",
+        "2017-02-02","2017-02-03","2017-02-06","2017-02-07","2017-02-08",
+        "2017-02-09","2017-02-10","2017-02-13","2017-02-14","2017-02-15"],
+    open: [115.849998,115.919998,116.779999,117.949997,118.769997,
+           118.739998,118.900002,119.110001,118.339996,120.0,
+           119.400002,120.449997,120.0,119.550003,120.419998,
+           121.669998,122.139999,120.93,121.150002,127.029999,
+           127.980003,128.309998,129.130005,130.539993,131.350006,
+           131.649994,132.460007,133.080002,133.470001,135.520004],
+    high: [116.510002,116.860001,118.160004,119.43,119.379997,
+           119.93,119.300003,119.620003,120.239998,120.5,
+           120.089996,120.449997,120.809998,120.099998,122.099998,
+           122.440002,122.349998,121.629997,121.389999,130.490005,
+           129.389999,129.190002,130.5,132.089996,132.220001,
+           132.449997,132.940002,133.820007,135.089996,136.270004],
+    low: [115.75,115.809998,116.470001,117.940002,118.300003,
+          118.599998,118.209999,118.809998,118.220001,119.709999,
+          119.370003,119.730003,119.769997,119.5,120.279999,
+          121.599998,121.599998,120.660004,120.620003,127.010002,
+          127.779999,128.160004,128.899994,130.449997,131.220001,
+          131.119995,132.050003,132.75,133.25,134.619995],
+    close: [116.019997,116.610001,117.910004,118.989998,119.110001,
+            119.75,119.25,119.040001,120.0,119.989998,
+            119.779999,120.0,120.080002,119.970001,121.879997,
+            121.940002,121.949997,121.629997,121.349998,128.75,
+            128.529999,129.080002,130.289993,131.529999,132.039993,
+            132.419998,132.119995,133.289993,135.020004,135.509995],
+    increasing: %{line: %{color: "#17BECF"}},
+    decreasing: %{line: %{color: "#7F7F7F"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Apple Stock (Jan–Feb 2017)",
+  showlegend: false,
+  xaxis: %{
+    type: "date",
+    title: %{text: "Date"},
+    rangeslider: %{range: ["2017-01-03 12:00", "2017-02-15 12:00"]}
+  }
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Candlestick Chart without Rangeslider
+
+`layout.xaxis.rangeslider: %{visible: false}` removes the default rangeslider. This example
+uses a larger AAPL dataset fetched from GitHub. CSV parsing uses `String.split` — no extra
+dependencies needed.
+
+```elixir
+alias Plotly.{Figure, Candlestick}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Candlestick.new(
+    x: dates, open: open, high: high, low: low, close: close,
+    increasing: %{line: %{color: "black"}},
+    decreasing: %{line: %{color: "red"}}
+  )
+)
+|> Figure.update_layout(
+  title: "AAPL — No Rangeslider",
+  showlegend: false,
+  xaxis: %{rangeslider: %{visible: false}}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Customise Candlestick Chart with Shapes and Annotations
+
+`layout.shapes` and `layout.annotations` work on candlestick charts exactly as on scatter
+plots. A rect shape with `xref: "x"` and `yref: "paper"` highlights a date range across the
+full height of the chart. An annotation with `xanchor: "right"` labels the event.
+
+```elixir
+alias Plotly.{Figure, Candlestick}
+
+Figure.new()
+|> Figure.add_trace(
+  Candlestick.new(
+    x: ["2017-01-17","2017-01-18","2017-01-19","2017-01-20","2017-01-23",
+        "2017-01-24","2017-01-25","2017-01-26","2017-01-27","2017-01-30",
+        "2017-01-31","2017-02-01","2017-02-02","2017-02-03","2017-02-06",
+        "2017-02-07","2017-02-08","2017-02-09","2017-02-10"],
+    open: [118.339996,120.0,119.400002,120.449997,120.0,
+           119.550003,120.419998,121.669998,122.139999,120.93,
+           121.150002,127.029999,127.980003,128.309998,129.130005,
+           130.539993,131.350006,131.649994,132.460007],
+    high: [120.239998,120.5,120.089996,120.449997,120.809998,
+           120.099998,122.099998,122.440002,122.349998,121.629997,
+           121.389999,130.490005,129.389999,129.190002,130.5,
+           132.089996,132.220001,132.449997,132.940002],
+    low: [118.220001,119.709999,119.370003,119.730003,119.769997,
+          119.5,120.279999,121.599998,121.599998,120.660004,
+          120.620003,127.010002,127.779999,128.160004,128.899994,
+          130.449997,131.220001,131.119995,132.050003],
+    close: [120.0,119.989998,119.779999,120.0,120.080002,
+            119.970001,121.879997,121.940002,121.949997,121.629997,
+            121.349998,128.75,128.529999,129.080002,130.289993,
+            131.529999,132.039993,132.419998,132.119995],
+    increasing: %{line: %{color: "#17BECF"}},
+    decreasing: %{line: %{color: "#7F7F7F"}}
+  )
+)
+|> Figure.update_layout(
+  showlegend: false,
+  xaxis: %{
+    type: "date",
+    title: %{text: "Date"},
+    rangeslider: %{range: ["2017-01-17 12:00", "2017-02-10 12:00"]}
+  },
+  shapes: [%{
+    type: "rect",
+    xref: "x", yref: "paper",
+    x0: "2017-01-31", y0: 0,
+    x1: "2017-02-01", y1: 1,
+    fillcolor: "#d3d3d3",
+    opacity: 0.2,
+    line: %{width: 0}
+  }],
+  annotations: [%{
+    x: "2017-01-31",
+    y: 0.9,
+    xref: "x", yref: "paper",
+    text: "largest movement",
+    font: %{color: "magenta"},
+    showarrow: true,
+    xanchor: "right",
+    ax: -20, ay: 0
+  }]
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Customizing Candlestick Chart Colors
+
+`increasing: %{line: %{color:}}` and `decreasing: %{line: %{color:}}` set the bar outline
+colours for up and down movements. `xaxis.range:` restricts the visible date window to a
+6-month period while the full dataset is loaded.
+
+```elixir
+alias Plotly.{Figure, Candlestick}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Candlestick.new(
+    x: dates, open: open, high: high, low: low, close: close,
+    increasing: %{line: %{color: "black"}},
+    decreasing: %{line: %{color: "red"}}
+  )
+)
+|> Figure.update_layout(
+  title: "AAPL — Custom Colors",
+  showlegend: false,
+  xaxis: %{
+    title: %{text: "Date"},
+    range: ["2016-06-01 12:00", "2017-01-01 12:00"]
+  }
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Add Rangeselector
+
+`xaxis.rangeselector: %{buttons: [...]}` adds preset time-period buttons above the chart.
+Each button needs `step:` (`"month"`, `"year"`, `"all"`), `stepmode:` (`"backward"` counts
+back from today; `"todate"` goes to start of current period), `count:`, and `label:`.
+`step: "all"` shows the full dataset.
+
+```elixir
+alias Plotly.{Figure, Candlestick}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Candlestick.new(
+    x: dates, open: open, high: high, low: low, close: close,
+    increasing: %{line: %{color: "black"}},
+    decreasing: %{line: %{color: "red"}}
+  )
+)
+|> Figure.update_layout(
+  title: "AAPL — With Rangeselector",
+  showlegend: false,
+  xaxis: %{
+    title: %{text: "Date"},
+    rangeselector: %{
+      x: 0, y: 1.2,
+      xanchor: "left",
+      font: %{size: 8},
+      buttons: [
+        %{step: "month", stepmode: "backward", count: 1, label: "1 month"},
+        %{step: "month", stepmode: "backward", count: 6, label: "6 months"},
+        %{step: "all", label: "All dates"}
+      ]
+    }
+  }
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Basic Funnel Plot
+
+`Funnel.new(x:, y:)` — `x` holds the numeric values per stage, `y` holds the stage labels.
+Plotly automatically calculates percent-initial and percent-previous values for hover and
+display. Stages shrink left-to-right following the value order.
+
+```elixir
+alias Plotly.{Figure, Funnel}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnel.new(
+    y: ["Website visit", "Downloads", "Potential customers", "Invoice sent", "Closed deals"],
+    x: [13873, 10533, 5443, 2703, 908],
+    hoverinfo: "x+percent previous+percent initial"
+  )
+)
+|> Figure.update_layout(
+  title: "Sales Funnel",
+  margin: %{l: 150},
+  width: 600,
+  height: 500
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Setting Marker Size and Color
+
+`marker.color` as a list assigns per-stage fill colours. `marker.line.color` and
+`marker.line.width` as lists style the border of each stage bar. `connector.line` styles the
+trapezoid connectors between stages. `textinfo: "value+percent initial"` shows both the
+raw value and percentage in each bar.
+
+```elixir
+alias Plotly.{Figure, Funnel}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnel.new(
+    y: ["Sales person A", "Sales person B", "Sales person C", "Sales person D", "Sales person E"],
+    x: [1200, 909.4, 600.6, 300, 80],
+    textposition: "inside",
+    textinfo: "value+percent initial",
+    hoverinfo: "percent total+x",
+    opacity: 0.65,
+    marker: %{
+      color: ["#59D4E8", "#DDB6C6", "#A696C8", "#67EACA", "#94D2E6"],
+      line: %{
+        width: [4, 2, 2, 3, 1],
+        color: ["#3E4E88", "#606470", "#3E4E88", "#606470", "#3E4E88"]
+      }
+    },
+    connector: %{
+      line: %{color: "royalblue", dash: "dot", width: 3}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Sales by Person",
+  margin: %{l: 100},
+  width: 600,
+  height: 500
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Stacked Funnel
+
+`layout.funnelmode: "stack"` stacks multiple `Funnel` traces side-by-side at each stage.
+Each trace can use a different `textinfo` and `textposition`. Stages with more traces than
+others simply have fewer bars — missing stages are skipped gracefully.
+
+```elixir
+alias Plotly.{Figure, Funnel}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnel.new(
+    name: "Montreal",
+    y: ["Website visit", "Downloads", "Potential customers", "Requested price"],
+    x: [120, 60, 30, 20],
+    textinfo: "value+percent initial"
+  )
+)
+|> Figure.add_trace(
+  Funnel.new(
+    name: "Toronto",
+    y: ["Website visit", "Downloads", "Potential customers", "Requested price", "Invoice sent"],
+    x: [100, 60, 40, 30, 20],
+    textposition: "inside",
+    textinfo: "value+percent previous"
+  )
+)
+|> Figure.add_trace(
+  Funnel.new(
+    name: "Vancouver",
+    y: ["Website visit", "Downloads", "Potential customers", "Requested price", "Invoice sent", "Closed deals"],
+    x: [90, 70, 50, 30, 10, 5],
+    textposition: "outside",
+    textinfo: "value+percent total"
+  )
+)
+|> Figure.update_layout(
+  title: "Multi-City Sales Funnel",
+  margin: %{l: 130, r: 0},
+  width: 600,
+  funnelmode: "stack",
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Funnelarea Plot
+
+`Funnelarea` renders a triangular funnel where each section's area is proportional to its
+`values:` entry. `text:` labels each section. Unlike `Funnel`, it does not show absolute widths
+but relative areas. `textfont:` styles all section labels at once.
+
+```elixir
+alias Plotly.{Figure, Funnelarea}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnelarea.new(
+    values: [5, 4, 3, 2, 1],
+    text: ["The 1st", "The 2nd", "The 3rd", "The 4th", "The 5th"],
+    marker: %{
+      colors: ["#59D4E8", "#DDB6C6", "#A696C8", "#67EACA", "#94D2E6"],
+      line: %{
+        color: ["#3E4E88", "#606470", "#3E4E88", "#606470", "#3E4E88"],
+        width: [2, 1, 5, 0, 3]
+      }
+    },
+    textfont: %{family: "Old Standard TT", size: 13, color: "black"},
+    opacity: 0.65
+  )
+)
+|> Figure.update_layout(
+  title: "Funnelarea Chart",
+  margin: %{l: 200, r: 200},
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Multi Funnelarea
+
+Multiple `Funnelarea` traces are positioned via `domain: %{x: [...], y: [...]}`. `scalegroup:`
+links traces so their funnel widths scale relative to each other — traces in `"first"` share
+one scale, `"second"` another. `title: %{position:, text:}` labels each panel.
+
+```elixir
+alias Plotly.{Figure, Funnelarea}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnelarea.new(
+    scalegroup: "first",
+    values: [500, 450, 340, 230, 220, 110],
+    textinfo: "value",
+    title: %{position: "top center", text: "Sales for Sale Person A in U.S."},
+    domain: %{x: [0, 0.5], y: [0, 0.5]}
+  )
+)
+|> Figure.add_trace(
+  Funnelarea.new(
+    scalegroup: "first",
+    values: [600, 500, 400, 300, 200, 100],
+    textinfo: "value",
+    title: %{position: "top center", text: "Sales of Sale Person B in Canada"},
+    domain: %{x: [0, 0.5], y: [0.55, 1]}
+  )
+)
+|> Figure.add_trace(
+  Funnelarea.new(
+    scalegroup: "second",
+    values: [510, 480, 440, 330, 220, 100],
+    textinfo: "value",
+    title: %{position: "top left", text: "Sales of Sale Person A in Canada"},
+    domain: %{x: [0.55, 1], y: [0, 0.5]}
+  )
+)
+|> Figure.add_trace(
+  Funnelarea.new(
+    scalegroup: "second",
+    values: [360, 250, 240, 130, 120, 60],
+    textinfo: "value",
+    title: %{position: "top left", text: "Sales of Sale Person B in U.S."},
+    domain: %{x: [0.55, 1], y: [0.55, 1]}
+  )
+)
+|> Figure.update_layout(width: 600)
+|> Plotly.show()
+```
+
+## Financial Charts > Date Strings
+
+Plotly accepts ISO 8601 date strings directly in `x:`. No special parsing needed — pass them
+as plain Elixir strings. `xaxis.type: "date"` is usually auto-detected but can be set
+explicitly. Date format: `"YYYY-MM-DD"` or `"YYYY-MM-DD HH:MM:SS"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2013-10-04 22:23:00", "2013-11-04 22:23:00", "2013-12-04 22:23:00"],
+    y: [1, 3, 6]
+  )
+)
+|> Figure.update_layout(title: "Date Strings in Plotly")
+|> Plotly.show()
+```
+
+## Financial Charts > Basic Time Series
+
+This example plots AAPL High and Low prices over ~2 years. Data is fetched from a GitHub CSV.
+`mode: "lines"` with named traces gives a clean time series. Plotly auto-detects the date
+axis from the ISO string format.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    mode: "lines",
+    name: "AAPL High",
+    x: dates, y: high,
+    line: %{color: "#17BECF"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    mode: "lines",
+    name: "AAPL Low",
+    x: dates, y: low,
+    line: %{color: "#7F7F7F"}
+  )
+)
+|> Figure.update_layout(title: "Apple Stock High & Low")
+|> Plotly.show()
+```
+
+## Financial Charts > Manually Set Range
+
+`xaxis.range: [date_string, date_string]` restricts the visible time window even when the
+full dataset is loaded. `xaxis.type: "date"` must be set explicitly when providing a range —
+Plotly needs to know the axis type before the data is inspected.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(mode: "lines", x: dates, y: high, line: %{color: "#17BECF"}))
+|> Figure.add_trace(Scatter.new(mode: "lines", x: dates, y: low,  line: %{color: "#7F7F7F"}))
+|> Figure.update_layout(
+  title: "AAPL — Custom Range (H2 2016)",
+  xaxis: %{
+    type: "date",
+    range: ["2016-07-01", "2016-12-31"]
+  },
+  yaxis: %{autorange: true}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Time Series with Rangeslider
+
+`xaxis.rangeslider: %{range: [start, end]}` adds an interactive minimap slider below the
+chart. `xaxis.rangeselector: %{buttons: [...]}` adds preset period buttons above the chart.
+Both can be combined. `step: "all"` shows the complete dataset.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(mode: "lines", name: "AAPL High", x: dates, y: high, line: %{color: "#17BECF"})
+)
+|> Figure.add_trace(
+  Scatter.new(mode: "lines", name: "AAPL Low",  x: dates, y: low,  line: %{color: "#7F7F7F"})
+)
+|> Figure.update_layout(
+  title: "Time Series with Rangeslider",
+  xaxis: %{
+    type: "date",
+    autorange: true,
+    rangeselector: %{
+      buttons: [
+        %{count: 1,  label: "1m", step: "month", stepmode: "backward"},
+        %{count: 6,  label: "6m", step: "month", stepmode: "backward"},
+        %{step: "all"}
+      ]
+    },
+    rangeslider: %{range: ["2015-02-17", "2017-02-16"]}
+  },
+  yaxis: %{autorange: true}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Simple OHLC Chart
+
+`Ohlc.new(x:, open:, high:, low:, close:)` works identically to `Candlestick` but renders
+as open/close tick stubs on a vertical high–low line rather than filled bodies. `x` contains
+ISO 8601 date strings. A rangeslider appears below the chart by default.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Ohlc.new(x: dates, open: open, high: high, low: low, close: close))
+|> Figure.update_layout(title: "Apple OHLC Chart")
+|> Plotly.show()
+```
+
+## Financial Charts > OHLC Chart without Rangeslider
+
+Set `layout.xaxis.rangeslider: %{visible: false}` to remove the default rangeslider that
+appears below OHLC (and Candlestick) charts.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Ohlc.new(x: dates, open: open, high: high, low: low, close: close))
+|> Figure.update_layout(
+  title: "Apple OHLC — No Rangeslider",
+  xaxis: %{rangeslider: %{visible: false}}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Customizing the Figure with Shapes and Annotations
+
+`layout.shapes` and `layout.annotations` work on OHLC charts exactly as on scatter plots.
+A rect shape with `xref: "x"` and `yref: "paper"` highlights a date range across the full
+chart height. Pair with an annotation to label the event.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Ohlc.new(x: dates, open: open, high: high, low: low, close: close))
+|> Figure.update_layout(
+  title: "Apple OHLC — Shapes & Annotations",
+  showlegend: false,
+  xaxis: %{type: "date", rangeslider: %{visible: false}},
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x", yref: "paper",
+      x0: "2016-01-01", y0: 0,
+      x1: "2016-02-01", y1: 1,
+      fillcolor: "#d3d3d3",
+      opacity: 0.3,
+      line: %{width: 0}
+    }
+  ],
+  annotations: [
+    %{
+      x: "2016-01-15",
+      y: 0.95,
+      xref: "x", yref: "paper",
+      text: "Jan 2016 drop",
+      font: %{color: "darkblue"},
+      showarrow: true,
+      ax: 0, ay: -30
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Customise OHLC Chart Colors
+
+`increasing: %{line: %{color:}}` and `decreasing: %{line: %{color:}}` set the colors for
+up and down bars. OHLC uses lines only (no filled bodies), so only `line.color` applies —
+unlike Candlestick which also supports `fillcolor`.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Ohlc.new(
+    x: dates,
+    open: open, high: high, low: low, close: close,
+    increasing: %{line: %{color: "#17BECF"}},
+    decreasing: %{line: %{color: "#7F7F7F"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Apple OHLC — Custom Colors",
+  xaxis: %{rangeslider: %{visible: false}}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Add Rangeselector
+
+`layout.xaxis.rangeselector: %{buttons: [...]}` adds preset-period buttons above the chart.
+Each button is `%{count:, label:, step:, stepmode:}`. `step: "all"` shows the full dataset.
+`stepmode: "backward"` counts back from the last date; `"todate"` counts back from now.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Ohlc.new(x: dates, open: open, high: high, low: low, close: close))
+|> Figure.update_layout(
+  title: "Apple OHLC — Rangeselector",
+  xaxis: %{
+    rangeselector: %{
+      buttons: [
+        %{count: 1, label: "1m", step: "month", stepmode: "backward"},
+        %{count: 6, label: "6m", step: "month", stepmode: "backward"},
+        %{count: 1, label: "YTD", step: "year", stepmode: "todate"},
+        %{count: 1, label: "1y", step: "year", stepmode: "backward"},
+        %{step: "all"}
+      ]
+    },
+    rangeslider: %{visible: true},
+    type: "date"
+  }
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Basic Gauge
+
+A basic gauge uses `Indicator.new(mode: "gauge+number", ...)`. The `gauge.axis.range` sets
+the scale — `[nil, max]` lets Plotly auto-determine the lower bound (equivalent to JS `null`).
+This is the same as notebook 06 (single angular gauge) but without a delta.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "gauge+number",
+    value: 270,
+    title: %{text: "Speed"},
+    gauge: %{axis: %{range: [nil, 500]}},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 400)
+|> Plotly.show()
+```
+
+## Financial Charts > Add Steps, Threshold, and Delta
+
+`gauge.steps:` adds colored bands to the gauge arc — each step is `%{range: [lo, hi], color:}`.
+`gauge.threshold:` draws a marker line at a specific value: `%{line: %{color:, width:}, thickness:, value:}`.
+`delta.reference:` shows the change from a baseline value.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "gauge+number+delta",
+    value: 450,
+    title: %{text: "Speed"},
+    delta: %{reference: 380},
+    gauge: %{
+      axis: %{range: [nil, 500]},
+      steps: [
+        %{range: [0, 250], color: "lightgray"},
+        %{range: [250, 400], color: "gray"}
+      ],
+      threshold: %{
+        line: %{color: "red", width: 4},
+        thickness: 0.75,
+        value: 490
+      }
+    },
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 400)
+|> Plotly.show()
+```
+
+## Financial Charts > Custom Gauge Chart
+
+Full gauge styling: `gauge.bar: %{color:}` sets the value bar color. `gauge.bgcolor:` sets the
+arc background. `gauge.borderwidth:` and `gauge.bordercolor:` style the border. Custom steps
+and threshold can use any CSS color. `number.prefix:` and `delta.relative: true` format the display.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "gauge+number+delta",
+    value: 420,
+    title: %{text: "Speed", font: %{size: 24}},
+    delta: %{reference: 400, increasing: %{color: "RebeccaPurple"}},
+    number: %{suffix: " km/h", font: %{size: 20}},
+    gauge: %{
+      axis: %{range: [nil, 500], tickwidth: 1, tickcolor: "darkblue"},
+      bar: %{color: "darkblue"},
+      bgcolor: "white",
+      borderwidth: 2,
+      bordercolor: "gray",
+      steps: [
+        %{range: [0, 250], color: "cyan"},
+        %{range: [250, 400], color: "royalblue"}
+      ],
+      threshold: %{
+        line: %{color: "red", width: 4},
+        thickness: 0.75,
+        value: 490
+      }
+    },
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 400,
+  paper_bgcolor: "lavender",
+  font: %{color: "darkblue", family: "Arial"}
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Basic Bullet Charts
+
+A bullet chart uses `gauge: %{shape: "bullet"}` on an `Indicator` trace. It renders as a
+compact horizontal bar, useful for dashboards. `mode: "number+gauge+delta"` displays the
+numeric value, bullet bar, and delta from the reference.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Profit"},
+    delta: %{reference: 200},
+    gauge: %{shape: "bullet", axis: %{range: [nil, 300]}},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 250)
+|> Plotly.show()
+```
+
+## Financial Charts > Add Steps and Threshold
+
+`gauge.steps:` and `gauge.threshold:` work on bullet charts exactly as on angular gauges.
+Steps add colored bands along the bullet bar; the threshold marker shows a target value.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Profit"},
+    delta: %{reference: 200},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 300]},
+      steps: [
+        %{range: [0, 150], color: "lightgray"},
+        %{range: [150, 250], color: "gray"}
+      ],
+      threshold: %{
+        line: %{color: "red", width: 2},
+        thickness: 0.75,
+        value: 280
+      }
+    },
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 250)
+|> Plotly.show()
+```
+
+## Financial Charts > Custom Bullet Chart
+
+Full bullet styling: `gauge.bar: %{color:, thickness:}` styles the value bar. `gauge.bgcolor:`
+sets the bullet background. `delta.relative: true` shows percentage change from reference.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Revenue"},
+    delta: %{reference: 200, relative: true, position: "top"},
+    number: %{suffix: "$", font: %{size: 20}},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 300]},
+      bar: %{color: "darkblue", thickness: 0.2},
+      bgcolor: "white",
+      borderwidth: 2,
+      bordercolor: "gray",
+      steps: [
+        %{range: [0, 150], color: "cyan"},
+        %{range: [150, 250], color: "royalblue"}
+      ],
+      threshold: %{
+        line: %{color: "red", width: 2},
+        thickness: 0.75,
+        value: 280
+      }
+    },
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 250,
+  paper_bgcolor: "lavender"
+)
+|> Plotly.show()
+```
+
+## Financial Charts > Multi Bullet
+
+Multiple bullet indicators are placed by assigning each trace a `domain: %{x: [0,1], y: [lo, hi]}`
+to split the vertical space. Alternatively use `domain: %{row:, column:}` with `layout.grid`.
+Here we use explicit `y` domains to stack three bullets vertically.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 180,
+    title: %{text: "Revenue"},
+    delta: %{reference: 200},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 300]},
+      steps: [%{range: [0, 150], color: "lightgray"}, %{range: [150, 250], color: "gray"}],
+      threshold: %{line: %{color: "red", width: 2}, thickness: 0.75, value: 280}
+    },
+    domain: %{x: [0.25, 1], y: [0.67, 1]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 35,
+    title: %{text: "Profit"},
+    delta: %{reference: 30},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 50]},
+      steps: [%{range: [0, 25], color: "lightgray"}, %{range: [25, 40], color: "gray"}],
+      threshold: %{line: %{color: "red", width: 2}, thickness: 0.75, value: 45}
+    },
+    domain: %{x: [0.25, 1], y: [0.33, 0.66]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 78,
+    title: %{text: "Satisfaction"},
+    delta: %{reference: 80},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 100]},
+      steps: [%{range: [0, 50], color: "lightgray"}, %{range: [50, 75], color: "gray"}],
+      threshold: %{line: %{color: "red", width: 2}, thickness: 0.75, value: 90}
+    },
+    domain: %{x: [0.25, 1], y: [0, 0.32]}
+  )
+)
+|> Figure.update_layout(
+  title: "KPI Dashboard",
+  width: 700,
+  height: 500,
+  margin: %{l: 120}
+)
+|> Plotly.show()
+```

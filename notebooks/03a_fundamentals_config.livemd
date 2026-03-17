@@ -1,0 +1,477 @@
+# Fundamentals: Configuration & Display
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Fundamentals: Configuration & Display > Scroll and Zoom
+
+`config.scrollZoom: true` enables zooming with the mouse wheel or two-finger
+trackpad scroll. Without it, scroll events pan the page rather than zoom the chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Scroll to zoom — try the mouse wheel"},
+  config: %{scrollZoom: true}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Editable Mode
+
+`config.editable: true` lets users double-click the chart title, axis labels, and
+legend entries to rename them directly in the browser — no Elixir round-trip needed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3], y: [4, 1, 6], mode: "markers", name: "Series A")],
+  layout: %{title: "Double-click any label to edit it"},
+  config: %{editable: true}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Making a Static Chart
+
+`config.staticPlot: true` disables all interactivity — no hover, no zoom, no
+modebar. Useful for embedding charts in reports where interaction is unwanted.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new(
+  data: [Bar.new(x: ["A", "B", "C", "D"], y: [3, 7, 2, 9])],
+  layout: %{title: "Static chart — no hover, no zoom"},
+  config: %{staticPlot: true}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Customize Download Plot Options
+
+`config.toImageButtonOptions` controls what the camera-icon modebar button
+downloads: format (`"png"`, `"svg"`, `"jpeg"`, `"webp"`), filename, pixel dimensions,
+and scale factor.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 6, 3, 8, 5], mode: "lines+markers")],
+  layout: %{title: "Click the camera icon to download"},
+  config: %{
+    toImageButtonOptions: %{
+      format: "svg",
+      filename: "my_plot",
+      height: 500,
+      width: 700,
+      scale: 1
+    }
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Force The Modebar to Always Be Visible
+
+By default the modebar fades in only on hover. `config.displayModeBar: true` pins
+it permanently — useful in dashboards where users need constant access to the tools.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3], y: [4, 5, 6], mode: "lines+markers")],
+  layout: %{title: "Modebar always visible"},
+  config: %{displayModeBar: true}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Never Display The Modebar
+
+`config.displayModeBar: false` hides the toolbar entirely — ideal for embedded
+charts where the toolbar would distract or confuse end users.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3], y: [4, 5, 6], mode: "lines+markers")],
+  layout: %{title: "No modebar"},
+  config: %{displayModeBar: false}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Remove ModeBar Buttons
+
+`config.modeBarButtonsToRemove` takes a list of button names to hide. Common
+names: `"toImage"`, `"zoom2d"`, `"pan2d"`, `"zoomIn2d"`, `"zoomOut2d"`,
+`"autoScale2d"`, `"resetScale2d"`, `"hoverClosestCartesian"`,
+`"hoverCompareCartesian"`, `"toggleSpikelines"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [5, 3, 7, 2, 8], mode: "lines+markers")],
+  layout: %{title: "Modebar without the download button"},
+  config: %{modeBarButtonsToRemove: ["toImage"]}
+)
+|> Plotly.show()
+```
+
+Remove multiple buttons:
+
+```elixir
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [5, 3, 7, 2, 8], mode: "lines+markers")],
+  layout: %{title: "Zoom buttons removed"},
+  config: %{
+    modeBarButtonsToRemove: [
+      "zoom2d",
+      "pan2d",
+      "zoomIn2d",
+      "zoomOut2d",
+      "autoScale2d",
+      "resetScale2d"
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Add Buttons to ModeBar
+
+`config.modeBarButtonsToAdd` accepts a list of button definition maps. Each button
+has a `name`, an `icon` (SVG path or a `Plotly.Icons.*` reference), and a `click`
+handler function.
+
+> **Limitation in Livebook:** Plotly.js button definitions require JavaScript
+> function objects for `click` and SVG data for `icon`. These are serialised as
+> JSON strings via `Plotly.RawJS` — but `JSON.parse()` in the browser converts
+> them back to plain strings, so the functions are **not executable**. This config
+> option is best used via a custom Phoenix LiveView component where you can inject
+> raw JavaScript, or via a `<script>` block in a standalone HTML page.
+>
+> The code below demonstrates the correct Elixir data structure. The button will
+> appear in the modebar but the click handler will be a string rather than a
+> function.
+
+```elixir
+alias Plotly.{Figure, Scatter, RawJS}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Chart with custom modebar button structure"},
+  config: %{
+    displayModeBar: true,
+    modeBarButtonsToAdd: [
+      %{
+        name: "alert_button",
+        title: "Click me",
+        icon: RawJS.new("Plotly.Icons.camera"),
+        click: RawJS.new("function(gd) { alert('Chart id: ' + gd.id); }")
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+For a fully functional custom button in a standalone HTML page, use JavaScript directly:
+
+```elixir
+# This is the equivalent JavaScript (for reference — not executable in Livebook):
+# config = {
+#   modeBarButtonsToAdd: [{
+#     name: 'alert_button',
+#     title: 'Click me',
+#     icon: Plotly.Icons.camera,
+#     click: function(gd) { alert('Chart id: ' + gd.id); }
+#   }]
+# }
+```
+
+## Fundamentals: Configuration & Display > Disabling Buttons for Specific Axes
+
+Certain modebar buttons can be disabled on a per-axis basis using the axis-level
+`fixedrange` layout property. Setting `fixedrange: true` on an axis prevents
+zooming and panning on that axis, disabling the corresponding modebar buttons for it.
+
+This is a **layout** property, not a `config` property.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Lock the y-axis range — users can only zoom/pan horizontally
+Figure.new(
+  data: [
+    Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn x -> :math.sin(x / 3.0) end),
+      mode: "lines"
+    )
+  ],
+  layout: %{
+    title: "Y-axis is locked (fixedrange: true)",
+    yaxis: %{fixedrange: true}
+  }
+)
+|> Plotly.show()
+```
+
+```elixir
+# Lock both axes — effectively disables all zoom/pan
+Figure.new(
+  data: [
+    Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn x -> :math.sin(x / 3.0) end),
+      mode: "lines"
+    )
+  ],
+  layout: %{
+    title: "Both axes locked",
+    xaxis: %{fixedrange: true},
+    yaxis: %{fixedrange: true}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Display the Edit Chart Link
+
+Chart Studio was retired on October 31, 2025. The plotly.js "Edit chart" link is
+deprecated in `plotly_ex`, and the related config options should be removed:
+
+- `plotlyServerURL`
+- `showLink`
+- `linkText`
+- `showEditInChartStudio`
+- `showSendToCloud`
+- `sendData`
+
+## Fundamentals: Configuration & Display > Customize The Edit Chart Link Text
+
+Chart Studio was retired on October 31, 2025. The edit link it provided is
+deprecated, so `config.linkText` is deprecated as well.
+
+## Fundamentals: Configuration & Display > Display Edit in Chart Studio Modebar Button
+
+Chart Studio was retired on October 31, 2025. The edit button it provided is
+deprecated, so `config.showEditInChartStudio` is deprecated as well.
+
+## Fundamentals: Configuration & Display > Change the Default Locale
+
+`config.locale` sets the interface language for the chart. `PlotlyLive` automatically
+loads the corresponding locale registration script from the plotly CDN when this
+is set — no extra setup needed in Livebook.
+
+Available locales include `"fr"`, `"de"`, `"es"`, `"zh-CN"`, `"pt-BR"`, `"ja"`,
+and many others. See the full list at
+https://github.com/plotly/plotly.js/tree/master/dist (files named `plotly-locale-*.js`).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "French locale — hover and modebar buttons translated"},
+  config: %{locale: "fr"}
+)
+|> Plotly.show()
+```
+
+```elixir
+# German locale
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [5, 3, 7, 2, 8], mode: "lines+markers")],
+  layout: %{title: "German locale"},
+  config: %{locale: "de"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Hide the Plotly Logo on the Modebar
+
+`config.displaylogo: false` removes the Plotly logo from the modebar. Useful for
+white-label dashboards or when branding guidelines prohibit third-party logos.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "No Plotly logo in the modebar"},
+  config: %{displaylogo: false}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Making a Responsive Chart
+
+`config.responsive: true` makes the chart fill its container and automatically
+resize when the window or panel changes size. Without it, the chart renders at a
+fixed pixel size.
+
+In Livebook, notebook panels resize frequently — `responsive: true` is generally
+recommended for all charts.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Resize the panel — chart follows"},
+  config: %{responsive: true}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Double Click Delay
+
+`config.doubleClickDelay` sets the maximum milliseconds between two clicks for
+them to be recognised as a double-click (default: 300 ms). Plotly uses
+double-click to reset zoom. Increase this value if users on touch screens or slow
+devices struggle to trigger double-click resets.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Double-click delay: 1000 ms — zoom then try double-click to reset"},
+  config: %{doubleClickDelay: 1000}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Responsive Plots
+
+A responsive (fluid) plot fills its container and automatically resizes when the
+window or panel changes size. Set `config.responsive: true` together with
+`layout.autosize: true`.
+
+In Livebook, Kino cells resize dynamically — `responsive: true` is recommended
+for all charts to avoid fixed-width overflow.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: Enum.to_list(1..10), y: [2, 4, 1, 5, 3, 7, 2, 6, 4, 8], mode: "lines+markers")],
+  layout: %{title: "Responsive plot — resize the panel to see it reflow", autosize: true},
+  config: %{responsive: true}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Configuration & Display > Persist User Changes
+
+`layout.uirevision` controls whether plotly.js preserves the user's interactive
+state (zoom, pan, legend toggles) when the figure is updated via `PlotlyLive.push`.
+
+When `uirevision` stays the **same** value across updates, the user's current view
+is preserved — only the data changes underneath. This is useful for live dashboards
+where users want to stay zoomed in while data refreshes.
+
+> **Two-cell pattern:** evaluate **Cell A** first, zoom in on the chart, then
+> evaluate **Cell B** to push updates. Your zoom will be preserved.
+
+**Cell A — create the widget**
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+kino =
+  Figure.new(
+    data: [Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn _ -> :rand.uniform() * 10 end),
+      mode: "lines+markers",
+      name: "live data"
+    )],
+    layout: %{
+      title: "Step 0 — zoom in, then run Cell B",
+      uirevision: "constant"
+    }
+  )
+  |> Plotly.show()
+```
+
+**Cell B — push updates (zoom is preserved)**
+
+```elixir
+for i <- 1..8 do
+  new_y = Enum.map(1..20, fn _ -> :rand.uniform() * 10 end)
+
+  Figure.new(
+    data: [Scatter.new(x: Enum.to_list(1..20), y: new_y, mode: "lines+markers", name: "live data")],
+    layout: %{title: "Update #{i} — zoom preserved (uirevision unchanged)", uirevision: "constant"}
+  )
+  |> then(&Plotly.Kino.PlotlyLive.push(kino, &1))
+
+  Process.sleep(600)
+end
+
+:ok
+```
+
+## Fundamentals: Configuration & Display > Reset User Changes
+
+When `layout.uirevision` **changes** on each update, plotly.js resets the user's
+interactive state back to the original view — as if the chart was freshly rendered.
+This is useful when the data changes so significantly that the old zoom window is
+no longer meaningful.
+
+> **Two-cell pattern:** evaluate **Cell A** first, zoom in on the chart, then
+> evaluate **Cell B**. Your zoom will reset on every update.
+
+**Cell A — create the widget**
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+kino =
+  Figure.new(
+    data: [Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn _ -> :rand.uniform() * 10 end),
+      mode: "lines+markers",
+      name: "live data"
+    )],
+    layout: %{
+      title: "Step 0 — zoom in, then run Cell B",
+      uirevision: 0
+    }
+  )
+  |> Plotly.show()
+```
+
+**Cell B — push updates (zoom resets each time)**
+
+```elixir
+for i <- 1..8 do
+  new_y = Enum.map(1..20, fn _ -> :rand.uniform() * 10 end)
+
+  Figure.new(
+    data: [Scatter.new(x: Enum.to_list(1..20), y: new_y, mode: "lines+markers", name: "live data")],
+    layout: %{title: "Update #{i} — zoom reset (uirevision: #{i})", uirevision: i}
+  )
+  |> then(&Plotly.Kino.PlotlyLive.push(kino, &1))
+
+  Process.sleep(600)
+end
+
+:ok
+```

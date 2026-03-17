@@ -1,0 +1,2223 @@
+# Fundamentals: Colors, Axes & Hover
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Fundamentals: Colors, Axes & Hover > Custom Colorscale
+
+A custom colorscale is a list of `[stop, color]` pairs where `stop` ranges from
+`0.0` to `1.0`. Colors can be CSS names, hex strings, or `"rgb(r,g,b)"`.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(
+  z: z,
+  colorscale: [
+    [0.0, "navy"],
+    [0.25, "royalblue"],
+    [0.5, "white"],
+    [0.75, "orange"],
+    [1.0, "red"]
+  ]
+))
+|> Figure.update_layout(title: "Custom Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > YlOrRd Heatmap
+
+The `"YlOrRd"` (Yellow-Orange-Red) colorscale is a sequential scheme well-suited
+for data where low values should appear light and high values dark.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "YlOrRd"))
+|> Figure.update_layout(title: "YlOrRd Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > YlGnBu Colorscale
+
+`"YlGnBu"` (Yellow-Green-Blue) is a sequential colorscale that transitions from
+light yellow through green to deep blue.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "YlGnBu"))
+|> Figure.update_layout(title: "YlGnBu Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > RdBu Colorscale
+
+`"RdBu"` (Red-Blue) is a diverging colorscale — red for high values, blue for
+low, white at the midpoint. Ideal for data that has a meaningful zero (e.g.
+anomalies, differences).
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "RdBu"))
+|> Figure.update_layout(title: "RdBu Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Portland Heatmap
+
+`"Portland"` is a sequential colorscale ranging from deep blue through cyan,
+green, yellow, and red — useful for showing density or intensity data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Portland"))
+|> Figure.update_layout(title: "Portland Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Picnic Colorscale
+
+`"Picnic"` is a diverging colorscale from blue through white to red — similar to
+`RdBu` but with a slightly different midpoint transition.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Picnic"))
+|> Figure.update_layout(title: "Picnic Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Jet Colorscale
+
+`"Jet"` is the classic rainbow colorscale (blue → cyan → green → yellow → red).
+Note: it is not perceptually uniform — `"Viridis"` or `"Plasma"` are generally
+preferred for scientific data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Jet"))
+|> Figure.update_layout(title: "Jet Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Hot Colorscale
+
+`"Hot"` runs from black through red and orange to yellow and white — mimicking
+a glowing surface. Well-suited for thermal or intensity data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Hot"))
+|> Figure.update_layout(title: "Hot Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Greys Colorscale
+
+`"Greys"` is a simple black-to-white sequential colorscale — useful for
+print-friendly charts or when colour is distracting.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Greys"))
+|> Figure.update_layout(title: "Greys Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Greens Colorscale
+
+`"Greens"` is a sequential single-hue colorscale from light green to dark green.
+Good for data representing growth, health, or environmental metrics.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Greens"))
+|> Figure.update_layout(title: "Greens Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Electric Colorscale
+
+`"Electric"` runs from black through purple and blue to bright cyan/white —
+evoking electrical or energy data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Electric"))
+|> Figure.update_layout(title: "Electric Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Earth Colorscale
+
+`"Earth"` mimics topographic colour conventions — blue for low (water), green and
+brown for mid (land), white for high (snow). Well-suited for geographic data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Earth"))
+|> Figure.update_layout(title: "Earth Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Bluered Colorscale
+
+`"Bluered"` is a diverging colorscale from blue (low) to red (high), passing
+through white at the midpoint. Similar to `RdBu` but with blue on the low end.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Bluered"))
+|> Figure.update_layout(title: "Bluered Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Blackbody Colorscale
+
+`"Blackbody"` simulates the colour of a heated blackbody radiator: black → red →
+orange → yellow → white. Effective for temperature, emission, or energy data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Blackbody"))
+|> Figure.update_layout(title: "Blackbody Colorscale Heatmap")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Colorscale for Contour Plot
+
+Named colorscales work on `Contour` traces the same way as on `Heatmap` traces —
+set `colorscale:` to any built-in name.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 3.0) * :math.cos(j / 3.0))
+
+Figure.new()
+|> Figure.add_trace(Contour.new(z: z, colorscale: "Jet"))
+|> Figure.update_layout(title: "Jet Colorscale — Contour Plot")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Contour.new(z: z, colorscale: "Viridis"))
+|> Figure.update_layout(title: "Viridis Colorscale — Contour Plot")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Custom Colorscale for Contour Plot
+
+Custom `[[stop, color], ...]` colorscales work on `Contour` traces exactly as on
+`Heatmap` traces. Add `contours: %{coloring: "heatmap"}` to fill contour bands
+with the custom colours.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 3.0) * :math.cos(j / 3.0))
+
+Figure.new()
+|> Figure.add_trace(Contour.new(
+  z: z,
+  colorscale: [
+    [0.0, "gold"],
+    [0.5, "mediumturquoise"],
+    [1.0, "lightsalmon"]
+  ],
+  contours: %{coloring: "heatmap"}
+))
+|> Figure.update_layout(title: "Custom Colorscale — Contour Plot")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Custom Discretized Heatmap Colorscale
+
+A discretized colorscale uses closely-spaced stop pairs to create sharp, flat
+colour bands instead of a smooth gradient. Each band needs two stops at nearly the
+same value — one ending the previous colour and one starting the next.
+
+This is achieved by using a list of `[stop, color]` pairs where the stops jump
+abruptly (e.g. `[0.0, "red"], [0.33, "red"], [0.33, "blue"], [0.66, "blue"], ...`).
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(
+  z: z,
+  colorscale: [
+    [0.0,    "rgb(165,0,38)"],
+    [0.1111, "rgb(165,0,38)"],
+    [0.1111, "rgb(215,48,39)"],
+    [0.2222, "rgb(215,48,39)"],
+    [0.2222, "rgb(244,109,67)"],
+    [0.3333, "rgb(244,109,67)"],
+    [0.3333, "rgb(253,174,97)"],
+    [0.4444, "rgb(253,174,97)"],
+    [0.4444, "rgb(254,224,144)"],
+    [0.5556, "rgb(254,224,144)"],
+    [0.5556, "rgb(171,217,233)"],
+    [0.6667, "rgb(171,217,233)"],
+    [0.6667, "rgb(116,173,209)"],
+    [0.7778, "rgb(116,173,209)"],
+    [0.7778, "rgb(69,117,180)"],
+    [0.8889, "rgb(69,117,180)"],
+    [0.8889, "rgb(49,54,149)"],
+    [1.0,    "rgb(49,54,149)"]
+  ]
+))
+|> Figure.update_layout(title: "Custom Discretized Heatmap Colorscale")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Set Default Trace Colors with colorway
+
+`layout.colorway` overrides the default colour cycle used for successive traces.
+Without it, plotly.js cycles through its built-in palette. With `colorway`, you
+control which colours each trace gets — useful for brand guidelines or
+accessible colour schemes.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+categories = ["Q1", "Q2", "Q3", "Q4"]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: categories, y: [4, 6, 3, 7], name: "Product A"))
+|> Figure.add_trace(Bar.new(x: categories, y: [2, 5, 4, 6], name: "Product B"))
+|> Figure.add_trace(Bar.new(x: categories, y: [5, 3, 6, 4], name: "Product C"))
+|> Figure.update_layout(
+  title: "Custom Colorway",
+  barmode: "group",
+  colorway: ["#e41a1c", "#377eb8", "#4daf4a"]
+)
+|> Plotly.show()
+```
+
+Use an accessible colour palette:
+
+```elixir
+# Wong (2011) colour-blind-safe palette
+Figure.new()
+|> Figure.add_trace(Bar.new(x: categories, y: [4, 6, 3, 7], name: "Series 1"))
+|> Figure.add_trace(Bar.new(x: categories, y: [2, 5, 4, 6], name: "Series 2"))
+|> Figure.add_trace(Bar.new(x: categories, y: [5, 3, 6, 4], name: "Series 3"))
+|> Figure.add_trace(Bar.new(x: categories, y: [3, 4, 5, 3], name: "Series 4"))
+|> Figure.update_layout(
+  title: "Colour-blind-safe Palette (Wong 2011)",
+  barmode: "group",
+  colorway: ["#E69F00", "#56B4E9", "#009E73", "#CC79A7"]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Add a Logo
+
+`layout.images` accepts a list of image overlay maps. Each image needs a `source`
+URL and position/size specified in `"paper"` coordinates (0–1 relative to the
+plot area) or axis coordinates.
+
+Key fields:
+- `source` — publicly accessible image URL
+- `xref` / `yref` — `"paper"` for plot-relative, or `"x"` / `"y"` for axis coords
+- `x` / `y` — position of the anchor point
+- `sizex` / `sizey` — width and height in coordinate units
+- `xanchor` / `yanchor` — which corner of the image the x/y refers to
+- `layer` — `"above"` (default) or `"below"` traces
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [2, 4, 1, 5, 3],
+  mode: "lines+markers",
+  name: "Series A"
+))
+|> Figure.update_layout(
+  title: "Chart with Logo Overlay",
+  images: [%{
+    source: "https://placehold.co/120x40/4B9CD3/white?text=MyLogo",
+    xref: "paper",
+    yref: "paper",
+    x: 1.0,
+    y: 1.05,
+    sizex: 0.15,
+    sizey: 0.1,
+    xanchor: "right",
+    yanchor: "bottom",
+    layer: "above"
+  }]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Add Multiple Images
+
+Add multiple entries to `layout.images` to overlay several images. Each entry is
+independent — different positions, sizes, and layers are supported.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(
+  x: ["Q1", "Q2", "Q3", "Q4"],
+  y: [120, 145, 132, 160],
+  name: "Revenue"
+))
+|> Figure.update_layout(
+  title: "Quarterly Revenue with Branding",
+  images: [
+    %{
+      source: "https://placehold.co/120x40/4B9CD3/white?text=TopLogo",
+      xref: "paper", yref: "paper",
+      x: 0.0, y: 1.1,
+      sizex: 0.15, sizey: 0.1,
+      xanchor: "left", yanchor: "bottom"
+    },
+    %{
+      source: "https://placehold.co/80x80/E84393/white?text=Seal",
+      xref: "paper", yref: "paper",
+      x: 0.5, y: 0.5,
+      sizex: 0.15, sizey: 0.15,
+      xanchor: "center", yanchor: "middle",
+      opacity: 0.2,
+      layer: "below"
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > LaTeX Typesetting
+
+The full plotly.js CDN bundle includes MathJax support. Any text field — chart
+title, axis titles, legend names, annotation text, trace `text` — accepts
+LaTeX enclosed in `$...$` (inline) or `$$...$$` (block).
+
+> **Note:** In Elixir strings, backslash must be escaped as `\\`. So the LaTeX
+> `\sin(x)` becomes `"\\sin(x)"` in Elixir source.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.map(0..100, fn i -> i / 20 end)
+ys = Enum.map(xs, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: ys,
+  mode: "lines",
+  name: "$y = \\sin(x)$"
+))
+|> Figure.update_layout(
+  title: "$\\text{Euler's formula: } e^{i\\theta} = \\cos\\theta + i\\sin\\theta$",
+  xaxis: %{title: "$x \\; \\text{(radians)}$"},
+  yaxis: %{title: "$\\sin(x)$"},
+  annotations: [%{
+    x: :math.pi(),
+    y: 0,
+    text: "$x = \\pi$",
+    showarrow: true,
+    arrowhead: 2,
+    ax: 40,
+    ay: -40
+  }]
+)
+|> Plotly.show()
+```
+
+Multiple equations:
+
+```elixir
+xs2 = Enum.map(0..100, fn i -> i / 20 end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs2,
+  y: Enum.map(xs2, &:math.sin/1),
+  mode: "lines", name: "$\\sin(x)$"
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs2,
+  y: Enum.map(xs2, &:math.cos/1),
+  mode: "lines", name: "$\\cos(x)$"
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs2,
+  y: Enum.map(xs2, fn x -> :math.sin(x) * :math.cos(x) end),
+  mode: "lines", name: "$\\sin(x)\\cos(x) = \\frac{1}{2}\\sin(2x)$"
+))
+|> Figure.update_layout(title: "$\\text{Trigonometric Identities}$")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Add Marker Border
+
+`marker.line` adds a border (outline) around each marker. Set `color` for the
+border colour and `width` for its thickness in pixels.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5, 6, 7],
+  y: [3, 1, 4, 1, 5, 9, 2],
+  mode: "markers",
+  name: "With border",
+  marker: %{
+    size: 18,
+    color: "steelblue",
+    line: %{color: "darkblue", width: 3}
+  }
+))
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5, 6, 7],
+  y: [2, 7, 1, 8, 2, 8, 4],
+  mode: "markers",
+  name: "No border",
+  marker: %{size: 18, color: "tomato"}
+))
+|> Figure.update_layout(title: "Marker Border vs No Border")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Fully Opaque
+
+By default, Plotly markers are fully opaque (`opacity: 1.0`). This notebook
+shows the distinction between a fully opaque trace and a semi-transparent one
+side by side, to illustrate the baseline.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = [1, 2, 3, 4, 5]
+ys_a = [3, 5, 2, 6, 4]
+ys_b = [2, 4, 3, 5, 3]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs, y: ys_a,
+  mode: "markers",
+  name: "Fully opaque (opacity: 1.0)",
+  opacity: 1.0,
+  marker: %{size: 20, color: "steelblue"}
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs, y: ys_b,
+  mode: "markers",
+  name: "Semi-transparent (opacity: 0.3)",
+  opacity: 0.3,
+  marker: %{size: 20, color: "tomato"}
+))
+|> Figure.update_layout(title: "Fully Opaque vs Semi-Transparent Trace")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Trace Opacity
+
+The `opacity` property on a **trace** applies to the entire trace — markers,
+lines, and fill all become equally transparent. This is different from
+`marker.opacity` which only affects the marker symbols.
+
+Use trace opacity when you want overlapping traces to show through each other
+while keeping a consistent visual weight for each trace.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(0..20)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.sin(x / 3.0) * 4 + 5 end),
+  mode: "lines+markers",
+  fill: "tozeroy",
+  name: "opacity: 0.6",
+  opacity: 0.6,
+  marker: %{size: 8}
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.cos(x / 3.0) * 4 + 5 end),
+  mode: "lines+markers",
+  fill: "tozeroy",
+  name: "opacity: 0.6",
+  opacity: 0.6,
+  marker: %{size: 8}
+))
+|> Figure.update_layout(title: "Trace Opacity — affects markers, line, and fill equally")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Marker Opacity
+
+`marker.opacity` makes **only the marker symbols** transparent — the line
+connecting them remains fully opaque. This differs from trace `opacity`, which
+affects the entire trace uniformly.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..10)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.sin(x / 2.0) * 3 end),
+  mode: "lines+markers",
+  name: "marker.opacity: 0.3",
+  marker: %{size: 18, color: "steelblue", opacity: 0.3},
+  line: %{color: "steelblue", width: 2}
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.cos(x / 2.0) * 3 end),
+  mode: "lines+markers",
+  name: "marker.opacity: 1.0",
+  marker: %{size: 18, color: "tomato", opacity: 1.0},
+  line: %{color: "tomato", width: 2}
+))
+|> Figure.update_layout(title: "Marker Opacity — line stays fully opaque")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Color Opacity
+
+Setting `marker.color` to an `"rgba(r, g, b, a)"` string applies opacity at the
+**colour level** — each marker's fill colour has its own alpha. This allows
+per-point transparency when using a list of colours, and is independent of both
+trace `opacity` and `marker.opacity`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [3, 5, 2, 6, 4],
+  mode: "markers",
+  name: "rgba colors",
+  marker: %{
+    size: 24,
+    color: [
+      "rgba(255,   0,   0, 1.0)",
+      "rgba(255, 128,   0, 0.8)",
+      "rgba(  0, 200,   0, 0.6)",
+      "rgba(  0,   0, 255, 0.4)",
+      "rgba(128,   0, 128, 0.2)"
+    ],
+    line: %{color: "black", width: 1}
+  }
+))
+|> Figure.update_layout(title: "Color Opacity via rgba() — each marker has its own alpha")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Range of Axes
+
+Set explicit axis ranges in a 3D scene via `layout.scene.xaxis.range`,
+`yaxis.range`, and `zaxis.range`. Without explicit ranges, plotly.js
+auto-scales to fit the data.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "3D Axes — Manual Range",
+  scene: %{
+    xaxis: %{range: [-2, 2]},
+    yaxis: %{range: [-2, 2]},
+    zaxis: %{range: [0, 8]}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Fixed Ratio Axes
+
+`layout.scene.aspectmode` controls the aspect ratio of the 3D bounding box:
+- `"auto"` (default) — plotly chooses based on data range
+- `"cube"` — forces all three axes equal length
+- `"data"` — axes scaled proportionally to data ranges
+- `"manual"` — set explicit ratios via `layout.scene.aspectratio`
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "cube aspect"))
+|> Figure.update_layout(
+  title: "Fixed Ratio — aspectmode: cube",
+  scene: %{aspectmode: "cube"}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "manual aspect"))
+|> Figure.update_layout(
+  title: "Fixed Ratio — aspectmode: manual (x:y:z = 1:1:2)",
+  scene: %{
+    aspectmode: "manual",
+    aspectratio: %{x: 1, y: 1, z: 2}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Ticks Formatting
+
+3D axis tick properties live under `layout.scene.xaxis`, `layout.scene.yaxis`,
+and `layout.scene.zaxis`. The same keys as 2D axes apply: `nticks`,
+`tickformat`, `tickprefix`, `ticksuffix`, `tickfont`.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines"))
+|> Figure.update_layout(
+  title: "3D Ticks Formatting",
+  scene: %{
+    xaxis: %{nticks: 4, tickformat: ".2f", tickprefix: "x="},
+    yaxis: %{nticks: 4, tickformat: ".2f", tickprefix: "y="},
+    zaxis: %{nticks: 5, ticksuffix: " s", tickfont: %{size: 10, color: "grey"}}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Axes Background Color
+
+Each face of the 3D bounding box has its own background colour, set via
+`layout.scene.xaxis.backgroundcolor` (and y, z). Set `showbackground: true`
+to enable the coloured panels. `gridcolor` controls the grid lines on each face.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines"))
+|> Figure.update_layout(
+  title: "3D Axes Background Color",
+  scene: %{
+    xaxis: %{backgroundcolor: "rgb(200, 200, 230)", showbackground: true, gridcolor: "white", zerolinecolor: "white"},
+    yaxis: %{backgroundcolor: "rgb(230, 200, 230)", showbackground: true, gridcolor: "white", zerolinecolor: "white"},
+    zaxis: %{backgroundcolor: "rgb(230, 230, 200)", showbackground: true, gridcolor: "white", zerolinecolor: "white"}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Set Axes Title
+
+Set the label for each 3D axis via `layout.scene.xaxis.title`,
+`layout.scene.yaxis.title`, and `layout.scene.zaxis.title`. Accepts a string
+or a map with `text` and `font` keys.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "3D Axes Titles",
+  scene: %{
+    xaxis: %{title: "cos(t)"},
+    yaxis: %{title: "sin(t)"},
+    zaxis: %{title: "t (time)"}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Camera Controls
+
+`layout.scene.camera` sets the initial viewpoint of a 3D chart. Three vectors
+control the camera:
+- `eye` — position of the camera (default `{x: 1.25, y: 1.25, z: 1.25}`)
+- `center` — point the camera looks at (default origin `{x: 0, y: 0, z: 0}`)
+- `up` — which direction is "up" (default `{x: 0, y: 0, z: 1}`)
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "Camera — top-down view",
+  scene: %{
+    camera: %{eye: %{x: 0, y: 0, z: 2.5}, center: %{x: 0, y: 0, z: 0}, up: %{x: 0, y: 1, z: 0}}
+  }
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "Camera — side view",
+  scene: %{
+    camera: %{eye: %{x: 2.5, y: 0, z: 0.5}, center: %{x: 0, y: 0, z: 0}, up: %{x: 0, y: 0, z: 1}}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Customize Hover for Spikelines
+
+When hovering over a 3D surface, plotly.js can draw **spikelines** — lines
+dropped from the hover point to each axis plane. Customise them via
+`layout.scene.xaxis.showspikes`, `spikecolor`, `spikethickness`, and
+`spikesides`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 5.0) * :math.cos(j / 5.0))
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis"))
+|> Figure.update_layout(
+  title: "3D Hover — Spikelines (hover over the surface)",
+  scene: %{
+    xaxis: %{showspikes: true, spikesides: false, spikecolor: "#3d1478", spikethickness: 2},
+    yaxis: %{showspikes: true, spikesides: false, spikecolor: "#1c6e13", spikethickness: 2},
+    zaxis: %{showspikes: true, spikecolor: "#ab2626", spikethickness: 2}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Customize Hover for Surface Contours
+
+The `contours` key on a `Surface` trace enables projected contour lines on the
+axis planes and highlights the contour under the cursor on hover. Set
+`show: true` and `usecolormap: true` to colour them from the surface colorscale.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 5.0) * :math.cos(j / 5.0))
+
+Figure.new()
+|> Figure.add_trace(Surface.new(
+  z: z,
+  colorscale: "RdBu",
+  contours: %{
+    x: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{x: true}},
+    y: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{y: true}},
+    z: %{show: true, usecolormap: true, highlightcolor: "#42f462"}
+  }
+))
+|> Figure.update_layout(
+  title: "3D Hover — Surface Contours (hover to highlight)",
+  scene: %{camera: %{eye: %{x: 1.5, y: 1.5, z: 1.2}}}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Ambient Lighting
+
+`lighting.ambient` controls the base illumination on a 3D surface — the amount
+of light that reaches the surface regardless of angle or light position. Range
+is `0.0` (dark) to `1.0` (fully lit). Default is `0.8`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Blues", lighting: %{ambient: 0.2}))
+|> Figure.update_layout(title: "Ambient Lighting: 0.2 (low)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Blues", lighting: %{ambient: 1.0}))
+|> Figure.update_layout(title: "Ambient Lighting: 1.0 (maximum)")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Roughness
+
+`lighting.roughness` controls how rough (matte) or smooth (glossy) the surface
+appears. Range is `0.0` (mirror-smooth) to `1.0` (completely matte). Default is `0.5`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Hot", lighting: %{roughness: 0.1}))
+|> Figure.update_layout(title: "Roughness: 0.1 (smooth/glossy)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Hot", lighting: %{roughness: 1.0}))
+|> Figure.update_layout(title: "Roughness: 1.0 (fully matte)")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Diffuse
+
+`lighting.diffuse` controls the intensity of angle-dependent (Lambertian)
+lighting — how much the surface brightens when facing the light source. Range
+is `0.0` to `1.0`. Default is `0.8`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis", lighting: %{diffuse: 0.1}))
+|> Figure.update_layout(title: "Diffuse: 0.1 (minimal angle effect)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis", lighting: %{diffuse: 1.0}))
+|> Figure.update_layout(title: "Diffuse: 1.0 (strong angle effect)")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Specular
+
+`lighting.specular` controls the intensity of the specular highlight —
+the bright spot where the light source directly reflects toward the camera.
+Range is `0.0` (no highlight) to `2.0` (very strong). Default is `0.05`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Earth", lighting: %{specular: 0.05}))
+|> Figure.update_layout(title: "Specular: 0.05 (default, subtle)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Earth", lighting: %{specular: 2.0}))
+|> Figure.update_layout(title: "Specular: 2.0 (very shiny)")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Fresnel
+
+`lighting.fresnel` controls how much light the surface reflects at glancing
+angles (edges of the surface). High values make the edges appear brighter than
+the center — a common effect in physically-based rendering. Range is `0.0` to
+`5.0`. Default is `0.2`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "RdBu", lighting: %{fresnel: 0.2}))
+|> Figure.update_layout(title: "Fresnel: 0.2 (default, subtle edge glow)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "RdBu", lighting: %{fresnel: 5.0}))
+|> Figure.update_layout(title: "Fresnel: 5.0 (bright edge reflection)")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Tick Placement, Color, and Style
+
+Control tick placement (`"outside"`, `"inside"`, `""`), colour, length, and
+width independently on each axis via `ticks`, `tickcolor`, `ticklen`, and
+`tickwidth`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..10)
+y = Enum.map(x, &(&1 * &1))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Tick Placement, Color, and Style",
+  xaxis: %{
+    ticks: "outside",
+    tickcolor: "crimson",
+    ticklen: 10,
+    tickwidth: 2,
+    showline: true
+  },
+  yaxis: %{
+    ticks: "inside",
+    tickcolor: "steelblue",
+    ticklen: 8,
+    tickwidth: 2,
+    showline: true
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Styling and Coloring Axes and the Zero-Line
+
+Style the axis line with `showline`, `linecolor`, `linewidth`, and the
+zero-line with `zeroline`, `zerolinecolor`, `zerolinewidth`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.map(-5..5, & &1)
+y = Enum.map(x, &(&1 * &1 - 10))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines"))
+|> Figure.update_layout(
+  title: "Styling Axes and Zero-Line",
+  xaxis: %{
+    showline: true,
+    linecolor: "black",
+    linewidth: 2,
+    zeroline: true,
+    zerolinecolor: "hotpink",
+    zerolinewidth: 4
+  },
+  yaxis: %{
+    showline: true,
+    linecolor: "black",
+    linewidth: 2,
+    zeroline: true,
+    zerolinecolor: "hotpink",
+    zerolinewidth: 4
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Set and Style Axes Title Labels and Ticks
+
+Set axis titles and style them via `xaxis.title` (a map with `text` and
+`font`). Style tick labels via `tickfont`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..5)
+y = [1, 3, 2, 4, 3, 5]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Set and Style Axes Title Labels and Ticks",
+  xaxis: %{
+    title: %{text: "x Axis Title", font: %{family: "Arial", size: 18, color: "#7f7f7f"}},
+    tickfont: %{family: "Old Standard TT", size: 14, color: "black"}
+  },
+  yaxis: %{
+    title: %{text: "y Axis Title", font: %{family: "Arial", size: 18, color: "#7f7f7f"}},
+    tickfont: %{family: "Old Standard TT", size: 14, color: "black"}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Setting the Range of Axes Manually
+
+Set `xaxis.range` and `yaxis.range` to `[min, max]` lists to fix the visible
+window of the plot, overriding plotly's auto-scale.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.map(0..100, fn i -> i / 10 end)
+y = Enum.map(x, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines", name: "sin(x)"))
+|> Figure.update_layout(
+  title: "Setting the Range of Axes Manually",
+  xaxis: %{range: [0, 5]},
+  yaxis: %{range: [-1.5, 1.5]}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Toggling Axes Lines, Ticks, Labels, and Autorange
+
+Toggle axis grid lines with `showgrid`, tick labels with `showticklabels`,
+and use `autorange: true` (default) to let plotly fit the data automatically.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+y = [1, 4, 9, 16, 25]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "squares"))
+|> Figure.update_layout(
+  title: "No Grid Lines",
+  xaxis: %{showgrid: false},
+  yaxis: %{showgrid: false}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "squares"))
+|> Figure.update_layout(
+  title: "No Tick Labels",
+  xaxis: %{showticklabels: false},
+  yaxis: %{showticklabels: false}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "squares"))
+|> Figure.update_layout(
+  title: "Axis Not Visible",
+  xaxis: %{visible: false},
+  yaxis: %{visible: false}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Enumerated Ticks with Tickvals and Ticktext
+
+Set `tickmode: "array"` and supply explicit `tickvals` (positions) and
+`ticktext` (labels) to display exactly the ticks you want.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+pi = :math.pi()
+x = Enum.map(0..100, fn i -> i * 3 * pi / 100 end)
+y = Enum.map(x, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines"))
+|> Figure.update_layout(
+  title: "Enumerated Ticks with Tickvals and Ticktext",
+  xaxis: %{
+    tickmode: "array",
+    tickvals: [0, pi, 2 * pi, 3 * pi],
+    ticktext: ["0", "π", "2π", "3π"]
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > nonnegative, tozero, and normal Rangemode
+
+`rangemode` controls how the axis auto-scales relative to zero:
+- `"normal"` (default): fits the data range
+- `"tozero"`: extends the range to include zero
+- `"nonnegative"`: forces the axis to start at zero or above
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+y = [-5, -2, 1, 4, 7]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "data"))
+|> Figure.update_layout(title: "Rangemode: normal (default)", yaxis: %{rangemode: "normal"})
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "data"))
+|> Figure.update_layout(title: "Rangemode: tozero", yaxis: %{rangemode: "tozero"})
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "data"))
+|> Figure.update_layout(title: "Rangemode: nonnegative", yaxis: %{rangemode: "nonnegative"})
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Logarithmic Axes
+
+Set `type: "log"` on an axis to use a logarithmic scale. Plotly
+automatically formats the tick labels as powers of ten.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y = Enum.map(x, fn i -> :math.pow(10, i - 1) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "10^(x-1)"))
+|> Figure.update_layout(
+  title: "Logarithmic Y-Axis",
+  yaxis: %{type: "log", title: %{text: "log scale"}}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: y, y: x, mode: "lines+markers", name: "10^(x-1)"))
+|> Figure.update_layout(
+  title: "Logarithmic X-Axis",
+  xaxis: %{type: "log", title: %{text: "log scale"}}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Set Axis Title Position
+
+`standoff` (inside `title`) controls the distance in pixels between the axis
+title and the tick labels. Increase it when long tick labels would otherwise
+overlap the title.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3]
+y = [1_000_000, 2_000_000, 3_000_000]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Axis Title Position — standoff",
+  xaxis: %{title: %{text: "x axis", standoff: 20}},
+  yaxis: %{title: %{text: "y axis (large numbers)", standoff: 40}}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Reversed Axes
+
+Set `autorange: "reversed"` to flip an axis direction while still
+auto-scaling to fit the data.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y = Enum.map(x, &(&1 * &1))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Reversed Axes",
+  xaxis: %{autorange: "reversed"},
+  yaxis: %{autorange: "reversed"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Reversed Axes with Range (Min/Max) Specified
+
+To reverse an axis with an explicit range, pass the bounds in descending
+order: `range: [max, min]`. Plotly treats the first element as the start
+(left/bottom) of the axis.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y = Enum.map(x, &(&1 * &1))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Reversed Axes with Explicit Range",
+  xaxis: %{range: [10, 1]},
+  yaxis: %{range: [100, 0]}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Categorical Axes
+
+When x (or y) values are strings, plotly automatically creates a categorical
+axis. Set `type: "category"` explicitly to force categorical treatment even
+for numeric-looking labels, or to control category ordering via
+`categoryorder`/`categoryarray`.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["giraffes", "orangutans", "monkeys"]
+y = [20, 14, 23]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: y))
+|> Figure.update_layout(title: "Categorical Axes (auto-detected)")
+|> Plotly.show()
+```
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = ["cat1", "cat2", "cat3", "cat4"]
+y = [2, 6, 3, 8]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "markers", marker: %{size: 14}))
+|> Figure.update_layout(
+  title: "Categorical Axis — Explicit Order",
+  xaxis: %{
+    type: "category",
+    categoryorder: "array",
+    categoryarray: ["cat3", "cat1", "cat4", "cat2"]
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Multi-Category Axes
+
+Multi-category axes display a two-level hierarchy on an axis. Pass `x` as a
+list of two lists: the outer list provides the top-level grouping and the
+inner list provides the sub-categories. Plotly renders a grouped tick label
+with the outer label spanning its children.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(
+  x: [["First", "First", "Second", "Second"], ["A", "B", "A", "B"]],
+  y: [2, 3, 1, 5],
+  name: "Values"
+))
+|> Figure.update_layout(title: "Multi-Category Axes")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Using Dates on the X-Axis
+
+Pass ISO 8601 date strings (`"YYYY-MM-DD"`) as x values. Set
+`xaxis.type: "date"` to ensure plotly parses them as dates even when
+there are only a few points. Plotly formats tick labels automatically and
+enables date-aware zoom/pan.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = ["2013-10-04", "2013-11-05", "2013-12-06", "2014-01-07", "2014-02-08",
+     "2014-03-09", "2014-04-10"]
+y = [1, 3, 6, 4, 7, 5, 8]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Using Dates on the X-Axis",
+  xaxis: %{type: "date"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Fixed-Ratio Axes
+
+`scaleanchor` and `scaleratio` lock the aspect ratio between axes so that
+one unit on the y-axis equals `scaleratio` units on the x-axis. Essential
+for displaying shapes (circles, squares) without distortion.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Generate a circle; without fixed ratio it renders as an ellipse
+theta = Enum.map(0..100, fn i -> i * 2 * :math.pi() / 100 end)
+x = Enum.map(theta, &:math.cos/1)
+y = Enum.map(theta, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines", name: "circle"))
+|> Figure.update_layout(
+  title: "Fixed-Ratio Axes (1:1) — circle looks like a circle",
+  yaxis: %{scaleanchor: "x", scaleratio: 1}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Specifying Label Aliases
+
+`labelalias` is a map from tick value (as a string key) to a replacement
+display label. Useful for showing human-friendly names on numeric or coded
+axes without changing the underlying data.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..6)
+y = [2, 4, 6, 8, 10, 12]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Specifying Label Aliases",
+  xaxis: %{
+    labelalias: %{
+      "1" => "Jan",
+      "2" => "Feb",
+      "3" => "Mar",
+      "4" => "Apr",
+      "5" => "May",
+      "6" => "Jun"
+    }
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Use Base64-Encoded Typed Arrays
+
+> **Note:** Base64-encoded typed arrays are a browser/JavaScript performance
+> optimisation. In plotly.js you can pass `{bdata: "<base64>", dtype: "f8"}` as
+> trace data, which allows the browser to deserialise large float arrays more
+> efficiently than JSON number arrays. This feature operates entirely in the JS
+> layer and has no Elixir equivalent — Elixir passes regular lists which are
+> serialised to JSON number arrays before reaching the browser.
+
+In practice, Elixir list → JSON array performance is sufficient for typical
+datasets. For very large datasets (millions of points) consider downsampling
+server-side before sending to the client.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Elixir equivalent: plain lists, serialised to JSON arrays
+x = Enum.map(1..1000, & &1)
+y = Enum.map(x, fn i -> :math.sin(i / 50) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines", name: "1 000 points"))
+|> Figure.update_layout(title: "Elixir: plain lists (equivalent to typed arrays in JS)")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Zero Line Layer
+
+`layer: "below traces"` on an axis moves the entire axis (grid, zero line)
+below the trace rendering layer, so bars or filled areas draw on top of the
+zero line. The default is `"above traces"`.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["A", "B", "C", "D"]
+y = [-5, 3, -2, 8]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: y))
+|> Figure.update_layout(
+  title: "Zero Line Layer: above traces (default)",
+  yaxis: %{
+    zeroline: true,
+    zerolinecolor: "red",
+    zerolinewidth: 3
+  }
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: y))
+|> Figure.update_layout(
+  title: "Zero Line Layer: below traces",
+  yaxis: %{
+    zeroline: true,
+    zerolinecolor: "red",
+    zerolinewidth: 3,
+    layer: "below traces"
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Basic Example — Horizontal Legend
+
+Set `legend.orientation: "h"` to display the legend horizontally below (or
+above) the plot instead of vertically on the right. Use `legend.x` and
+`legend.y` to reposition it. Values are in paper coordinates (0–1).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..5)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [1, 2, 3, 4, 5], name: "Series A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [2, 4, 1, 3, 5], name: "Series B", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [5, 1, 4, 2, 3], name: "Series C", mode: "lines"))
+|> Figure.update_layout(
+  title: "Horizontal Legend",
+  legend: %{orientation: "h"}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [1, 2, 3, 4, 5], name: "Series A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [2, 4, 1, 3, 5], name: "Series B", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [5, 1, 4, 2, 3], name: "Series C", mode: "lines"))
+|> Figure.update_layout(
+  title: "Horizontal Legend Positioned Above Plot",
+  legend: %{orientation: "h", x: 0.5, xanchor: "center", y: 1.1, yanchor: "bottom"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Adding Hover Text to Data in Line and Scatter Plots
+
+Use the `text` property on a Scatter trace to supply custom labels that appear
+in the hover tooltip. By default Plotly shows the x/y values; `text` adds or
+replaces those labels.
+
+Set `mode: "markers"` (or `"lines+markers"`) to show markers. Set
+`hoverinfo: "text"` to show only the custom text in the tooltip.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2],
+    y: [1, 3, 2],
+    mode: "markers",
+    text: ["Alpha", "Beta", "Gamma"],
+    hoverinfo: "text",
+    marker: %{size: 14}
+  )
+)
+|> Figure.update_layout(title: "Hover Text on Scatter Points")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Rounding X and Y Hover Values
+
+Use `xaxis: %{hoverformat: ".2f"}` and `yaxis: %{hoverformat: ".2f"}` in the
+layout to control the number of decimal places shown when hovering. The format
+string uses D3 number formatting syntax (same as `tickformat`).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1.12345, 2.98765, 3.14159],
+    y: [10.9999, 20.0001, 15.5555],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Rounded Hover Values",
+  xaxis: %{hoverformat: ".2f"},
+  yaxis: %{hoverformat: ".2f"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Hovertemplate
+
+`hovertemplate` gives full control over the hover label content. Use `%{x}`,
+`%{y}`, `%{text}`, and D3 format strings like `%{y:.2f}`. End with
+`<extra></extra>` to suppress the default secondary box showing the trace name.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["Jan", "Feb", "Mar", "Apr"],
+    y: [1200, 950, 1400, 1100],
+    mode: "lines+markers",
+    hovertemplate: "Month: %{x}<br>Revenue: $%{y:,.0f}<extra></extra>",
+    name: "Revenue"
+  )
+)
+|> Figure.update_layout(title: "Custom Hovertemplate")
+|> Plotly.show()
+```
+
+Use `%{text}` to reference an extra text array:
+
+```elixir
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3],
+    y: [4, 5, 6],
+    mode: "markers",
+    text: ["Point A", "Point B", "Point C"],
+    hovertemplate: "%{text}<br>(%{x}, %{y})<extra></extra>",
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(title: "Hovertemplate with Extra Text")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Unified Hover Mode
+
+`layout.hovermode: "x unified"` displays a single hover box for all traces
+at the same x value, instead of per-trace tooltips. Use `"y unified"` for
+horizontal comparisons.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..5)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [1, 3, 2, 4, 3], name: "Alpha", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [2, 1, 4, 2, 5], name: "Beta", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [3, 2, 1, 3, 2], name: "Gamma", mode: "lines"))
+|> Figure.update_layout(
+  title: "Unified Hover Mode",
+  hovermode: "x unified"
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Custom Unified Hover Title
+
+When using `hovermode: "x unified"`, the header of the unified hover box shows
+the x value. Customize it by styling the `hoverlabel` map: set `bgcolor`,
+`bordercolor`, and `font` to make the tooltip stand out.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-04-01", "2020-07-01", "2020-10-01"],
+    y: [100, 150, 130, 180],
+    name: "Series A",
+    mode: "lines"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-04-01", "2020-07-01", "2020-10-01"],
+    y: [80, 120, 160, 140],
+    name: "Series B",
+    mode: "lines"
+  )
+)
+|> Figure.update_layout(
+  title: "Custom Unified Hover Title",
+  hovermode: "x unified",
+  xaxis: %{type: "date"},
+  hoverlabel: %{bgcolor: "white", bordercolor: "black", font: %{size: 14}}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Styling Names
+
+Set `name:` on each trace to control what appears in the legend and hover.
+Style the plot title and axis titles by passing a map with `text:` and `font:`
+instead of a plain string.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "Experiment A", mode: "lines+markers"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "Experiment B", mode: "lines+markers"))
+|> Figure.update_layout(
+  title: %{
+    text: "Custom Styled Title",
+    font: %{family: "Arial", size: 24, color: "darkblue"}
+  },
+  xaxis: %{title: %{text: "Time (s)", font: %{size: 16, color: "gray"}}},
+  yaxis: %{title: %{text: "Value", font: %{size: 16, color: "gray"}}}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Setting Title Automargin
+
+Long titles can overlap with the plot area. Set `title.automargin: true` to
+have Plotly automatically expand the top margin to accommodate the title.
+Set `title.yref: "paper"` to position the title relative to the paper (0–1),
+which prevents it from overlapping tick labels.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [2, 4, 3, 5, 4, 6, 5, 7, 6, 8],
+    mode: "lines"
+  )
+)
+|> Figure.update_layout(
+  title: %{
+    text: "This Is a Very Long Title That Might Overlap the Plot Without Automargin",
+    automargin: true,
+    yref: "paper",
+    y: 1.0
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Add Named Container Array Items
+
+`layout.template` lets you define default chart elements. You can name
+template items (e.g. images) and then reference them with `templateitemname`
+in the actual figure. Items in the figure with a matching `templateitemname`
+inherit the template item's properties.
+
+This notebook shows adding a named image item (a watermark) via the
+template, then toggling its visibility with `visible: false` on a matching
+figure item.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+watermark_template = %{
+  layout: %{
+    images: [
+      %{
+        name: "watermark",
+        source: "https://raw.githubusercontent.com/elixir-lang/elixir-lang.github.com/main/images/logo/logo.png",
+        xref: "paper",
+        yref: "paper",
+        x: 0.5,
+        y: 0.5,
+        sizex: 0.5,
+        sizey: 0.5,
+        xanchor: "center",
+        yanchor: "middle",
+        opacity: 0.2,
+        layer: "above"
+      }
+    ]
+  }
+}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Chart With Watermark from Template",
+  template: watermark_template
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Matching Named Template Container Items
+
+When a figure item has a `templateitemname` that matches a template item's
+`name`, the figure item inherits all properties from the template item and can
+override them. Template items whose `name` has no matching figure item are not
+rendered.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+template = %{
+  layout: %{
+    annotations: [
+      %{name: "label_a", font: %{size: 18, color: "blue"}, showarrow: false},
+      %{name: "label_b", font: %{size: 14, color: "red"}, showarrow: false}
+    ]
+  }
+}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 2, 1], mode: "markers"))
+|> Figure.update_layout(
+  title: "Matching Named Template Container Items",
+  template: template,
+  annotations: [
+    %{templateitemname: "label_a", text: "Alpha", x: 1, y: 1},
+    %{templateitemname: "label_b", text: "Beta", x: 3, y: 1}
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Creating Default Item Values
+
+`annotationdefaults` (and similar `*defaults` keys) in a template apply
+styling to all items of that type that do NOT have a `templateitemname`. This
+is how you set global defaults without naming each item.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+template = %{
+  layout: %{
+    annotationdefaults: %{
+      font: %{size: 14, color: "green"},
+      showarrow: true,
+      arrowhead: 2,
+      arrowcolor: "green"
+    }
+  }
+}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], mode: "markers", marker: %{size: 12}))
+|> Figure.update_layout(
+  title: "Default Annotation Values from Template",
+  template: template,
+  annotations: [
+    %{text: "Peak", x: 2, y: 4, ax: 0, ay: -40},
+    %{text: "Start", x: 1, y: 2, ax: -40, ay: 0}
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Hiding the Legend
+
+Set `layout.showlegend: false` to hide the legend entirely, regardless of
+how many traces are in the figure.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], name: "Series A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 4], name: "Series B", mode: "lines"))
+|> Figure.update_layout(title: "No Legend", showlegend: false)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Legend Names
+
+Set `name:` on each trace to control the text shown in the legend. Without a
+`name`, Plotly uses the trace index ("trace 0", "trace 1", etc.).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 4, 3], name: "Blue Trace", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 1, 2], name: "Red Trace", mode: "lines"))
+|> Figure.update_layout(title: "Named Legend Entries")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Positioning the Legend Inside the Plot
+
+Use `layout.legend` with `x`, `y`, `xanchor`, and `yanchor` (paper coords,
+0–1) to place the legend inside the plot area.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "B", mode: "lines"))
+|> Figure.update_layout(
+  title: "Legend Inside the Plot (top-right)",
+  legend: %{x: 1, xanchor: "right", y: 1}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Positioning the Legend Outside the Plot
+
+Set `legend.x` to a value greater than 1 (or less than 0) to place the legend
+outside the plot area. Common positions: right (`x: 1.02`) or below (`y: -0.2`).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "Alpha", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 3, 2], name: "Beta", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "Gamma", mode: "lines"))
+|> Figure.update_layout(
+  title: "Legend Outside the Plot (right)",
+  legend: %{x: 1.05, y: 1, xanchor: "left", yanchor: "top"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Styling and Coloring the Legend
+
+Customize the legend box with `bgcolor`, `bordercolor`, `borderwidth`, and
+`font` inside `layout.legend`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], name: "Alpha", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 1, 4], name: "Beta", mode: "lines"))
+|> Figure.update_layout(
+  title: "Styled Legend",
+  legend: %{
+    bgcolor: "#E2E2E2",
+    bordercolor: "#FFFFFF",
+    borderwidth: 2,
+    font: %{family: "Arial", size: 14, color: "black"}
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Changing the Orientation of Legend
+
+Set `legend.orientation: "h"` to display legend items horizontally. This is
+the same property shown in the Horizontal Legend subsection but presented here
+in the general Legend context.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 3, 2], name: "A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "B", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "C", mode: "lines"))
+|> Figure.update_layout(
+  title: "Horizontal Legend",
+  legend: %{orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "right", x: 1}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Hiding Legend Entries
+
+Set `showlegend: false` on a specific trace to hide its entry from the legend
+while keeping the trace visible in the chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], name: "Visible", mode: "lines"))
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3],
+    y: [1, 2, 1],
+    name: "Hidden from Legend",
+    mode: "lines",
+    showlegend: false
+  )
+)
+|> Figure.update_layout(title: "Hiding a Specific Legend Entry")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Grouped Legend
+
+Assign the same `legendgroup` string to multiple traces to group them in the
+legend. Clicking the group entry toggles all traces in the group at once.
+Use `legendgrouptitle: %{text: "..."}` to add a title above the group.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [2, 4, 3],
+    name: "Line A",
+    mode: "lines",
+    legendgroup: "group1",
+    legendgrouptitle: %{text: "Group 1"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [2.2, 3.8, 3.2],
+    name: "Line A (variant)",
+    mode: "lines",
+    line: %{dash: "dot"},
+    legendgroup: "group1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [4, 2, 5],
+    name: "Line B",
+    mode: "lines",
+    legendgroup: "group2",
+    legendgrouptitle: %{text: "Group 2"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [3.8, 2.2, 4.8],
+    name: "Line B (variant)",
+    mode: "lines",
+    line: %{dash: "dot"},
+    legendgroup: "group2"
+  )
+)
+|> Figure.update_layout(title: "Grouped Legend")
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Subplot Grouped Legend
+
+When using subplots, assign the same `legendgroup` across traces in different
+subplot axes. Clicking a legend group hides/shows all traces with that group
+across all subplots simultaneously.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [2, 4, 3],
+    name: "Series A",
+    mode: "lines",
+    legendgroup: "A",
+    legendgrouptitle: %{text: "Series A"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [4, 2, 5],
+    name: "Series B",
+    mode: "lines",
+    legendgroup: "B",
+    legendgrouptitle: %{text: "Series B"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [20, 40, 30],
+    name: "Series A (subplot)",
+    mode: "lines",
+    legendgroup: "A",
+    showlegend: false,
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [40, 20, 50],
+    name: "Series B (subplot)",
+    mode: "lines",
+    legendgroup: "B",
+    showlegend: false,
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Subplot Grouped Legend",
+  xaxis: %{domain: [0, 0.45]},
+  xaxis2: %{domain: [0.55, 1]},
+  yaxis2: %{anchor: "x2"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Adjusting Height, Width, and Margins
+
+Set `layout.width` and `layout.height` (in pixels) together with
+`layout.autosize: false` to fix the chart dimensions. Use `layout.margin`
+with keys `l` (left), `r` (right), `b` (bottom), `t` (top), and `pad` to
+control spacing around the plot area.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    y: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    mode: "markers"
+  )
+)
+|> Figure.update_layout(
+  autosize: false,
+  width: 500,
+  height: 500,
+  margin: %{l: 50, r: 50, b: 100, t: 100, pad: 4},
+  paper_bgcolor: "LightSteelBlue",
+  plot_bgcolor: "LightSteelBlue"
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Colors, Axes & Hover > Automatically Adjust Margins
+
+Setting `yaxis.automargin: true` tells Plotly to automatically expand the
+margin so that tick labels and axis titles are never clipped. This is useful
+when tick labels are long or the axis title is large.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: [20, 14, 23],
+    y: ["giraffes", "orangutans", "monkeys"],
+    orientation: "h"
+  )
+)
+|> Figure.update_layout(
+  autosize: false,
+  width: 500,
+  height: 400,
+  yaxis: %{
+    automargin: true,
+    title: %{text: "Animal", font: %{size: 18}, standoff: 20}
+  }
+)
+|> Plotly.show()
+```

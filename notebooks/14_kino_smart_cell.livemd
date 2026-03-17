@@ -1,0 +1,163 @@
+# Plotly Kino Smart Cell
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"},
+  {:explorer, "~> 0.11"}
+])
+```
+
+## What is the Smart Cell?
+
+The **Plotly Chart** smart cell is a no-code chart builder built into Livebook.
+It auto-discovers tabular variables defined in your notebook and populates
+column dropdowns automatically — no need to type column names.
+
+**How to insert one:**
+
+1. Click **+ Smart** between cells
+2. Choose **Plotly Chart** from the list
+
+**Supported chart types:** `scatter`, `bar`, `line`, `histogram`, `box`, `violin`, `pie`
+
+**Supported data sources:**
+
+- `Explorer.DataFrame` — column names and types inferred automatically
+- List of string-keyed maps — e.g. `[%{"x" => 1, "y" => 2}]`
+- Columnar maps — e.g. `%{"col" => [1, 2, 3]}`
+
+**UI controls:**
+
+| Control | Purpose |
+|---------|---------|
+| Variable | Which notebook variable to plot |
+| Chart type | scatter / bar / line / histogram / box / violin / pie |
+| X axis | Column to use for the X dimension |
+| Y axis | Column to use for the Y dimension |
+| Color by | Column to split into colour-coded groups |
+| Title | Optional chart title (shown in the navy header bar) |
+| W / H | Optional width/height in pixels (leave blank for auto) |
+| + Add layer | Overlay a second trace on the same figure |
+
+## Prepare Sample Data
+
+Run this cell first — the smart cells below will auto-discover these variables.
+
+```elixir
+alias Explorer.DataFrame, as: DF
+
+# Explorer.DataFrame — column types are inferred automatically
+sales_df =
+  DF.new(%{
+    "date"     => ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "revenue"  => [42, 55, 61, 48, 73, 89, 95, 82, 67, 74, 91, 110],
+    "category" => ["Q1", "Q1", "Q1", "Q2", "Q2", "Q2",
+                   "Q3", "Q3", "Q3", "Q4", "Q4", "Q4"]
+  })
+
+# Columnar map — keys are column names, values are lists
+population = %{
+  "city" => ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
+             "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"],
+  "pop"  => [8_336_817, 3_979_576, 2_693_976, 2_320_268, 1_680_992,
+             1_584_064, 1_547_253, 1_423_851, 1_343_573, 1_021_795],
+  "region" => ["Northeast", "West", "Midwest", "South", "West",
+               "Northeast", "South", "West", "South", "West"]
+}
+
+# List of string-keyed maps
+scatter_data = [
+  %{"x" => 1.2, "y" => 4.5, "label" => "alpha"},
+  %{"x" => 2.8, "y" => 2.1, "label" => "beta"},
+  %{"x" => 3.5, "y" => 6.8, "label" => "gamma"},
+  %{"x" => 4.1, "y" => 3.3, "label" => "delta"},
+  %{"x" => 5.0, "y" => 7.2, "label" => "epsilon"},
+  %{"x" => 6.2, "y" => 5.0, "label" => "zeta"},
+  %{"x" => 7.4, "y" => 8.9, "label" => "eta"},
+  %{"x" => 8.1, "y" => 6.4, "label" => "theta"}
+]
+
+:ok
+```
+
+## Smart Cell → Scatter Chart
+
+The smart cell below is configured for a scatter chart using `scatter_data`.
+After running the cell above, the **Variable**, **X axis**, and **Y axis**
+dropdowns will be populated from the discovered columns.
+
+<!-- livebook:{"attrs":{"height":"","layers":[{"chart_type":"scatter","color_field":"","data_variable":"scatter_data","id":"1","x_field":"x","y_field":"y"}],"title":"Scatter: X vs Y","width":""},"chunks":null,"kind":"Elixir.Plotly.Kino.SmartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+Plotly.scatter(scatter_data, x: "x", y: "y", title: "Scatter: X vs Y") |> Plotly.show()
+```
+
+The generated code above is exactly what the smart cell emits when you pick those
+options. You can copy it into a regular code cell and extend it further —
+for example, add `mode: "markers+text"` or custom marker colours.
+
+## Smart Cell → Bar + Color Grouping
+
+This smart cell uses `sales_df` with a bar chart. The **Color by** field is set
+to `category`, which splits the bars into quarterly colour groups.
+
+<!-- livebook:{"attrs":{"height":"","layers":[{"chart_type":"bar","color_field":"category","data_variable":"sales_df","id":"2","x_field":"date","y_field":"revenue"}],"title":"Monthly Revenue by Quarter","width":""},"chunks":null,"kind":"Elixir.Plotly.Kino.SmartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+Plotly.bar(sales_df, x: "date", y: "revenue", color: "category", title: "Monthly Revenue by Quarter") |> Plotly.show()
+```
+
+**Tip:** `bar` and `scatter` are the only Express chart types that support
+colour grouping. Each unique value in the colour column becomes a separate
+Plotly trace, rendered side-by-side by default.
+
+## Smart Cell → Multi-Layer (Scatter + Bar Overlay)
+
+Click **+ Add layer** in the smart cell to overlay two chart types on the
+same figure. Layer 1 shows revenue as bars; Layer 2 adds a scatter overlay
+on the same axes.
+
+<!-- livebook:{"attrs":{"height":"","layers":[{"chart_type":"bar","color_field":"","data_variable":"sales_df","id":"3","x_field":"date","y_field":"revenue"},{"chart_type":"scatter","color_field":"","data_variable":"sales_df","id":"4","x_field":"date","y_field":"revenue"}],"title":"Revenue: Bar + Scatter Overlay","width":""},"chunks":null,"kind":"Elixir.Plotly.Kino.SmartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+Plotly.bar(sales_df, x: "date", y: "revenue")
+|> Plotly.Figure.merge(Plotly.scatter(sales_df, x: "date", y: "revenue"))
+|> Plotly.show()
+```
+
+Under the hood the smart cell calls `Plotly.Figure.merge/2` to combine
+independent Express figures. Here is the same chart built manually so you can
+see the full structure and customise it further:
+
+```elixir
+bars =
+  Plotly.bar(sales_df,
+    x: "date",
+    y: "revenue",
+    title: "Revenue: Bar + Scatter Overlay"
+  )
+
+dots =
+  Plotly.scatter(sales_df,
+    x: "date",
+    y: "revenue"
+  )
+
+Plotly.Figure.merge(bars, dots)
+|> Plotly.show()
+```
+
+## Tip: From Smart Cell to Code
+
+Once you have configured a smart cell to your liking, you can **eject** it to
+plain Elixir code:
+
+1. Hover over the smart cell — a toolbar appears above it.
+2. Click the **↓ Convert to Code** button (arrow-down icon).
+3. Livebook replaces the smart cell with the equivalent `Plotly.*` call.
+
+This is the recommended workflow for going beyond what the UI supports:
+start visually, eject, then add custom layout options, annotations,
+or post-processing that the smart cell doesn't expose.

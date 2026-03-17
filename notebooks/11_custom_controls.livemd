@@ -1,0 +1,719 @@
+# Custom Controls
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Custom Controls > Add Two Dropdown Menus to a Chart
+
+`layout.updatemenus` accepts a list — each entry becomes a separate control.
+Use `type: "dropdown"` for a select menu. `method: "restyle"` updates trace
+properties client-side; `method: "relayout"` updates layout properties.
+
+Position with `x`, `y`, `xanchor`, `yanchor` (0–1 fractions of plot area).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..20)
+ys_sin = Enum.map(xs, fn x -> :math.sin(x / 3.0) end)
+ys_cos = Enum.map(xs, fn x -> :math.cos(x / 3.0) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_sin, name: "sin", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_cos, name: "cos", mode: "lines", visible: false))
+|> Figure.update_layout(
+  title: "Two Dropdown Menus",
+  updatemenus: [
+    # Dropdown 1: select trace (left side)
+    %{
+      type: "dropdown",
+      x: 0.1,
+      y: 1.15,
+      xanchor: "left",
+      showactive: true,
+      buttons: [
+        %{label: "sin",      method: "update",
+          args: [%{visible: [true, false]}, %{title: "sin(x/3)"}]},
+        %{label: "cos",      method: "update",
+          args: [%{visible: [false, true]}, %{title: "cos(x/3)"}]},
+        %{label: "sin + cos", method: "update",
+          args: [%{visible: [true, true]}, %{title: "sin and cos"}]}
+      ]
+    },
+    # Dropdown 2: select line colour (right side)
+    %{
+      type: "dropdown",
+      x: 0.55,
+      y: 1.15,
+      xanchor: "left",
+      showactive: true,
+      buttons: [
+        %{label: "Blue",   method: "restyle", args: [%{line: %{color: "steelblue"}}]},
+        %{label: "Red",    method: "restyle", args: [%{line: %{color: "crimson"}}]},
+        %{label: "Green",  method: "restyle", args: [%{line: %{color: "seagreen"}}]}
+      ]
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Bind Dropdown Events to Charts
+
+The idiomatic Elixir approach: use `Kino.Control.form/2` with `report_changes: true`
+to drive chart updates from Elixir. Every dropdown change fires the listener with all
+current field values, so there's no need to call `Kino.Input.read/1` from the callback
+process (which Kino forbids).
+
+This gives full Elixir logic in the callback — filter data, fetch from DB, transform — unlike the native JS approach which can only `restyle`/`relayout` the existing data.
+
+```elixir
+alias Plotly.{Figure, Scatter, Bar}
+alias Plotly.Kino.PlotlyLive
+
+# Dataset
+categories = ~w[Mon Tue Wed Thu Fri Sat Sun]
+data = %{
+  "Sales"    => [120, 145, 110, 160, 200, 230, 180],
+  "Traffic"  => [340, 390, 300, 420, 510, 600, 480],
+  "Returns"  => [12, 8, 15, 10, 18, 22, 16]
+}
+
+make_fig = fn chart_type, metric ->
+  key = metric |> to_string() |> String.capitalize()
+  y = data[key]
+  trace = case chart_type do
+    :bar     -> Bar.new(x: categories, y: y, name: key)
+    :line    -> Scatter.new(x: categories, y: y, mode: "lines+markers", name: key)
+    :scatter -> Scatter.new(x: categories, y: y, mode: "markers", name: key,
+                  marker: %{size: 12})
+  end
+  Figure.new()
+  |> Figure.add_trace(trace)
+  |> Figure.update_layout(title: "#{key} — #{chart_type}")
+end
+
+form = Kino.Control.form(
+  [
+    chart_type: Kino.Input.select("Chart type", [bar: "Bar", line: "Line", scatter: "Scatter"]),
+    metric: Kino.Input.select("Metric", [sales: "Sales", traffic: "Traffic", returns: "Returns"])
+  ],
+  report_changes: true
+)
+
+chart = make_fig.(:bar, :sales) |> PlotlyLive.new()
+
+Kino.listen(form, fn %{data: %{chart_type: ct, metric: m}} ->
+  PlotlyLive.push(chart, make_fig.(ct, m))
+end)
+
+Kino.Layout.grid([chart, form])
+```
+
+## Custom Controls > Restyle Button — Single Attribute
+
+`method: "restyle"` updates one or more trace properties without replotting.
+The `args` list is `[update_map]` or `[update_map, trace_indices]`.
+
+Changing a single attribute — e.g. `mode`, `marker.color`, `line.dash` — is the simplest case.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..15)
+ys = Enum.map(xs, fn x -> :math.sin(x / 2.5) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys, mode: "lines+markers", name: "data",
+    line: %{color: "steelblue", width: 2},
+    marker: %{size: 8}))
+|> Figure.update_layout(
+  title: "Restyle — Single Attribute",
+  updatemenus: [%{
+    type: "buttons",
+    direction: "right",
+    x: 0.5,
+    xanchor: "center",
+    y: 1.1,
+    showactive: true,
+    buttons: [
+      %{label: "Lines",    method: "restyle", args: [%{mode: "lines"}]},
+      %{label: "Markers",  method: "restyle", args: [%{mode: "markers"}]},
+      %{label: "Both",     method: "restyle", args: [%{mode: "lines+markers"}]},
+      %{label: "Text",     method: "restyle",
+        args: [%{mode: "text", text: Enum.map(xs, &to_string/1)}]}
+    ]
+  }]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Restyle Button — Multiple Attributes
+
+A single `restyle` call can update multiple trace properties at once by including
+all keys in the update map. This is more efficient than chaining multiple calls.
+
+With multiple traces, pass a list of values — one per trace — or a scalar to apply to all.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..20)
+ys_a = Enum.map(xs, fn x -> :math.sin(x / 3.0) end)
+ys_b = Enum.map(xs, fn x -> :math.cos(x / 3.0) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_a, name: "Trace A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_b, name: "Trace B", mode: "lines"))
+|> Figure.update_layout(
+  title: "Restyle — Multiple Attributes",
+  updatemenus: [%{
+    type: "buttons",
+    direction: "down",
+    x: 1.1,
+    y: 1.0,
+    showactive: true,
+    buttons: [
+      %{
+        label: "Default",
+        method: "restyle",
+        args: [%{
+          mode: "lines",
+          line: [%{color: "steelblue", width: 2}, %{color: "coral", width: 2}],
+          opacity: 1.0
+        }]
+      },
+      %{
+        label: "Thick Dashed",
+        method: "restyle",
+        args: [%{
+          mode: "lines",
+          line: [%{color: "purple", width: 4, dash: "dash"}, %{color: "green", width: 4, dash: "dash"}],
+          opacity: 0.9
+        }]
+      },
+      %{
+        label: "Markers Only",
+        method: "restyle",
+        args: [%{
+          mode: "markers",
+          marker: [%{size: 10, color: "steelblue", symbol: "circle"},
+                   %{size: 10, color: "coral",     symbol: "diamond"}],
+          opacity: 0.8
+        }]
+      }
+    ]
+  }]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Relayout Button
+
+`method: "relayout"` updates layout properties (title, axis ranges, background,
+annotations, etc.) without touching trace data.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..20)
+ys = Enum.map(xs, fn x -> :math.sin(x / 3.0) * x / 10 end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Relayout Button Examples",
+  xaxis: %{title: "x"},
+  yaxis: %{title: "y"},
+  updatemenus: [%{
+    type: "buttons",
+    direction: "right",
+    x: 0.5,
+    xanchor: "center",
+    y: 1.12,
+    buttons: [
+      %{label: "Default",
+        method: "relayout",
+        args: [%{plot_bgcolor: "white", paper_bgcolor: "white",
+                 font: %{color: "#444"},
+                 "xaxis.title.text": "x", "yaxis.title.text": "y"}]},
+      %{label: "Dark",
+        method: "relayout",
+        args: [%{plot_bgcolor: "#1a1a2e", paper_bgcolor: "#16213e",
+                 font: %{color: "white"}}]},
+      %{label: "Zoom In",
+        method: "relayout",
+        args: [%{"xaxis.range": [5, 15], "yaxis.range": [-1, 1]}]},
+      %{label: "Reset",
+        method: "relayout",
+        args: [%{"xaxis.autorange": true, "yaxis.autorange": true}]}
+    ]
+  }]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Update Button
+
+`method: "update"` is a combined `restyle` + `relayout` in one call.
+`args` is `[trace_update_map, layout_update_map]`. Use it when a single
+button should change both trace properties and layout simultaneously.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..30)
+ys_sin  = Enum.map(xs, fn x -> :math.sin(x / 5.0) end)
+ys_cos  = Enum.map(xs, fn x -> :math.cos(x / 5.0) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_sin, name: "sin", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_cos, name: "cos", mode: "lines", visible: false))
+|> Figure.update_layout(
+  title: "Update Button — Sin View",
+  xaxis: %{title: "x"},
+  yaxis: %{range: [-1.2, 1.2], title: "sin(x/5)"},
+  updatemenus: [%{
+    type: "buttons",
+    direction: "right",
+    x: 0.5,
+    xanchor: "center",
+    y: 1.12,
+    showactive: true,
+    buttons: [
+      %{
+        label: "Sin",
+        method: "update",
+        args: [
+          %{visible: [true, false]},
+          %{title: "Update Button — Sin View", "yaxis.title.text": "sin(x/5)"}
+        ]
+      },
+      %{
+        label: "Cos",
+        method: "update",
+        args: [
+          %{visible: [false, true]},
+          %{title: "Update Button — Cos View", "yaxis.title.text": "cos(x/5)"}
+        ]
+      },
+      %{
+        label: "Both",
+        method: "update",
+        args: [
+          %{visible: [true, true]},
+          %{title: "Update Button — Both Traces", "yaxis.title.text": "value"}
+        ]
+      }
+    ]
+  }]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Animate Button
+
+`method: "animate"` triggers `Plotly.animate` when clicked. This is the same
+mechanism used in the `notebooks/animations/` series. Here we show how to
+place Play/Pause buttons inside `layout.updatemenus` as a custom control panel.
+
+Multiple buttons can target different frame subsets or animation speeds.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 40
+frames =
+  for i <- 1..n do
+    xs = Enum.to_list(0..i)
+    ys = Enum.map(xs, fn x -> :math.sin(x * 0.5) * :math.exp(-x * 0.05) end)
+    %{name: "f#{i}", data: [%{x: xs, y: ys}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0.0], mode: "lines+markers",
+           line: %{color: "steelblue"}, marker: %{size: 6})],
+  layout: %{
+    title: "Animate Button — Damped Wave",
+    xaxis: %{range: [0, n], autorange: false},
+    yaxis: %{range: [-1.1, 1.1], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      direction: "right",
+      x: 0.5,
+      xanchor: "center",
+      y: 0,
+      yanchor: "top",
+      showactive: false,
+      buttons: [
+        %{label: "▶ Play (normal)",
+          method: "animate",
+          args: [nil, %{frame: %{duration: 80, redraw: false}, transition: %{duration: 40}, fromcurrent: false}]},
+        %{label: "▶ Play (fast)",
+          method: "animate",
+          args: [nil, %{frame: %{duration: 20, redraw: false}, transition: %{duration: 0}}]},
+        %{label: "⏸ Pause",
+          method: "animate",
+          args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]}
+      ]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Style the Buttons
+
+> **N/A — HTML/CSS styling only**
+>
+> The JS example adds CSS classes and inline styles to the `layout.updatemenus`
+> button container (position, font, background colour, border).
+>
+> In Livebook, button appearance is controlled by Plotly.js's own rendering — there
+> is no HTML DOM to style. The visual look of native buttons can be adjusted via
+> `layout.updatemenus` properties: `bgcolor`, `font`, `bordercolor`, `borderwidth`.
+>
+> For Elixir-driven controls using `Kino.Input`, styling is determined by Livebook's
+> own UI framework.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Example: style native buttons via updatemenus layout properties
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [1, 4, 9, 16, 25],
+  mode: "lines+markers"
+))
+|> Figure.update_layout(
+  title: "Styled Buttons (via layout properties)",
+  updatemenus: [%{
+    type: "buttons",
+    bgcolor: "#2c7bb6",
+    font: %{color: "white", size: 13},
+    bordercolor: "#1a5276",
+    borderwidth: 2,
+    buttons: [
+      %{label: "Lines",    method: "restyle", args: [%{mode: "lines"}]},
+      %{label: "Markers",  method: "restyle", args: [%{mode: "markers"}]},
+      %{label: "Both",     method: "restyle", args: [%{mode: "lines+markers"}]}
+    ]
+  }]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Basic Slider
+
+`layout.sliders` adds a scrub bar to the chart. Each step can call `method: "restyle"`,
+`"relayout"`, or `"animate"`. The `currentvalue` section shows the active label.
+
+This example uses `method: "restyle"` to show one trace at a time — no `frames` needed
+since we pre-build all traces and toggle `visible`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+freqs = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]
+xs = Enum.map(0..100, fn i -> i / 10.0 end)
+
+traces =
+  for {freq, i} <- Enum.with_index(freqs) do
+    ys = Enum.map(xs, fn x -> :math.sin(freq * x) end)
+    Scatter.new(x: xs, y: ys, mode: "lines", name: "f=#{freq}", visible: i == 0)
+  end
+
+steps =
+  for {freq, i} <- Enum.with_index(freqs) do
+    visibility = Enum.map(0..(length(freqs) - 1), fn j -> j == i end)
+    %{
+      method: "restyle",
+      label: "#{freq}",
+      args: [%{visible: visibility}]
+    }
+  end
+
+Enum.reduce(traces, Figure.new(), &Figure.add_trace(&2, &1))
+|> Figure.update_layout(
+  title: "Basic Slider — Sin Frequency",
+  yaxis: %{range: [-1.2, 1.2], autorange: false},
+  sliders: [%{
+    steps: steps,
+    active: 0,
+    currentvalue: %{prefix: "Frequency: ", visible: true, xanchor: "center"},
+    pad: %{t: 50, b: 10}
+  }]
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Bind Components to the Appearance of a Plot
+
+The idiomatic Livebook approach: bind multiple `Kino.Input` controls to chart
+appearance. Each input change triggers an Elixir callback that rebuilds and pushes
+a new figure. This allows full Elixir logic — no limit to what can be changed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+xs = Enum.map(0..100, fn i -> i / 10.0 end)
+
+make_fig = fn freq, amp, color, mode ->
+  color_map = %{blue: "steelblue", red: "crimson", green: "seagreen"}
+  mode_map  = %{lines: "lines", markers: "markers", both: "lines+markers"}
+  ys = Enum.map(xs, fn x -> amp * :math.sin(freq * x / 5.0) end)
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: xs, y: ys,
+    mode: mode_map[mode],
+    line: %{color: color_map[color], width: 2},
+    marker: %{color: color_map[color], size: 4}
+  ))
+  |> Figure.update_layout(
+    title: "f=#{freq}, A=#{amp}",
+    yaxis: %{range: [-6, 6], autorange: false}
+  )
+end
+
+form = Kino.Control.form(
+  [
+    freq:  Kino.Input.range("Frequency", min: 1, max: 10, default: 3, step: 1),
+    amp:   Kino.Input.range("Amplitude", min: 1, max: 5,  default: 2, step: 1),
+    color: Kino.Input.select("Color", [blue: "Steelblue", red: "Crimson", green: "Seagreen"]),
+    mode:  Kino.Input.select("Mode",  [lines: "Lines", markers: "Markers", both: "Lines+Markers"])
+  ],
+  report_changes: true
+)
+
+chart = make_fig.(3, 2, :blue, :lines) |> PlotlyLive.new()
+
+Kino.listen(form, fn %{data: %{freq: freq, amp: amp, color: color, mode: mode}} ->
+  PlotlyLive.push(chart, make_fig.(freq, amp, color, mode))
+end)
+
+Kino.Layout.grid([chart, form])
+```
+
+## Custom Controls > Add a Play Button to Control a Slider
+
+A Play button (`method: "animate"`) combined with `layout.sliders` gives users both
+manual scrubbing (drag the slider) and automatic playback (click Play). This is the
+same pattern as `notebooks/animations/08_animating_with_slider.livemd` — see that
+notebook for the full slider animation reference.
+
+Here we show the minimal pattern: Play/Pause buttons + a year slider.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+years = 2010..2023
+n = Enum.count(years)
+
+:rand.seed(:exsplus, {7, 8, 9})
+# Simulated annual temperature anomaly
+base_anomaly = 0.5
+temps = Enum.map(years, fn y -> base_anomaly + (y - 2010) * 0.025 + (:rand.normal() * 0.15) end)
+
+frames =
+  Enum.with_index(years, fn year, i ->
+    %{
+      name: "#{year}",
+      data: [%{
+        x: Enum.slice(Enum.to_list(years), 0, i + 1),
+        y: Enum.slice(temps, 0, i + 1)
+      }],
+      layout: %{title: %{text: "Temperature Anomaly through #{year}"}}
+    }
+  end)
+
+slider_steps =
+  Enum.map(years, fn year ->
+    %{
+      label: "#{year}",
+      method: "animate",
+      args: [["#{year}"], %{mode: "immediate", frame: %{duration: 400}, transition: %{duration: 200}}]
+    }
+  end)
+
+Figure.new(
+  data: [Scatter.new(
+    x: [Enum.at(Enum.to_list(years), 0)],
+    y: [Enum.at(temps, 0)],
+    mode: "lines+markers",
+    line: %{color: "tomato", width: 2},
+    marker: %{size: 8}
+  )],
+  layout: %{
+    title: "Temperature Anomaly through 2010",
+    xaxis: %{range: [2009, 2024], autorange: false, title: "Year"},
+    yaxis: %{range: [0.2, 1.2], autorange: false, title: "°C anomaly"},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      yanchor: "top",
+      pad: %{t: 60},
+      buttons: [
+        %{label: "▶ Play", method: "animate",
+          args: [nil, %{frame: %{duration: 500}, transition: %{duration: 200}, fromcurrent: true}]},
+        %{label: "⏸ Pause", method: "animate",
+          args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]}
+      ]
+    }],
+    sliders: [%{
+      steps: slider_steps,
+      active: 0,
+      currentvalue: %{prefix: "Year: ", visible: true, xanchor: "center"},
+      pad: %{t: 50},
+      x: 0.05,
+      len: 0.9
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Custom Controls > Lasso Selection
+
+Lasso and box select are built into the Plotly.js toolbar. In Livebook, selected
+points can be captured via the `plotly_selected` event using `PlotlyLive.subscribe/2`
+from `Batch 1`.
+
+Click the lasso or box-select toolbar icon, draw a selection on the chart, then
+evaluate the `receive` cell to see the selected points.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+:rand.seed(:exsplus, {42, 0, 0})
+n = 80
+x = Enum.map(1..n, fn _ -> :rand.normal() * 2 end)
+y = Enum.map(1..n, fn _ -> :rand.normal() * 2 end)
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{size: 10, color: "steelblue", opacity: 0.7}
+  ))
+  |> Figure.update_layout(
+    title: "Use lasso/box select tool, then run next cell",
+    dragmode: "lasso"
+  )
+  |> PlotlyLive.new()
+
+PlotlyLive.subscribe(chart, :selection, :selected)
+chart
+```
+
+```elixir
+# Draw a selection above, then evaluate this cell
+receive do
+  {:selection, %{"data" => %{"points" => pts}}} ->
+    IO.puts("Selected #{length(pts)} points")
+    Enum.each(pts, fn p -> IO.puts("  x=#{p["x"]}, y=#{p["y"]}") end)
+after
+  15_000 -> "No selection within 15 s — use the lasso tool first"
+end
+```
+
+## Custom Controls > Basic Range Slider on Time Series
+
+`xaxis.rangeslider: %{visible: true}` adds a minimap below the chart for panning
+and zooming time series data. `xaxis.rangeselector` adds preset range buttons.
+
+Combined, these give a full time-series navigation experience.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# 3 years of daily close prices (random walk)
+:rand.seed(:exsplus, {1, 2, 3})
+dates = for i <- 0..1094, do: Date.add(~D[2022-01-01], i) |> Date.to_string()
+prices =
+  Enum.scan(1..1095, 150.0, fn _, acc ->
+    change = :rand.normal() * 2.5
+    max(10.0, acc + change)
+  end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: dates,
+  y: prices,
+  mode: "lines",
+  name: "Price",
+  line: %{color: "steelblue", width: 1.5}
+))
+|> Figure.update_layout(
+  title: "Stock Price with Range Slider",
+  xaxis: %{
+    title: "Date",
+    rangeslider: %{visible: true},
+    rangeselector: %{
+      buttons: [
+        %{count: 1,  label: "1M", step: "month", stepmode: "backward"},
+        %{count: 3,  label: "3M", step: "month", stepmode: "backward"},
+        %{count: 6,  label: "6M", step: "month", stepmode: "backward"},
+        %{count: 1,  label: "YTD", step: "year", stepmode: "todate"},
+        %{count: 1,  label: "1Y",  step: "year", stepmode: "backward"},
+        %{step: "all", label: "All"}
+      ]
+    },
+    type: "date"
+  },
+  yaxis: %{title: "Price ($)", fixedrange: false},
+  height: 500
+)
+|> Plotly.show()
+```
+
+## Kino.Input Approach
+
+For Elixir-driven range selection, use `PlotlyLive.subscribe/2` to capture
+`plotly_relayout` zoom events and respond with new data:
+
+```elixir
+alias Plotly.Kino.PlotlyLive
+
+# (Reuse `chart` and `dates`/`prices` from the cell above if running in sequence)
+output = Kino.Frame.new()
+
+chart2 =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(x: dates, y: prices, mode: "lines", name: "Price"))
+  |> Figure.update_layout(
+    title: "Range Slider + Zoom Event Capture",
+    xaxis: %{rangeslider: %{visible: true}, type: "date"},
+    yaxis: %{title: "Price ($)"}
+  )
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:zoom, %{"data" => data}} ->
+          x0 = data["xaxis.range[0]"] || data["xaxis.range[0] "] || "—"
+          x1 = data["xaxis.range[1]"] || "—"
+          Kino.Frame.render(output, Kino.Markdown.new("**Zoomed to:** #{x0} → #{x1}"))
+      after 60_000 -> :ok
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart2, listener, :zoom)
+Kino.Layout.grid([chart2, output])
+```

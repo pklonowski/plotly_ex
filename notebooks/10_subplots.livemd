@@ -1,0 +1,352 @@
+# Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Subplots > Simple Subplot
+
+`layout.grid` creates a subplot grid. Set `rows:` and `columns:` with `pattern: "independent"`
+to give each cell its own axes. Traces reference their cell via `xaxis: "x2"` etc.
+The first cell always uses `xaxis`/`yaxis` (no number suffix).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], name: "Trace 1"))
+|> Figure.add_trace(Scatter.new(x: [2, 3, 4], y: [5, 6, 7], xaxis: "x2", yaxis: "y2", name: "Trace 2"))
+|> Figure.update_layout(
+  title: "Simple Subplot",
+  grid: %{rows: 1, columns: 2, pattern: "independent"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Custom Sized Subplot
+
+Set `xaxis.domain` / `xaxis2.domain` as `[start, end]` fractions of the total plot width
+(0.0–1.0) to control column proportions. A small gap between domains prevents the axes
+from touching.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], name: "Wide"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 3, 4], xaxis: "x2", yaxis: "y2", name: "Narrow"))
+|> Figure.update_layout(
+  title: "Custom Sized Subplots",
+  xaxis: %{domain: [0, 0.65]},
+  xaxis2: %{domain: [0.70, 1.0]},
+  yaxis2: %{anchor: "x2"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Multiple Subplots
+
+A 2×2 grid has 4 axis pairs. The mapping is row-major:
+cell (1,1)=x/y, (1,2)=x2/y2, (2,1)=x3/y3, (2,2)=x4/y4.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2], y: [1, 2], name: "R1C1"))
+|> Figure.add_trace(Scatter.new(x: [1, 2], y: [2, 1], xaxis: "x2", yaxis: "y2", name: "R1C2"))
+|> Figure.add_trace(Scatter.new(x: [1, 2], y: [3, 1], xaxis: "x3", yaxis: "y3", name: "R2C1"))
+|> Figure.add_trace(Scatter.new(x: [1, 2], y: [1, 3], xaxis: "x4", yaxis: "y4", name: "R2C2"))
+|> Figure.update_layout(
+  title: "Multiple Subplots",
+  grid: %{rows: 2, columns: 2, pattern: "independent"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Subplots with Shared Axes
+
+`pattern: "coupled"` in `layout.grid` shares axes between cells in the same row/column.
+Alternatively, set `xaxis2.matches: "x"` explicitly to link specific axis pairs.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], name: "Top"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 3, 4], xaxis: "x2", yaxis: "y2", name: "Bottom"))
+|> Figure.update_layout(
+  title: "Shared Axes",
+  grid: %{rows: 2, columns: 1, pattern: "independent"},
+  xaxis2: %{matches: "x"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Stacked Subplots
+
+Three rows, one column. Each trace gets its own y-axis but they share the x-axis column visually.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], name: "Top"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 3, 4], xaxis: "x2", yaxis: "y2", name: "Middle"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 4, 2], xaxis: "x3", yaxis: "y3", name: "Bottom"))
+|> Figure.update_layout(
+  title: "Stacked Subplots",
+  grid: %{rows: 3, columns: 1, pattern: "independent"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Stacked Subplots with a Shared X-Axis
+
+`xaxis2.matches: "x"` and `xaxis3.matches: "x"` link all x-axes so zooming one zooms all.
+`showticklabels: false` hides redundant x tick labels on upper plots.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3], y: [10, 11, 12, 13], name: "Top"))
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3], y: [20, 18, 17, 16], xaxis: "x2", yaxis: "y2", name: "Middle"))
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3], y: [30, 29, 31, 28], xaxis: "x3", yaxis: "y3", name: "Bottom"))
+|> Figure.update_layout(
+  title: "Stacked Subplots — Shared X-Axis",
+  grid: %{rows: 3, columns: 1, pattern: "independent"},
+  xaxis: %{showticklabels: false},
+  xaxis2: %{matches: "x", showticklabels: false},
+  xaxis3: %{matches: "x"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Multiple Custom Sized Subplots
+
+Manual `xaxis.domain`/`yaxis.domain` gives full control over each subplot's position.
+Each domain is `[x_start, x_end]` / `[y_start, y_end]` as fractions of the figure (0.0–1.0).
+Leave a gap between domains for spacing (e.g. 0.0–0.45, 0.55–1.0).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 2, 3], name: "Large"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 1, 2], xaxis: "x2", yaxis: "y2", name: "Small Top"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 3, 1], xaxis: "x3", yaxis: "y3", name: "Small Bottom"))
+|> Figure.update_layout(
+  title: "Multiple Custom Sized Subplots",
+  xaxis:  %{domain: [0.0, 0.55]},
+  yaxis:  %{domain: [0.0, 1.0]},
+  xaxis2: %{domain: [0.65, 1.0]},
+  yaxis2: %{domain: [0.55, 1.0]},
+  xaxis3: %{domain: [0.65, 1.0]},
+  yaxis3: %{domain: [0.0, 0.45]}
+)
+|> Plotly.show()
+```
+
+## Subplots > Simple Inset Graph
+
+An inset is a small subplot overlaid on top of the main plot. Achieved by giving `xaxis2`
+and `yaxis2` fractional domains in the upper-right corner of the figure space (e.g. 0.6–1.0).
+Both axes occupy the same figure area — the inset "floats" over the main chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.map(0..49, & &1 / 10)
+y = Enum.map(x, &:math.sin/1)
+
+# Zoomed region for inset
+x_inset = Enum.map(0..9, & &1 / 10)
+y_inset = Enum.map(x_inset, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, name: "sin(x)"))
+|> Figure.add_trace(
+  Scatter.new(x: x_inset, y: y_inset, xaxis: "x2", yaxis: "y2", name: "Zoom")
+)
+|> Figure.update_layout(
+  title: "Simple Inset Graph",
+  xaxis2: %{domain: [0.6, 1.0], anchor: "y2"},
+  yaxis2: %{domain: [0.6, 1.0], anchor: "x2"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Multiple 3D Subplots
+
+3D traces (`Surface`, `Scatter3d`, `Mesh3d`) use `scene:` instead of `xaxis:`/`yaxis:`.
+The first scene is `"scene"`, the second is `"scene2"`, etc.
+`layout.scene` and `layout.scene2` each accept a `domain: %{column: 0|1}` to assign to grid columns.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+# Simple z-surfaces
+n = 20
+xs = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))
+z1 = for x <- xs, do: (for y <- xs, do: :math.sin(:math.sqrt(x * x + y * y)))
+z2 = for x <- xs, do: (for y <- xs, do: :math.cos(:math.sqrt(x * x + y * y)))
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z1, colorscale: "Viridis", showscale: false))
+|> Figure.add_trace(Surface.new(z: z2, colorscale: "RdBu", showscale: false, scene: "scene2"))
+|> Figure.update_layout(
+  title: "Multiple 3D Subplots",
+  grid: %{rows: 1, columns: 2},
+  scene:  %{domain: %{column: 0}},
+  scene2: %{domain: %{column: 1}}
+)
+|> Plotly.show()
+```
+
+## Subplots > Mixed Subplots
+
+Different trace types can share a grid. `Scatter` and `Bar` use the `xaxis`/`yaxis` system.
+`Pie` uses `domain: %{row:, column:}` to position itself in the grid (0-indexed).
+
+```elixir
+alias Plotly.{Figure, Scatter, Bar, Pie}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 3, 2], name: "Scatter"))
+|> Figure.add_trace(Bar.new(x: ["A", "B", "C"], y: [3, 1, 4], xaxis: "x2", yaxis: "y2", name: "Bar"))
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["X", "Y", "Z"],
+    values: [40, 35, 25],
+    domain: %{row: 1, column: 0},
+    name: "Pie"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3],
+    y: [10, 11, 12],
+    mode: "markers",
+    xaxis: "x4",
+    yaxis: "y4",
+    name: "Scatter 2"
+  )
+)
+|> Figure.update_layout(
+  title: "Mixed Subplots",
+  grid: %{rows: 2, columns: 2, pattern: "independent"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Table and Chart Subplot
+
+`Table` is positioned using `domain: %{row:, column:}` (0-indexed row/column in the grid).
+Chart traces use `xaxis2`/`yaxis2` referencing the second grid cell.
+
+```elixir
+alias Plotly.{Figure, Table, Scatter}
+
+headers = ["Month", "Sales", "Returns"]
+months = ["Jan", "Feb", "Mar", "Apr", "May"]
+sales = [120, 150, 130, 170, 160]
+returns = [10, 12, 8, 15, 11]
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{values: headers},
+    cells: %{values: [months, sales, returns]},
+    domain: %{row: 0, column: 0}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: months,
+    y: sales,
+    mode: "lines+markers",
+    name: "Sales",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Table and Chart Subplot",
+  grid: %{rows: 2, columns: 1},
+  yaxis2: %{domain: [0.0, 0.45]},
+  xaxis2: %{domain: [0.0, 1.0], anchor: "y2"}
+)
+|> Plotly.show()
+```
+
+## Subplots > Two Y-Axes
+
+Two y-axes on one chart: the second y-axis uses `overlaying: "y"` to share the same x-axis
+and plot area. `side: "right"` puts it on the right. The trace referencing it sets `yaxis: "y2"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+y1 = [1000, 1200, 900, 1400, 1100, 1300]
+y2 = [22, 19, 25, 18, 23, 20]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(x: x, y: y1, name: "Revenue ($)", mode: "lines+markers")
+)
+|> Figure.add_trace(
+  Scatter.new(x: x, y: y2, name: "Temperature (°C)", mode: "lines+markers", yaxis: "y2")
+)
+|> Figure.update_layout(
+  title: "Two Y-Axes",
+  yaxis: %{title: %{text: "Revenue ($)"}},
+  yaxis2: %{
+    title: %{text: "Temperature (°C)"},
+    overlaying: "y",
+    side: "right"
+  }
+)
+|> Plotly.show()
+```
+
+## Subplots > Multiple Y-Axes
+
+Three y-axes: narrow the x-axis domain to leave room for the extra axis on the right.
+`yaxis3.position` is a 0.0–1.0 fraction of the plot width where the axis line appears.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [10, 15, 13, 17, 12], name: "Price", mode: "lines"))
+|> Figure.add_trace(
+  Scatter.new(x: x, y: [1000, 1200, 900, 1400, 1100], name: "Volume", mode: "lines", yaxis: "y2")
+)
+|> Figure.add_trace(
+  Scatter.new(x: x, y: [22, 19, 25, 18, 23], name: "Temp (°C)", mode: "lines", yaxis: "y3")
+)
+|> Figure.update_layout(
+  title: "Multiple Y-Axes",
+  xaxis: %{domain: [0.0, 0.8]},
+  yaxis: %{title: %{text: "Price"}},
+  yaxis2: %{
+    title: %{text: "Volume"},
+    overlaying: "y",
+    side: "right"
+  },
+  yaxis3: %{
+    title: %{text: "Temperature (°C)"},
+    overlaying: "y",
+    side: "right",
+    position: 0.9
+  }
+)
+|> Plotly.show()
+```

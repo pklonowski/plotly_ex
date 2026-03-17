@@ -1,0 +1,1751 @@
+# Scientific Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Scientific Charts > Simple Contour Plot
+
+`Contour.new(z: [[...]])` takes a 2D list (list of rows) of numeric values.
+Plotly automatically picks the contour levels, colour scale, and axis ranges.
+Each inner list is one row of the z matrix.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Contour.new(z: z))
+|> Figure.update_layout(title: "Simple Contour Plot")
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Contour Plot
+
+Adding explicit `x:` and `y:` coordinate arrays maps the z matrix to real-world
+axis values. `x` must have the same length as the number of *columns* in z;
+`y` must have the same length as the number of *rows*.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+x = Enum.map(0..19, fn i -> -2.0 + i * 0.2 end)
+y = Enum.map(0..19, fn j -> -2.0 + j * 0.2 end)
+
+z = for yi <- y do
+  for xi <- x do
+    :math.exp(-((xi * xi) + (yi * yi)))
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Contour.new(x: x, y: y, z: z))
+|> Figure.update_layout(title: "Basic Contour Plot — Gaussian Surface")
+|> Plotly.show()
+```
+
+## Scientific Charts > Setting X and Y Coordinates in a Contour Plot
+
+`x:` and `y:` can be any numeric lists — they do not need to be uniformly spaced.
+Non-uniform coordinates distort the contour shape to reflect real data spacing.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+# Non-uniform x and y coordinates
+x = [0, 1, 2, 3, 5, 8, 13]
+y = [0, 1, 3, 6, 10]
+
+z = for yi <- 0..4 do
+  for xi <- 0..6 do
+    :math.sin(xi / 3.0) * :math.cos(yi / 2.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Contour.new(x: x, y: y, z: z))
+|> Figure.update_layout(title: "Contour Plot with Non-Uniform X and Y Coordinates")
+|> Plotly.show()
+```
+
+## Scientific Charts > Colorscale for Contour Plot
+
+`colorscale:` accepts any named Plotly colour scale string: `"Viridis"`, `"Hot"`,
+`"RdBu"`, `"Portland"`, etc. `reversescale: true` flips the direction.
+`showscale: false` hides the colour bar.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+for {scale, reverse} <- [{"Viridis", false}, {"Hot", false}, {"RdBu", true}] do
+  Figure.new()
+  |> Figure.add_trace(Contour.new(z: z, colorscale: scale, reversescale: reverse))
+  |> Figure.update_layout(title: "Contour — colorscale: #{scale}#{if reverse, do: " (reversed)", else: ""}")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 3)
+```
+
+## Scientific Charts > Customizing Size and Range of a Contour Plot's Contours
+
+By default Plotly auto-selects contour levels. Use `contours: %{start:, end:, size:}` to
+control them manually:
+- `start:` — the lowest contour level value
+- `end:` — the highest contour level value
+- `size:` — the step between levels (smaller = more lines)
+
+`autocontour: false` must be set (or is implied) when you specify `start`/`end`/`size`.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Jet",
+    autocontour: false,
+    contours: %{start: -1.0, end: 1.0, size: 0.25}
+  )
+)
+|> Figure.update_layout(title: "Contour with Custom Level Range and Step Size")
+|> Plotly.show()
+```
+
+## Scientific Charts > Customizing Spacing Between X and Y Ticks
+
+Instead of providing explicit `x:` and `y:` lists, use `x0:`/`y0:` (starting value)
+with `dx:`/`dy:` (step size) to define uniformly-spaced implicit coordinates.
+This is more concise when spacing is constant.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    x0: -2.0,
+    dx: 0.2,
+    y0: -2.0,
+    dy: 0.2,
+    colorscale: "Viridis"
+  )
+)
+|> Figure.update_layout(title: "Contour with dx/dy Implicit Spacing")
+|> Plotly.show()
+```
+
+## Scientific Charts > Connect the Gaps Between Null Values in the Z Matrix
+
+`nil` values in the z matrix represent missing data. By default these create holes
+(disconnected contour regions). `connectgaps: true` fills them by interpolating
+across the missing cells.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+# 5×5 z matrix with a nil hole in the centre
+z_with_gaps = [
+  [1,   2,    3,    4,    5],
+  [2,   nil,  nil,  nil,  4],
+  [3,   nil,  9,    nil,  3],
+  [4,   nil,  nil,  nil,  2],
+  [5,   4,    3,    2,    1]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(z: z_with_gaps, name: "With Gaps", showscale: false)
+)
+|> Figure.update_layout(title: "Contour with Gaps (connectgaps: false — default)")
+|> Plotly.show()
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(z: z_with_gaps, connectgaps: true, name: "Gaps Connected")
+)
+|> Figure.update_layout(title: "Contour with Gaps Connected (connectgaps: true)")
+|> Plotly.show()
+```
+
+## Scientific Charts > Smoothing Contour Lines
+
+`line: %{smoothing: N}` controls how curved the contour lines are.
+- `0` — straight line segments between grid points (sharp)
+- `1.3` — maximum smoothing (curved, spline-like)
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..9 do
+  for j <- 0..9 do
+    :math.sin(i / 3.0) * :math.cos(j / 3.0)
+  end
+end
+
+for smoothing <- [0, 0.65, 1.3] do
+  Figure.new()
+  |> Figure.add_trace(
+    Contour.new(z: z, line: %{smoothing: smoothing}, colorscale: "Portland")
+  )
+  |> Figure.update_layout(title: "Contour Line Smoothing: #{smoothing}")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 3)
+```
+
+## Scientific Charts > Smooth Contour Coloring
+
+`contours: %{coloring: "..."}` controls how the space between lines is filled:
+- `"fill"` (default) — discrete colour bands between contour lines
+- `"heatmap"` — smooth continuous colour interpolation (like a heatmap)
+- `"lines"` — colour only the lines themselves, no fill
+- `"none"` — transparent fill, coloured lines
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+for coloring <- ["fill", "heatmap", "lines", "none"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Contour.new(
+      z: z,
+      colorscale: "RdBu",
+      contours: %{coloring: coloring}
+    )
+  )
+  |> Figure.update_layout(title: "Contour coloring: \"#{coloring}\"")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```
+
+## Scientific Charts > Contour Lines
+
+`contours: %{coloring: "lines"}` renders only the contour lines, colour-coded
+by value using the chosen `colorscale:`. The fill is transparent.
+Combine with `line: %{width: 2}` to make the lines more visible.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Jet",
+    contours: %{coloring: "lines"},
+    line: %{width: 2}
+  )
+)
+|> Figure.update_layout(title: "Contour Lines Only (coloring: \"lines\")")
+|> Plotly.show()
+```
+
+## Scientific Charts > Contour Line Labels
+
+`contours: %{showlabels: true}` prints the z value on each contour line.
+`contours: %{labelfont: %{size:, color:, family:}}` styles these labels.
+Works best when combined with `coloring: "fill"` or `coloring: "heatmap"`.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Viridis",
+    contours: %{
+      showlabels: true,
+      labelfont: %{size: 12, color: "white"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour Plot with Line Labels")
+|> Plotly.show()
+```
+
+## Scientific Charts > Custom Colorscale for Contour Plot
+
+A custom colour scale is a list of `[stop, color]` pairs where `stop` is a float 0–1
+and `color` is a CSS string. Stops must be in ascending order starting at 0 and ending at 1.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+custom_scale = [
+  [0.0, "rgb(166,206,227)"],
+  [0.25, "rgb(31,120,180)"],
+  [0.45, "rgb(178,223,138)"],
+  [0.65, "rgb(51,160,44)"],
+  [0.85, "rgb(251,154,153)"],
+  [1.0, "rgb(227,26,28)"]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: custom_scale,
+    contours: %{showlabels: true, labelfont: %{color: "black", size: 10}}
+  )
+)
+|> Figure.update_layout(title: "Contour with Custom Colourscale")
+|> Plotly.show()
+```
+
+## Scientific Charts > Color Bar Title
+
+`colorbar: %{title: %{text: "...", side: "..."}}` adds a title to the colour bar.
+`side:` accepts `"right"` (default), `"top"`, or `"bottom"`.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Hot",
+    colorbar: %{
+      title: %{text: "Amplitude", side: "right"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour — Color Bar Title")
+|> Plotly.show()
+```
+
+## Scientific Charts > Color Bar Size
+
+`colorbar:` sizing options:
+- `thickness:` — bar width in pixels (default ~30)
+- `len:` — bar length as fraction of plot height (0–1; default 1.0)
+- `x:` — horizontal position (0–1 relative to plot; default just right of plot)
+- `y:` — vertical centre position (0–1)
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Viridis",
+    colorbar: %{
+      thickness: 15,
+      len: 0.5,
+      title: %{text: "Value"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour — Compact Color Bar (thickness: 15, len: 0.5)")
+|> Plotly.show()
+```
+
+## Scientific Charts > Styling Color Bar Ticks for Contour Plots
+
+`colorbar` tick styling mirrors axis tick styling:
+- `tickmode: "linear"` + `dtick:` — fixed interval ticks
+- `tickmode: "array"` + `tickvals:` + `ticktext:` — explicit custom ticks
+- `nticks:` — approximate count of auto ticks
+- `ticks: "outside"` — tick marks on the outside of the bar
+- `ticklen:`, `tickwidth:`, `tickcolor:` — tick appearance
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Portland",
+    colorbar: %{
+      tickmode: "array",
+      tickvals: [-1.0, -0.5, 0.0, 0.5, 1.0],
+      ticktext: ["−1.0", "−0.5", "0", "+0.5", "+1.0"],
+      ticks: "outside",
+      ticklen: 8,
+      tickwidth: 2,
+      tickcolor: "black",
+      title: %{text: "z", side: "right"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour — Styled Color Bar Ticks")
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Heatmap
+
+`Heatmap.new(z: [[...]])` renders a 2D matrix as a colour-encoded grid.
+Each inner list is a row. The default colour scale maps low values to blue
+and high values to red (`"RdBu"` reversed, or the default Plotly scale).
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = [
+  [1,  20, 30],
+  [20, 1,  60],
+  [30, 60, 1 ]
+]
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z))
+|> Figure.update_layout(title: "Basic Heatmap")
+|> Plotly.show()
+```
+
+## Scientific Charts > Heatmap with Categorical Axis Labels
+
+Passing string lists as `x:` and `y:` creates categorical axes with labelled ticks.
+`x` labels the columns; `y` labels the rows. Length of `x` must equal number of
+columns in z; length of `y` must equal number of rows.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = [
+  [1,  20, 30, 50, 1 ],
+  [20, 1,  60, 80, 30],
+  [30, 60, 1,  5,  20]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Heatmap.new(
+    z: z,
+    x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    y: ["Morning", "Afternoon", "Evening"],
+    colorscale: "Viridis"
+  )
+)
+|> Figure.update_layout(title: "Heatmap with Categorical Axis Labels")
+|> Plotly.show()
+```
+
+## Scientific Charts > Annotated Heatmap
+
+`texttemplate: "%{z}"` prints the z value inside each heatmap cell.
+`textfont: %{color: "...", size: N}` styles the annotation text.
+Use a D3 format string to control decimal places: `texttemplate: "%{z:.2f}"`.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = [
+  [1,  20, 30],
+  [20, 1,  60],
+  [30, 60, 1 ]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Heatmap.new(
+    z: z,
+    x: ["Col A", "Col B", "Col C"],
+    y: ["Row 1", "Row 2", "Row 3"],
+    texttemplate: "%{z}",
+    textfont: %{color: "white", size: 14},
+    colorscale: "Blues"
+  )
+)
+|> Figure.update_layout(title: "Annotated Heatmap")
+|> Plotly.show()
+```
+
+## Scientific Charts > Heatmap with Unequal Block Sizes
+
+When `x:` and `y:` are non-uniformly spaced numeric lists, the heatmap cells
+become rectangles of varying widths and heights, proportional to the coordinate
+intervals between adjacent values.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+# Non-uniform x coordinates: small gaps at start, large gap at end
+x = [0, 1, 2, 3, 4, 10]
+# Non-uniform y coordinates
+y = [0, 1, 2, 5, 8]
+
+# 5 rows × 6 columns
+z = for yi <- 0..4 do
+  for xi <- 0..5 do
+    :math.sin(xi / 3.0) * :math.cos(yi / 2.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Heatmap.new(
+    z: z,
+    x: x,
+    y: y,
+    colorscale: "Portland"
+  )
+)
+|> Figure.update_layout(title: "Heatmap with Unequal Block Sizes")
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Ternary Plot with Markers
+
+A ternary plot represents three-component compositions. Each point has coordinates
+`a`, `b`, `c` that sum to a constant (here 1.0). `layout.ternary` sets the axis titles.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterternary.new(
+    a: [0.1, 0.5, 0.2, 0.3],
+    b: [0.6, 0.2, 0.5, 0.4],
+    c: [0.3, 0.3, 0.3, 0.3],
+    mode: "markers",
+    name: "Sample A",
+    marker: %{size: 10, color: "steelblue"}
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Ternary Plot with Markers",
+  ternary: %{
+    aaxis: %{title: "Component A"},
+    baxis: %{title: "Component B"},
+    caxis: %{title: "Component C"}
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Soil Types Ternary Plot
+
+Multiple `Scatterternary` traces classify different soil types by their
+sand, silt, and clay composition. Each trace represents one soil class.
+`text:` provides hover labels for individual points.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+# Sand / Silt / Clay fractions for 3 soil types (each row sums to 1)
+soils = [
+  %{name: "Clay",        a: [0.1, 0.15, 0.2],  b: [0.1, 0.15, 0.1],  c: [0.8, 0.7, 0.7],  color: "peru"},
+  %{name: "Sandy Loam",  a: [0.6, 0.65, 0.55], b: [0.2, 0.15, 0.25], c: [0.2, 0.2, 0.2],  color: "wheat"},
+  %{name: "Silt Loam",   a: [0.15, 0.2, 0.1],  b: [0.6, 0.55, 0.65], c: [0.25, 0.25, 0.25], color: "darkkhaki"}
+]
+
+fig =
+  Enum.reduce(soils, Figure.new(), fn soil, fig ->
+    Figure.add_trace(fig,
+      Scatterternary.new(
+        a: soil.a,
+        b: soil.b,
+        c: soil.c,
+        mode: "markers",
+        name: soil.name,
+        marker: %{size: 12, color: soil.color, symbol: "circle"}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Soil Types Ternary Plot",
+  ternary: %{
+    aaxis: %{title: "Sand"},
+    baxis: %{title: "Silt"},
+    caxis: %{title: "Clay"},
+    bgcolor: "lightyellow"
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Adding Dimensions to a Parallel Coordinates Plot
+
+`Parcoords.new(dimensions: [...])` draws one vertical axis per dimension.
+Each dimension map needs `label:` (axis title) and `values:` (one value per observation).
+Lines connect each observation's values across all axes.
+
+```elixir
+alias Plotly.{Figure, Parcoords}
+
+Figure.new()
+|> Figure.add_trace(
+  Parcoords.new(
+    dimensions: [
+      %{label: "Sepal Length", values: [5.1, 4.9, 4.7, 5.0, 5.4, 6.3, 5.8, 7.1]},
+      %{label: "Sepal Width",  values: [3.5, 3.0, 3.2, 3.6, 3.9, 3.3, 2.7, 3.0]},
+      %{label: "Petal Length", values: [1.4, 1.4, 1.3, 1.4, 1.7, 4.7, 5.1, 5.9]},
+      %{label: "Petal Width",  values: [0.2, 0.2, 0.2, 0.2, 0.4, 1.6, 1.9, 2.1]}
+    ]
+  )
+)
+|> Figure.update_layout(title: "Parallel Coordinates — Adding Dimensions")
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Parallel Coordinates Plot
+
+`line: %{color: [...], colorscale: "..."}` colours each line by a numeric variable.
+Provide one colour value per observation (same length as each `values` list).
+A colour bar appears automatically.
+
+```elixir
+alias Plotly.{Figure, Parcoords}
+
+# 8 Iris observations: 0=setosa, 1=versicolor, 2=virginica
+species = [0, 0, 0, 0, 0, 1, 1, 2]
+
+Figure.new()
+|> Figure.add_trace(
+  Parcoords.new(
+    dimensions: [
+      %{label: "Sepal Length", values: [5.1, 4.9, 4.7, 5.0, 5.4, 6.3, 5.8, 7.1]},
+      %{label: "Sepal Width",  values: [3.5, 3.0, 3.2, 3.6, 3.9, 3.3, 2.7, 3.0]},
+      %{label: "Petal Length", values: [1.4, 1.4, 1.3, 1.4, 1.7, 4.7, 5.1, 5.9]},
+      %{label: "Petal Width",  values: [0.2, 0.2, 0.2, 0.2, 0.4, 1.6, 1.9, 2.1]}
+    ],
+    line: %{
+      color: species,
+      colorscale: [[0, "purple"], [0.5, "lightseagreen"], [1, "gold"]],
+      showscale: true,
+      cmin: 0,
+      cmax: 2
+    }
+  )
+)
+|> Figure.update_layout(title: "Parallel Coordinates — Coloured by Species")
+|> Plotly.show()
+```
+
+## Scientific Charts > Annotated Parallel Coordinates Plot
+
+`constraintrange: [low, high]` highlights lines that fall within a range on a
+given dimension — all others are dimmed. Users can drag to adjust this range
+interactively. Setting it in the data pre-selects a subset on load.
+
+```elixir
+alias Plotly.{Figure, Parcoords}
+
+species = [0, 0, 0, 0, 0, 1, 1, 2]
+
+Figure.new()
+|> Figure.add_trace(
+  Parcoords.new(
+    dimensions: [
+      %{label: "Sepal Length", values: [5.1, 4.9, 4.7, 5.0, 5.4, 6.3, 5.8, 7.1],
+        constraintrange: [5.0, 5.5]},
+      %{label: "Sepal Width",  values: [3.5, 3.0, 3.2, 3.6, 3.9, 3.3, 2.7, 3.0]},
+      %{label: "Petal Length", values: [1.4, 1.4, 1.3, 1.4, 1.7, 4.7, 5.1, 5.9]},
+      %{label: "Petal Width",  values: [0.2, 0.2, 0.2, 0.2, 0.4, 1.6, 1.9, 2.1]}
+    ],
+    line: %{color: species, colorscale: "Viridis", showscale: true}
+  )
+)
+|> Figure.update_layout(
+  title: "Parallel Coordinates — constraintrange highlights Sepal Length 5.0–5.5"
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Advanced Parallel Coordinates Plot
+
+`range:` on a dimension sets the visible axis range (not a filter — just the display bounds).
+`tickvals:` + `ticktext:` replace numeric tick labels with custom strings on a given axis.
+Useful when one dimension encodes categories as integers.
+
+```elixir
+alias Plotly.{Figure, Parcoords}
+
+# Encode species as 0/1/2; use ticktext to show names
+species = [0, 0, 0, 1, 1, 1, 2, 2]
+
+Figure.new()
+|> Figure.add_trace(
+  Parcoords.new(
+    dimensions: [
+      %{label: "Sepal Length", values: [5.1, 4.9, 5.0, 6.3, 5.8, 5.7, 7.1, 6.3],
+        range: [4.0, 8.0]},
+      %{label: "Petal Length", values: [1.4, 1.4, 1.4, 4.7, 5.1, 4.5, 5.9, 4.7],
+        range: [0.0, 7.0]},
+      %{label: "Species", values: species,
+        range: [-0.5, 2.5],
+        tickvals: [0, 1, 2],
+        ticktext: ["Setosa", "Versicolor", "Virginica"]}
+    ],
+    line: %{color: species, colorscale: "Portland", showscale: false}
+  )
+)
+|> Figure.update_layout(title: "Advanced Parallel Coordinates — Custom Ticks and Range")
+|> Plotly.show()
+```
+
+## Scientific Charts > Logarithmic Axes
+
+`layout.xaxis.type: "log"` switches the x-axis to a base-10 log scale.
+The data values remain in linear space — Plotly converts them automatically.
+Set `layout.yaxis.type: "log"` for the y-axis too.
+
+Note: this duplicates the Fundamentals "Logarithmic Axes" notebook but in the context
+of Scientific Charts where log plots are typically used (e.g. exponential growth data).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Exponential growth: y = 2^x
+x = Enum.to_list(0..20)
+y = Enum.map(x, fn i -> :math.pow(2, i) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "y = 2^x"))
+|> Figure.update_layout(
+  title: "Logarithmic Y-Axis",
+  xaxis: %{title: "x"},
+  yaxis: %{title: "2^x", type: "log"}
+)
+|> Plotly.show()
+```
+
+Show both axes log:
+
+```elixir
+# Power law: y = x^2 — straight line on log-log
+x2 = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
+y2 = Enum.map(x2, fn v -> v * v end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x2, y: y2, mode: "lines+markers", name: "y = x²"))
+|> Figure.update_layout(
+  title: "Log-Log Plot (straight line for power laws)",
+  xaxis: %{title: "x", type: "log"},
+  yaxis: %{title: "x²", type: "log"}
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Wind Rose Chart
+
+A wind rose uses `Barpolar` traces to show directional frequency data.
+`r:` contains the magnitude (e.g. frequency or speed), `theta:` contains
+compass directions as strings or degree values.
+Multiple `Barpolar` traces show different speed categories stacked by direction.
+
+```elixir
+alias Plotly.{Figure, Barpolar}
+
+directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+              "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+# Frequencies (%) for each direction, two speed categories
+slow = [5.0, 1.5, 1.5, 2.2, 2.0, 2.0, 5.0, 4.0,
+        6.0, 5.0, 4.0, 4.0, 3.0, 2.5, 4.0, 4.0]
+fast = [2.0, 0.5, 0.5, 0.8, 1.0, 1.0, 2.0, 1.5,
+        3.0, 2.5, 2.0, 1.5, 1.5, 1.5, 2.0, 2.0]
+
+Figure.new()
+|> Figure.add_trace(
+  Barpolar.new(
+    r: slow,
+    theta: directions,
+    name: "< 5 m/s",
+    marker: %{color: "steelblue"}
+  )
+)
+|> Figure.add_trace(
+  Barpolar.new(
+    r: fast,
+    theta: directions,
+    name: "> 5 m/s",
+    marker: %{color: "firebrick"}
+  )
+)
+|> Figure.update_layout(
+  title: "Wind Rose Chart",
+  polar: %{
+    radialaxis: %{ticksuffix: "%", angle: 45, dtick: 2},
+    angularaxis: %{direction: "clockwise"}
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Filled Ternary Plot
+
+`fill: "toself"` on a `Scatterternary` trace closes the polygon and fills the interior.
+Use this to create filled regions (e.g. classification zones) in ternary space.
+Each trace is one filled region. Close the polygon by repeating the first point at the end.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+# Three soil classification zones as filled polygons
+zones = [
+  %{
+    name: "Clay zone",
+    a: [0.0, 0.0, 0.2, 0.4, 0.0],
+    b: [0.0, 0.4, 0.4, 0.2, 0.0],
+    c: [1.0, 0.6, 0.4, 0.4, 1.0],
+    color: "rgba(205, 133, 63, 0.4)"
+  },
+  %{
+    name: "Sand zone",
+    a: [0.8, 1.0, 1.0, 0.8, 0.8],
+    b: [0.0, 0.0, 0.0, 0.2, 0.0],
+    c: [0.2, 0.0, 0.0, 0.0, 0.2],
+    color: "rgba(245, 222, 179, 0.4)"
+  },
+  %{
+    name: "Silt zone",
+    a: [0.0, 0.2, 0.2, 0.0, 0.0],
+    b: [0.8, 0.6, 0.8, 1.0, 0.8],
+    c: [0.2, 0.2, 0.0, 0.0, 0.2],
+    color: "rgba(107, 142, 35, 0.4)"
+  }
+]
+
+fig =
+  Enum.reduce(zones, Figure.new(), fn zone, fig ->
+    Figure.add_trace(fig,
+      Scatterternary.new(
+        a: zone.a,
+        b: zone.b,
+        c: zone.c,
+        mode: "lines",
+        fill: "toself",
+        fillcolor: zone.color,
+        line: %{color: "black", width: 1},
+        name: zone.name
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Basic Filled Ternary Plot (Classification Zones)",
+  ternary: %{
+    aaxis: %{title: "Sand"},
+    baxis: %{title: "Silt"},
+    caxis: %{title: "Clay"}
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Radar Chart
+
+A radar chart uses `Scatterpolar` with `fill: "toself"` to create a filled polygon
+on a polar axis. `theta:` holds category names (string list). Close the polygon
+by repeating the first element at the end of both `r:` and `theta:`.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+categories = ["Speed", "Strength", "Stamina", "Agility", "Flexibility", "Speed"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [80, 60, 70, 90, 55, 80],
+    theta: categories,
+    fill: "toself",
+    name: "Athlete A"
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Radar Chart",
+  polar: %{
+    radialaxis: %{visible: true, range: [0, 100]}
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Multiple Trace Radar Chart
+
+Multiple `Scatterpolar` traces on the same polar axis compare profiles side by side.
+`opacity:` on the trace (or `fillcolor:` with rgba) helps distinguish overlapping fills.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+categories = ["Speed", "Strength", "Stamina", "Agility", "Flexibility", "Speed"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [80, 60, 70, 90, 55, 80],
+    theta: categories,
+    fill: "toself",
+    name: "Athlete A",
+    line: %{color: "rgb(0, 114, 189)"}
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [50, 90, 60, 65, 85, 50],
+    theta: categories,
+    fill: "toself",
+    name: "Athlete B",
+    line: %{color: "rgb(217, 83, 25)"}
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Trace Radar Chart",
+  polar: %{radialaxis: %{visible: true, range: [0, 100]}},
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Line Polar Plot
+
+`Scatterpolar.new(r:, theta:, mode: "lines")` draws a line on polar axes.
+`theta:` values are in degrees by default (0 = right, increases counter-clockwise).
+`thetaunit: "radians"` switches to radians. `r:` is the distance from the centre.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = Enum.map(0..360, fn d -> d end)
+r     = Enum.map(theta, fn d -> :math.cos(d * :math.pi() / 180 * 4) + 1.5 end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r,
+    theta: theta,
+    mode: "lines",
+    name: "Rose curve",
+    line: %{color: "steelblue"}
+  )
+)
+|> Figure.update_layout(title: "Line Polar Plot — Rose Curve")
+|> Plotly.show()
+```
+
+## Scientific Charts > Area Polar Chart
+
+`fill: "toself"` on a `Scatterpolar` trace fills the area enclosed by the line.
+`fill: "tonext"` fills the area between this trace and the previous one.
+Useful for showing a confidence band or layered areas.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = for i <- 0..7, do: i * 45
+r_outer = [2.0, 1.5, 2.5, 1.8, 2.2, 1.0, 2.0, 1.5]
+r_inner = [1.0, 0.8, 1.2, 0.9, 1.1, 0.5, 1.0, 0.8]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r_outer ++ [hd(r_outer)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines",
+    fill: "toself",
+    fillcolor: "rgba(0, 100, 200, 0.3)",
+    line: %{color: "rgba(0, 100, 200, 0.8)"},
+    name: "Outer area"
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r_inner ++ [hd(r_inner)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines",
+    fill: "toself",
+    fillcolor: "rgba(200, 50, 50, 0.3)",
+    line: %{color: "rgba(200, 50, 50, 0.8)"},
+    name: "Inner area"
+  )
+)
+|> Figure.update_layout(title: "Area Polar Chart")
+|> Plotly.show()
+```
+
+## Scientific Charts > Categorical Polar Chart
+
+When `theta:` is a list of strings, set `layout.polar.angularaxis.type: "category"`.
+Plotly places the categories at equal angular spacing around the circle.
+`layout.polar.angularaxis.categoryarray:` overrides the display order.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"]
+rain   = [50, 40, 45, 60, 80, 90, 100, 95, 75, 55, 50, 45, 50]
+temp   = [5,  7,  12, 17, 21, 25,  27,  26, 22, 16, 10,  6,  5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: rain,
+    theta: months,
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Rainfall (mm)"
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: temp,
+    theta: months,
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Temperature (°C)"
+  )
+)
+|> Figure.update_layout(
+  title: "Categorical Polar Chart — Monthly Climate",
+  polar: %{angularaxis: %{type: "category"}}
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Polar Chart Directions
+
+By default, `theta: 0` is at the right (3 o'clock) and increases counter-clockwise.
+`layout.polar.angularaxis.direction: "clockwise"` reverses the rotation direction.
+`layout.polar.angularaxis.rotation: N` sets where `theta: 0` is (in degrees from right).
+Setting `rotation: 90` moves 0° to the top (12 o'clock), which is conventional for compass bearings.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = Enum.map(0..11, fn i -> i * 30 end)
+r     = [3, 2, 4, 3, 2, 5, 4, 3, 2, 4, 3, 2]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r ++ [hd(r)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Counter-clockwise (default)"
+  )
+)
+|> Figure.update_layout(
+  title: "Default direction (counter-clockwise, 0° at right)"
+)
+|> Plotly.show()
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r ++ [hd(r)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Clockwise, 0° at top"
+  )
+)
+|> Figure.update_layout(
+  title: "Clockwise direction, 0° at top (compass convention)",
+  polar: %{
+    angularaxis: %{
+      direction: "clockwise",
+      rotation: 90
+    }
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Polar Chart Sector
+
+`layout.polar.sector: [start_deg, end_deg]` restricts the visible angular range,
+creating a partial (sector) polar chart instead of a full circle.
+`[0, 180]` creates a semicircle; `[0, 90]` creates a quarter circle.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = Enum.map(0..18, fn i -> i * 10 end)
+r     = Enum.map(theta, fn t -> 1 + :math.sin(t * :math.pi() / 180 * 2) end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r,
+    theta: theta,
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Upper semicircle"
+  )
+)
+|> Figure.update_layout(
+  title: "Polar Chart Sector — Upper Half (0° to 180°)",
+  polar: %{
+    sector: [0, 180],
+    radialaxis: %{range: [0, 2.5]}
+  }
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Polar Chart Subplots
+
+Multiple polar subplots use `subplot: "polar"` (default first polar) and
+`subplot: "polar2"` (second). Define each polar axis with `layout.polar` and
+`layout.polar2` respectively. Use `layout.grid` for positioning.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = for i <- 0..12, do: i * 30
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [1, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1],
+    theta: theta,
+    mode: "lines",
+    fill: "toself",
+    name: "Polar 1",
+    subplot: "polar"
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 3, 4],
+    theta: theta,
+    mode: "lines",
+    fill: "toself",
+    name: "Polar 2",
+    subplot: "polar2"
+  )
+)
+|> Figure.update_layout(
+  title: "Polar Chart Subplots",
+  grid: %{rows: 1, columns: 2},
+  polar: %{domain: %{column: 0}},
+  polar2: %{domain: %{column: 1}}
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > WebGL Polar Chart
+
+`Scatterpolargl` is the WebGL-accelerated version of `Scatterpolar`.
+It has an identical API but renders using WebGL, making it much faster for
+large datasets (thousands of points) in polar coordinates.
+
+```elixir
+alias Plotly.{Figure, Scatterpolargl}
+
+:rand.seed(:exsss, {42, 42, 42})
+
+# 1000 random polar points
+n = 1000
+r     = for _ <- 1..n, do: :rand.uniform()
+theta = for _ <- 1..n, do: :rand.uniform() * 360
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolargl.new(
+    r: r,
+    theta: theta,
+    mode: "markers",
+    name: "1000 points (WebGL)",
+    marker: %{size: 3, color: theta, colorscale: "Viridis", showscale: true}
+  )
+)
+|> Figure.update_layout(
+  title: "WebGL Polar Chart — 1000 Random Points"
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Set X and Y Coordinates
+
+When `x` coordinate values are omitted a cheater plot will be created. With only `y:`
+provided and no `a`/`b`, Plotly auto-generates the parameter values.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10]
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot — Y Coordinates Only")
+|> Plotly.show()
+```
+
+## Scientific Charts > Add Parameter Values
+
+Adding explicit `a:` and `b:` parameter arrays to the carpet trace gives each grid point
+named coordinates. Here a ∈ {4, 4.5, 5, 6} and b ∈ {1, 2, 3}, forming a 4×3 grid.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6],
+    b: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3],
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10]
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot — Parameter Values")
+|> Plotly.show()
+```
+
+## Scientific Charts > Add A and B Axis
+
+`aaxis:` and `baxis:` maps on the `Carpet` trace configure the parametric axis labels.
+`tickprefix:`/`ticksuffix:` annotate tick values. `smoothing: 1` curves the grid lines.
+`minorgridcount: 9` adds 9 minor grid subdivisions between each major tick.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6],
+    b: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3],
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{
+      tickprefix: "a = ",
+      ticksuffix: "m",
+      smoothing: 1,
+      minorgridcount: 9
+    },
+    baxis: %{
+      tickprefix: "b = ",
+      ticksuffix: "Pa",
+      smoothing: 1,
+      minorgridcount: 9
+    }
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot — A and B Axes")
+|> Plotly.show()
+```
+
+## Scientific Charts > Style A and B Axis
+
+`aaxis.minorgridcolor:`, `gridcolor:`, and `color:` style the parametric axis lines and labels.
+`layout.plot_bgcolor:` and `paper_bgcolor:` set the chart background — here a dark theme.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6],
+    b: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3],
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{
+      tickprefix: "a = ",
+      ticksuffix: "m",
+      smoothing: 1,
+      minorgridcount: 9,
+      minorgridcolor: "white",
+      gridcolor: "white",
+      color: "white"
+    },
+    baxis: %{
+      tickprefix: "b = ",
+      ticksuffix: "Pa",
+      smoothing: 1,
+      minorgridcount: 9,
+      minorgridcolor: "white",
+      gridcolor: "white",
+      color: "white"
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Carpet Plot — Styled Axes (Dark Theme)",
+  plot_bgcolor: "black",
+  paper_bgcolor: "black"
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Add Points and Contours
+
+A `Carpet` base trace can be augmented with `Scattercarpet` (points/lines in carpet space)
+and `Contourcarpet` (contour lines mapped to the carpet grid). All three traces share the
+same `carpet: "c1"` ID to link them.
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet, Contourcarpet}
+
+# Shared carpet grid data
+a = [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6]
+b = [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3]
+y = [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10]
+
+# Z values for contours (one per grid point)
+z = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    y: y,
+    aaxis: %{tickprefix: "a = ", ticksuffix: "m", smoothing: 1, minorgridcount: 9},
+    baxis: %{tickprefix: "b = ", ticksuffix: "Pa", smoothing: 1, minorgridcount: 9}
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    z: z,
+    autocontour: false,
+    contours: %{start: 1, end: 12, size: 2},
+    colorscale: "Viridis",
+    showscale: false
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    a: [4, 4.5, 5, 6],
+    b: [2, 2, 2, 2],
+    mode: "markers+lines",
+    name: "b = 2",
+    marker: %{size: 10, color: "red"},
+    line: %{shape: "spline", smoothing: 1}
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot with Points and Contours")
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Carpet Plot
+
+This carpet uses scaled `a` and `b` values (scientific notation). `aaxis.tickprefix` and
+`ticksuffix` annotate the displayed tick labels. The `carpet: "c1"` ID will be referenced
+by subsequent scatter traces.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+a = Enum.map([4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6], &(&1 * 1.0e-6))
+b = Enum.map([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3], &(&1 * 1.0e6))
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{
+      tickprefix: "a = ",
+      ticksuffix: "m",
+      smoothing: 1,
+      minorgridcount: 9
+    },
+    baxis: %{
+      tickprefix: "b = ",
+      ticksuffix: "Pa",
+      smoothing: 1,
+      minorgridcount: 9
+    }
+  )
+)
+|> Figure.update_layout(title: "Basic Carpet Plot")
+|> Plotly.show()
+```
+
+## Scientific Charts > Add Carpet Scatter Trace
+
+`Scattercarpet` overlays points or lines on a `Carpet` trace. The `carpet: "c1"` field links it
+to the base carpet. `a:` and `b:` are in carpet parameter space (not data space).
+`line: %{shape: "spline", smoothing: 1}` produces a smooth curve between the points.
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet}
+
+a_grid = Enum.map([4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6], &(&1 * 1.0e-6))
+b_grid = Enum.map([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3], &(&1 * 1.0e6))
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a_grid,
+    b: b_grid,
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{tickprefix: "a = ", ticksuffix: "m", smoothing: 1, minorgridcount: 9},
+    baxis: %{tickprefix: "b = ", ticksuffix: "Pa", smoothing: 1, minorgridcount: 9}
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    a: Enum.map([4, 4.5, 5, 6], &(&1 * 1.0e-6)),
+    b: Enum.map([1.5, 2.5, 1.5, 2.5], &(&1 * 1.0e6)),
+    line: %{shape: "spline", smoothing: 1}
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot with Scatter Trace")
+|> Plotly.show()
+```
+
+## Scientific Charts > Add Multiple Carpet Scatter Traces
+
+Multiple `Scattercarpet` traces demonstrate iso-lines along constant `a` or constant `b`.
+`cheaterslope: 1` on the carpet controls the apparent angle of the a-axis in cheater mode.
+`marker.size` and `marker.color` as lists set per-point styling.
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: [0.1, 0.2, 0.3],
+    b: [1, 2, 3],
+    y: [[1, 2.2, 3], [1.5, 2.7, 3.5], [1.7, 2.9, 3.7]],
+    cheaterslope: 1,
+    aaxis: %{title: %{text: "a"}, tickmode: "linear", dtick: 0.05, minorgridcount: 9},
+    baxis: %{title: %{text: "b"}, tickmode: "linear", dtick: 0.5, minorgridcount: 9}
+  )
+)
+|> Figure.add_trace(Scattercarpet.new(carpet: "c1", name: "b = 1.5", a: [0.05, 0.15, 0.25, 0.35], b: [1.5, 1.5, 1.5, 1.5]))
+|> Figure.add_trace(Scattercarpet.new(carpet: "c1", name: "b = 2", a: [0.05, 0.15, 0.25, 0.35], b: [2, 2, 2, 2]))
+|> Figure.add_trace(Scattercarpet.new(carpet: "c1", name: "b = 2.5", a: [0.05, 0.15, 0.25, 0.35], b: [2.5, 2.5, 2.5, 2.5]))
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    name: "a = 0.15",
+    a: [0.15, 0.15, 0.15, 0.15],
+    b: [0.5, 1.5, 2.5, 3.5],
+    line: %{smoothing: 1, shape: "spline"}
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    name: "a = 0.2",
+    a: [0.2, 0.2, 0.2, 0.2],
+    b: [0.5, 1.5, 2.5, 3.5],
+    line: %{smoothing: 1, shape: "spline"},
+    marker: %{size: [10, 20, 30, 40], color: ["#000", "#f00", "#ff0", "#fff"]}
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    name: "a = 0.25",
+    a: [0.25, 0.25, 0.25, 0.25],
+    b: [0.5, 1.5, 2.5, 3.5],
+    line: %{smoothing: 1, shape: "spline"}
+  )
+)
+|> Figure.update_layout(
+  title: "Scattercarpet Extrapolation, Clipping, and Smoothing",
+  hovermode: "closest"
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Basic Carpet Plot (Cheater)
+
+A cheater carpet provides both `x:` and `y:` to position the grid in data space. Here `a` and `b`
+index the rows and columns. The `aaxis`/`baxis` with `smoothing: 0` give sharp grid corners.
+This is the base for adding `Contourcarpet` traces in the next notebooks.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+    b: [4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+    x: [2, 3, 4, 5, 2.2, 3.1, 4.1, 5.1, 1.5, 2.5, 3.5, 4.5],
+    y: [1, 1.4, 1.6, 1.75, 2, 2.5, 2.7, 2.75, 3, 3.5, 3.7, 3.75],
+    aaxis: %{tickprefix: "a = ", smoothing: 0, minorgridcount: 9, type: "linear"},
+    baxis: %{tickprefix: "b = ", smoothing: 0, minorgridcount: 9, type: "linear"}
+  )
+)
+|> Figure.update_layout(
+  title: "Cheater Plot with 1D Input",
+  margin: %{t: 40, r: 30, b: 30, l: 30},
+  yaxis: %{range: [0.388, 4.361]},
+  xaxis: %{range: [0.667, 5.932]}
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Add Contours
+
+`Contourcarpet` draws contour lines mapped to the carpet coordinate system. The `Contourcarpet`
+trace must come before the `Carpet` trace so it renders beneath the carpet grid lines.
+`autocontour: false` with `contours: %{start:, end:, size:}` sets manual contour levels.
+
+```elixir
+alias Plotly.{Figure, Carpet, Contourcarpet}
+
+a = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3]
+b = [4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6]
+x = [2, 3, 4, 5, 2.2, 3.1, 4.1, 5.1, 1.5, 2.5, 3.5, 4.5]
+y = [1, 1.4, 1.6, 1.75, 2, 2.5, 2.7, 2.75, 3, 3.5, 3.7, 3.75]
+z = [1, 1.96, 2.56, 3.0625, 4, 5.0625, 1, 7.5625, 9, 12.25, 15.21, 14.0625]
+
+Figure.new()
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    z: z,
+    autocontour: false,
+    contours: %{start: 1, end: 14, size: 1},
+    line: %{width: 2, smoothing: 0},
+    colorbar: %{len: 0.4, y: 0.25}
+  )
+)
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    x: x,
+    y: y,
+    aaxis: %{tickprefix: "a = ", smoothing: 0, minorgridcount: 9, type: "linear"},
+    baxis: %{tickprefix: "b = ", smoothing: 0, minorgridcount: 9, type: "linear"}
+  )
+)
+|> Figure.update_layout(
+  title: "Cheater Plot with Contours",
+  margin: %{t: 40, r: 30, b: 30, l: 30},
+  yaxis: %{range: [0.388, 4.361]},
+  xaxis: %{range: [0.667, 5.932]}
+)
+|> Plotly.show()
+```
+
+## Scientific Charts > Add Multiple Traces
+
+This example visualizes flow over a Karman-Trefftz airfoil using multiple traces on a
+`Carpet` grid. The dataset is fetched from GitHub. The visualization combines:
+- A `Carpet` base grid defining the coordinate system
+- A filled `Contourcarpet` for pressure coefficient (cp) values
+- A `Contourcarpet` for streamlines (`coloring: "none"`, `ncontours: 50`)
+- A `Contourcarpet` for pressure contour lines
+- `Scatter` traces for the airfoil surface shape
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet, Contourcarpet, Scatter}
+
+url = "https://raw.githubusercontent.com/bcdunbar/datasets/master/airfoil_data.json"
+json = url |> Req.get!() |> Map.get(:body) |> Jason.decode!()
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: json |> List.first() |> Map.get("a"),
+    b: json |> List.first() |> Map.get("b"),
+    x: json |> List.first() |> Map.get("x"),
+    y: json |> List.first() |> Map.get("y"),
+    aaxis: %{
+      startlinewidth: 2,
+      startline: true,
+      showticklabels: "none",
+      endline: true,
+      showgrid: false,
+      endlinewidth: 2,
+      smoothing: 0
+    },
+    baxis: %{
+      startline: false,
+      endline: false,
+      showticklabels: "none",
+      smoothing: 0,
+      showgrid: false
+    }
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    name: "Pressure",
+    z: json |> Enum.at(1) |> Map.get("z"),
+    autocolorscale: false,
+    colorscale: "Viridis",
+    zmin: -8,
+    zmax: 1,
+    autocontour: false,
+    zauto: false,
+    contours: %{start: -1, size: 0.025, end: 1.0, showlines: false},
+    line: %{smoothing: 0},
+    colorbar: %{
+      y: 0,
+      yanchor: "bottom",
+      len: 0.75,
+      title: %{text: "Pressure coefficient, c<sub>p</sub>"}
+    }
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    name: "Streamlines",
+    z: json |> Enum.at(2) |> Map.get("z"),
+    opacity: 0.3,
+    showlegend: true,
+    autocontour: true,
+    ncontours: 50,
+    contours: %{coloring: "none"},
+    line: %{color: "white", width: 1}
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    name: "Pressure<br>contours",
+    z: json |> Enum.at(3) |> Map.get("z"),
+    showlegend: true,
+    autocontour: false,
+    contours: %{size: 0.25, start: -4, coloring: "none", end: 1.0, showlines: true},
+    line: %{color: "rgba(0, 0, 0, 0.5)", smoothing: 1}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    legendgroup: "g1",
+    name: "Surface<br>pressure",
+    mode: "lines",
+    hoverinfo: "skip",
+    x: json |> Enum.at(4) |> Map.get("x"),
+    y: json |> Enum.at(4) |> Map.get("y"),
+    line: %{color: "rgba(255, 0, 0, 0.5)", width: 1, shape: "spline", smoothing: 1},
+    fill: "toself",
+    fillcolor: "rgba(255, 0, 0, 0.2)"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    showlegend: false,
+    legendgroup: "g1",
+    mode: "lines",
+    hoverinfo: "skip",
+    x: json |> Enum.at(5) |> Map.get("x"),
+    y: json |> Enum.at(5) |> Map.get("y"),
+    line: %{color: "rgba(255, 0, 0, 0.3)", width: 1}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    showlegend: false,
+    legendgroup: "g1",
+    name: "cp",
+    text: json |> Enum.at(6) |> Map.get("text"),
+    mode: "lines",
+    hoverinfo: "text",
+    x: json |> Enum.at(6) |> Map.get("x"),
+    y: json |> Enum.at(6) |> Map.get("y"),
+    line: %{color: "rgba(255, 0, 0, 0.2)", width: 0}
+  )
+)
+|> Figure.update_layout(
+  title: "Flow over a Karman-Trefftz Airfoil",
+  hovermode: "closest",
+  height: 700,
+  width: 900,
+  margin: %{r: 60, b: 40, l: 40, t: 80},
+  xaxis: %{
+    zeroline: false,
+    scaleratio: 1,
+    scaleanchor: "y",
+    range: [-3.8, 3.8],
+    showgrid: false
+  },
+  yaxis: %{zeroline: false, range: [-1.8, 1.8], showgrid: false}
+)
+|> Plotly.show()
+```

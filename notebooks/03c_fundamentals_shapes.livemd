@@ -1,0 +1,1220 @@
+# Fundamentals: Shapes & Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.1"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Fundamentals: Shapes & Annotations > Tickmode - Linear (Date)
+
+For date axes, `dtick` is specified in milliseconds. 30 days =
+`30 * 24 * 60 * 60 * 1000 = 2_592_000_000`. `tick0` is the first tick as
+an ISO date string.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-02-01", "2020-03-01", "2020-04-01",
+        "2020-05-01", "2020-06-01", "2020-07-01"],
+    y: [1, 3, 2, 4, 3, 5, 4],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Linear Tickmode - Date Axis (30-day ticks)",
+  xaxis: %{
+    tickmode: "linear",
+    tick0: "2020-01-01",
+    dtick: 2_592_000_000
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Tickmode - Array
+
+Set `tickmode: "array"` and provide explicit tick positions via `tickvals`
+and labels via `ticktext`. Only the specified ticks are shown.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(y: [1, 2, 3, 4, 5], mode: "markers"))
+|> Figure.update_layout(
+  title: "Array Tickmode",
+  xaxis: %{
+    tickmode: "array",
+    tickvals: [0, 1, 2, 3, 4],
+    ticktext: ["Apples", "Bananas", "Coconuts", "Dates", "Elderberries"]
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Using Tickformat
+
+`tickformat` uses D3 number or time format strings. Use `"%"` to display
+values as percentages (a value of 0.5 renders as "50%").
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [0.1, 0.24, 0.18, 0.35, 0.29, 0.41, 0.38, 0.52, 0.47, 0.6],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Y-Axis as Percentage",
+  yaxis: %{tickformat: "%"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Using Tickformat (Date)
+
+For date axes, `tickformat` uses d3-time-format specifiers. Common tokens:
+`%d` day, `%B` full month name, `%b` abbreviated month, `%a` abbreviated
+weekday, `%Y` 4-digit year. Use `\n` for multi-line tick labels.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-15", "2020-02-15", "2020-03-15",
+        "2020-04-15", "2020-05-15", "2020-06-15"],
+    y: [10, 14, 12, 18, 15, 20],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Custom Date Tick Format",
+  xaxis: %{tickformat: "%d %B (%a)\n%Y"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Tickformatstops to Customize for Different Zoom Levels
+
+`tickformatstops` is a list of maps, each with a `dtickrange` (two-element
+list of tick-step thresholds) and a `value` (the format string applied at
+that zoom level). Use `nil` as an open bound. This lets the tick format
+adapt as the user zooms in or out.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Generate hourly data for a few days
+start_ms = ~N[2020-01-01 00:00:00] |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(:millisecond)
+x = for h <- 0..72, do: start_ms + h * 3_600_000
+y = Enum.map(0..72, fn h -> :math.sin(h / 6.0) + :rand.uniform() * 0.2 end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines"))
+|> Figure.update_layout(
+  title: "Tickformatstops — zoom in/out to see format change",
+  xaxis: %{
+    type: "date",
+    tickformatstops: [
+      %{dtickrange: [nil, 1000],           value: "%H:%M:%S.%L ms"},
+      %{dtickrange: [1000, 60_000],         value: "%H:%M:%S s"},
+      %{dtickrange: [60_000, 3_600_000],    value: "%H:%M m"},
+      %{dtickrange: [3_600_000, 86_400_000], value: "%H:%M h"},
+      %{dtickrange: [86_400_000, 604_800_000], value: "%e. %b d"},
+      %{dtickrange: [604_800_000, "M1"],    value: "%e. %b w"},
+      %{dtickrange: ["M1", "M12"],          value: "%b '%y M"},
+      %{dtickrange: ["M12", nil],           value: "%Y Y"}
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Using Exponentformat
+
+Use `exponentformat` to control how large numbers are displayed on axes.
+Set `showexponent: "all"` to apply formatting to all ticks. Options for
+`exponentformat`: `"none"`, `"e"`, `"E"`, `"power"`, `"SI"`, `"B"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000],
+    y: [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000],
+    mode: "markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Exponent Format on Axes",
+  xaxis: %{showexponent: "all", exponentformat: "e"},
+  yaxis: %{showexponent: "all", exponentformat: "power"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Include Locale Config
+
+Set `config.locale` to a BCP 47 language tag (e.g. `"fr"`, `"de"`, `"es"`)
+to apply locale-specific number and date formatting. The locale file is
+loaded dynamically from the Plotly CDN (this is handled automatically by
+the PlotlyLive widget).
+
+Combined with `tickformat`, this formats date labels in the selected locale's
+language (e.g. French month names).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-02-01", "2020-03-01",
+        "2020-04-01", "2020-05-01", "2020-06-01"],
+    y: [10, 14, 12, 18, 16, 20],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Locale Config — French Date Formatting",
+  xaxis: %{tickformat: "%d %B %Y"}
+)
+|> Plotly.show(config: %{locale: "fr"})
+```
+
+Note: locale support requires an internet connection in Livebook to load the
+locale file from the Plotly CDN. See notebook 13 (Change the Default Locale)
+for more locale options.
+
+## Fundamentals: Shapes & Annotations > Highlighting Time Series Regions with Rectangle Shapes
+
+Add `layout.shapes` — a list of shape maps — to overlay geometric shapes on
+a chart. Set `xref: "x"` to anchor the x bounds to data coordinates and
+`yref: "paper"` to span the full height (0 = bottom, 1 = top) regardless of
+y scale. Use `line: %{width: 0}` to suppress the border.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2015-02-01", "2015-02-02", "2015-02-03", "2015-02-04",
+        "2015-02-05", "2015-02-06", "2015-02-07", "2015-02-08",
+        "2015-02-09", "2015-02-10"],
+    y: [1, 3, 2, 4, 5, 3, 4, 6, 5, 7],
+    mode: "lines"
+  )
+)
+|> Figure.update_layout(
+  title: "Highlighted Time Regions",
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x",
+      yref: "paper",
+      x0: "2015-02-04",
+      y0: 0,
+      x1: "2015-02-06",
+      y1: 1,
+      fillcolor: "#d3d3d3",
+      opacity: 0.5,
+      line: %{width: 0}
+    },
+    %{
+      type: "rect",
+      xref: "x",
+      yref: "paper",
+      x0: "2015-02-08",
+      y0: 0,
+      x1: "2015-02-10",
+      y1: 1,
+      fillcolor: "#d3d3d3",
+      opacity: 0.5,
+      line: %{width: 0}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Highlighting Clusters of Scatter Points with Circle Shapes
+
+Use `type: "circle"` shapes with `xref: "x"` and `yref: "y"` to draw
+circles anchored to data coordinates, overlaying scatter point clusters.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0.5, 1.0, 1.5, 2.0, 2.5, 3.5, 4.0, 4.5],
+    y: [0.75, 0.5, 1.0, 0.75, 0.9, 3.5, 4.0, 3.75],
+    mode: "markers",
+    marker: %{size: 10}
+  )
+)
+|> Figure.update_layout(
+  title: "Circle Shapes Highlighting Clusters",
+  shapes: [
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 0.25,
+      y0: 0.25,
+      x1: 2.75,
+      y1: 1.25,
+      fillcolor: "rgba(50, 171, 96, 0.2)",
+      line: %{color: "rgba(50, 171, 96, 0.8)"}
+    },
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 3.25,
+      y0: 3.25,
+      x1: 4.75,
+      y1: 4.25,
+      fillcolor: "rgba(214, 39, 40, 0.2)",
+      line: %{color: "rgba(214, 39, 40, 0.8)"}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Vertical and Horizontal Lines Positioned Relative to the Axes
+
+Use `type: "line"` to draw straight lines. Set `x0 == x1` for vertical
+lines or `y0 == y1` for horizontal lines. `xref: "x"` / `yref: "y"` anchors
+to data coordinates. Use `line.dash` for dashed/dotted styles.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [2, 4, 6], y: [4, 2, 5], mode: "markers"))
+|> Figure.update_layout(
+  title: "Vertical and Horizontal Lines",
+  shapes: [
+    # Vertical line at x=2
+    %{
+      type: "line",
+      xref: "x",
+      yref: "paper",
+      x0: 2,
+      y0: 0,
+      x1: 2,
+      y1: 1,
+      line: %{color: "royalblue", width: 2, dash: "dot"}
+    },
+    # Horizontal line at y=3
+    %{
+      type: "line",
+      xref: "paper",
+      yref: "y",
+      x0: 0,
+      y0: 3,
+      x1: 1,
+      y1: 3,
+      line: %{color: "firebrick", width: 2, dash: "dashdot"}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Circle
+
+Draw circles in paper coordinates (0–1 on both axes, independent of data
+scale) using `xref: "paper"` and `yref: "paper"`. Also demonstrates an
+unfilled circle (no `fillcolor`) versus a filled one.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1.5, 4.5], y: [0.75, 0.75], mode: "text", text: ["Unfilled", "Filled"]))
+|> Figure.update_layout(
+  title: "Circle Shapes",
+  xaxis: %{range: [0, 6]},
+  yaxis: %{range: [0, 1.5]},
+  shapes: [
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 1,
+      y0: 0.25,
+      x1: 2,
+      y1: 1.25,
+      line: %{color: "RoyalBlue"}
+    },
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 3,
+      y0: 0.25,
+      x1: 5,
+      y1: 1.25,
+      line: %{color: "LightSeaGreen"},
+      fillcolor: "PaleTurquoise"
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Rectangle Positioned Relative to the Plot and to the Axes
+
+You can mix reference frames: `xref: "paper"` places x bounds in paper
+coordinates (0–1), while `yref: "y"` anchors y to data coordinates. This
+lets you draw a shape that always spans the full width but sits at a
+specific y range.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3, 4, 5], y: [1, 3, 2, 4, 3], mode: "lines"))
+|> Figure.update_layout(
+  title: "Rectangle: Paper x-ref, Axis y-ref",
+  shapes: [
+    %{
+      type: "rect",
+      xref: "paper",
+      yref: "y",
+      x0: 0,
+      y0: 2,
+      x1: 1,
+      y1: 3,
+      fillcolor: "LightSalmon",
+      opacity: 0.4,
+      line: %{width: 0}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Rectangle Positioned Relative to the Axes
+
+Both `xref: "x"` and `yref: "y"` anchor the rectangle to data coordinates.
+The rectangle resizes with zoom.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1.5, 2.5], y: [1.5, 2.5], mode: "markers", marker: %{size: 10}))
+|> Figure.update_layout(
+  title: "Rectangle Relative to Axes",
+  xaxis: %{range: [0, 4]},
+  yaxis: %{range: [0, 4]},
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x",
+      yref: "y",
+      x0: 1,
+      y0: 1,
+      x1: 3,
+      y1: 3,
+      fillcolor: "LightGreen",
+      opacity: 0.4,
+      line: %{color: "DarkGreen", width: 2}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Lines Positioned Relative to the Plot and to the Axis
+
+Mix `xref: "paper"` (plot-relative, 0–1) with `yref: "y"` (data-relative)
+to draw a line that always spans the full width at a fixed data y-value.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3, 4, 5], y: [1.5, 2, 3, 2.5, 4, 3], mode: "lines"))
+|> Figure.update_layout(
+  title: "Lines: Mixed Paper/Axis Reference",
+  shapes: [
+    %{
+      type: "line",
+      xref: "paper",
+      yref: "y",
+      x0: 0,
+      y0: 2.5,
+      x1: 1,
+      y1: 2.5,
+      line: %{color: "Crimson", width: 2, dash: "dot"}
+    }
+  ],
+  annotations: [
+    %{
+      text: "Threshold",
+      xref: "paper",
+      yref: "y",
+      x: 0.05,
+      y: 2.6,
+      showarrow: false,
+      font: %{color: "Crimson"}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Basic Arbitrary SVG Paths
+
+Use `type: "path"` with a `path` string containing SVG path commands:
+- `M x,y` — move to (start point)
+- `L x,y` — line to
+- `Q cx,cy x,y` — quadratic Bézier
+- `C cx1,cy1 cx2,cy2 x,y` — cubic Bézier
+- `Z` — close path
+
+All coordinates use `xref`/`yref` as with other shapes.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1.5], y: [1.5], mode: "markers", marker: %{size: 10}))
+|> Figure.update_layout(
+  title: "SVG Path Shapes",
+  xaxis: %{range: [0, 3]},
+  yaxis: %{range: [0, 3]},
+  shapes: [
+    # Triangle via SVG path
+    %{
+      type: "path",
+      path: "M 1 1 L 2 1 L 1.5 2 Z",
+      fillcolor: "rgba(44, 160, 101, 0.5)",
+      line: %{color: "rgb(44, 160, 101)"}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Venn Diagram with Circle Shapes
+
+Overlapping circle shapes with transparency create a Venn diagram effect.
+Use `fillcolor` with `rgba` for transparency and position circles using
+paper coordinates.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 1.5],
+    y: [1, 1, 1.75],
+    mode: "text",
+    text: ["A", "B", "A∩B"],
+    textfont: %{size: 18, color: "white"}
+  )
+)
+|> Figure.update_layout(
+  title: "Venn Diagram",
+  xaxis: %{range: [0, 3], showgrid: false, zeroline: false, showticklabels: false},
+  yaxis: %{range: [0, 3], showgrid: false, zeroline: false, showticklabels: false},
+  plot_bgcolor: "white",
+  shapes: [
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 0.2,
+      y0: 0.2,
+      x1: 2.2,
+      y1: 2.2,
+      fillcolor: "rgba(55, 128, 191, 0.6)",
+      line: %{color: "rgba(55, 128, 191, 1)"}
+    },
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 0.8,
+      y0: 0.2,
+      x1: 2.8,
+      y1: 2.2,
+      fillcolor: "rgba(255, 127, 14, 0.6)",
+      line: %{color: "rgba(255, 127, 14, 1)"}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Creating Tangent Lines with Shapes
+
+Compute tangent lines analytically and draw them as `type: "line"` shapes.
+This example uses sin(x) and its derivative cos(x) to place tangent lines at
+specific points.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x_curve = for i <- 0..100, do: i * :math.pi() / 50
+y_curve = Enum.map(x_curve, &:math.sin/1)
+
+# Tangent at x0: y = sin(x0) + cos(x0) * (x - x0)
+tangent_at = fn x0 ->
+  y0 = :math.sin(x0)
+  slope = :math.cos(x0)
+  x1 = x0 - 0.6
+  x2 = x0 + 0.6
+  {x1, y0 + slope * (x1 - x0), x2, y0 + slope * (x2 - x0)}
+end
+
+{tx1_a, ty1_a, tx2_a, ty2_a} = tangent_at.(:math.pi() / 4)
+{tx1_b, ty1_b, tx2_b, ty2_b} = tangent_at.(:math.pi())
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x_curve, y: y_curve, mode: "lines", name: "sin(x)"))
+|> Figure.update_layout(
+  title: "Tangent Lines on sin(x)",
+  shapes: [
+    %{
+      type: "line",
+      xref: "x", yref: "y",
+      x0: tx1_a, y0: ty1_a, x1: tx2_a, y1: ty2_a,
+      line: %{color: "red", width: 2}
+    },
+    %{
+      type: "line",
+      xref: "x", yref: "y",
+      x0: tx1_b, y0: ty1_b, x1: tx2_b, y1: ty2_b,
+      line: %{color: "green", width: 2}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Adding Labels to Shapes
+
+Add a `label` map to any shape to annotate it directly. Key fields:
+`text`, `font` (map with `size`, `color`), `textposition` (e.g.
+`"middle center"`, `"top left"`). The label moves with the shape.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 3, 5, 4], mode: "lines"))
+|> Figure.update_layout(
+  title: "Shapes with Labels",
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x",
+      yref: "y",
+      x0: 1.5,
+      y0: 2.5,
+      x1: 2.5,
+      y1: 4.5,
+      fillcolor: "rgba(255, 165, 0, 0.3)",
+      line: %{color: "orange"},
+      label: %{
+        text: "Region A",
+        font: %{size: 14, color: "darkorange"},
+        textposition: "middle center"
+      }
+    },
+    %{
+      type: "line",
+      xref: "x",
+      yref: "y",
+      x0: 3.5,
+      y0: 2,
+      x1: 3.5,
+      y1: 5,
+      line: %{color: "royalblue", width: 2, dash: "dot"},
+      label: %{
+        text: "Threshold",
+        font: %{size: 12, color: "royalblue"},
+        textposition: "end"
+      }
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Add Text Template in Pie Chart
+
+`texttemplate` controls the text shown inside or outside each slice of a Pie
+chart. Available tokens: `%{label}`, `%{value}`, `%{percent}` (formatted as
+a percentage string, e.g. "25%"). Combine with `textposition: "inside"` to
+display the labels within each slice.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Apples", "Bananas", "Cherries", "Dates"],
+    values: [40, 25, 20, 15],
+    texttemplate: "%{label}: %{value} (%{percent})",
+    textposition: "inside"
+  )
+)
+|> Figure.update_layout(title: "Pie Chart with Text Template")
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Customize Text Template
+
+`texttemplate` works on ternary scatter plots too. Available tokens include
+`%{text}` (from the `text` property), `%{a}`, `%{b}`, `%{c}` (ternary
+coordinates). Use D3 format strings like `:.2f` for decimal precision.
+
+Per-point `textfont` styling can be applied by passing lists for `size` and
+`color`.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterternary.new(
+    a: [0.1, 0.2, 0.3, 0.4, 0.5],
+    b: [0.5, 0.4, 0.3, 0.2, 0.1],
+    c: [0.4, 0.4, 0.4, 0.4, 0.4],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    texttemplate: "%{text}<br>(%{a:.2f}, %{b:.2f}, %{c:.2f})",
+    textposition: "bottom center",
+    textfont: %{
+      family: "sans-serif",
+      size: [14, 13, 12, 11, 10],
+      color: ["red", "blue", "green", "orange", "purple"]
+    },
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(title: "Customized Text Template on Ternary Plot")
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Set Date in Text Template
+
+`texttemplate` on a Funnel chart with a date-typed y-axis uses `%{label}` to
+render the date label text inside each funnel stage.
+
+```elixir
+alias Plotly.{Figure, Funnel}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnel.new(
+    x: [1200, 909, 600, 300, 80],
+    y: ["2024-01-15", "2024-02-15", "2024-03-15", "2024-04-15", "2024-05-15"],
+    texttemplate: "%{label}",
+    textposition: "inside"
+  )
+)
+|> Figure.update_layout(
+  title: "Funnel Chart with Date Labels via texttemplate",
+  yaxis: %{type: "date"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Adding Text to Data in Line and Scatter Plots
+
+Set `mode` to include `"text"` (e.g. `"markers+text"` or `"lines+markers+text"`)
+and provide a `text` list to display labels directly on data points. Control
+placement with `textposition`: `"top center"`, `"bottom center"`, `"middle right"`, etc.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 1, 3, 1, 2],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    textposition: "top center",
+    marker: %{size: 10},
+    name: "Team A"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [4, 3, 5, 3, 4],
+    mode: "lines+markers+text",
+    text: ["A", "B", "C", "D", "E"],
+    textposition: "bottom center",
+    name: "Team B"
+  )
+)
+|> Figure.update_layout(title: "Text Labels on Scatter/Line Points")
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Paper Referenced Annotations
+
+Set `xref: "paper"` and `yref: "paper"` on an annotation to position it
+relative to the plot area (0 = left/bottom, 1 = right/top), independent of
+data coordinates. Use `showarrow: false` for text-only labels.
+
+This is useful for adding titles, footnotes, or labels to specific corners
+of the chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], mode: "lines"))
+|> Figure.update_layout(
+  title: "Paper-Referenced Annotations",
+  annotations: [
+    %{
+      text: "Top-left corner",
+      xref: "paper",
+      yref: "paper",
+      x: 0,
+      y: 1,
+      xanchor: "left",
+      yanchor: "top",
+      showarrow: false,
+      font: %{size: 14, color: "blue"}
+    },
+    %{
+      text: "Bottom-right corner",
+      xref: "paper",
+      yref: "paper",
+      x: 1,
+      y: 0,
+      xanchor: "right",
+      yanchor: "bottom",
+      showarrow: false,
+      font: %{size: 14, color: "red"}
+    },
+    %{
+      text: "Centre",
+      xref: "paper",
+      yref: "paper",
+      x: 0.5,
+      y: 0.5,
+      xanchor: "center",
+      yanchor: "middle",
+      showarrow: false,
+      font: %{size: 16, color: "green"}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Simple Annotation
+
+A basic annotation with an arrow pointing to a data coordinate. Key fields:
+- `x`, `y`: the point the arrow tip touches (in data coordinates)
+- `xref`, `yref`: `"x"` / `"y"` to anchor to data
+- `ax`, `ay`: arrow tail offset in pixels from the annotation text box
+- `arrowhead`: integer 0–8 selecting the arrowhead style
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2, 3, 4],
+    y: [0, 1, 4, 9, 16],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Simple Annotation",
+  annotations: [
+    %{
+      x: 2,
+      y: 4,
+      xref: "x",
+      yref: "y",
+      text: "Peak at (2, 4)",
+      showarrow: true,
+      arrowhead: 2,
+      ax: 0,
+      ay: -40
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Annotations with Log Axes
+
+When an axis uses `type: "log"`, annotation coordinates must be specified
+in log₁₀ space. For a data value `v`, set the annotation coordinate to
+`:math.log10(v)`. For example, to annotate the point at y = 1000, set
+`y: :math.log10(1000)` which equals `3.0`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 10, 100, 1_000, 10_000],
+    y: [1, 10, 100, 1_000, 10_000],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Annotations on Log Axes",
+  xaxis: %{type: "log"},
+  yaxis: %{type: "log"},
+  annotations: [
+    %{
+      x: :math.log10(100),
+      y: :math.log10(100),
+      xref: "x",
+      yref: "y",
+      text: "y = 100",
+      showarrow: true,
+      arrowhead: 2,
+      ax: 40,
+      ay: -40
+    },
+    %{
+      x: :math.log10(10_000),
+      y: :math.log10(10_000),
+      xref: "x",
+      yref: "y",
+      text: "y = 10,000",
+      showarrow: true,
+      arrowhead: 2,
+      ax: -60,
+      ay: 30
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Multiple Annotations
+
+Pass a list of annotation maps to `layout.annotations`. Each map is
+independent and can have different positions, styles, and arrow settings.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2015-02-01", "2015-04-01", "2015-06-01", "2015-08-01",
+        "2015-10-01", "2015-12-01"],
+    y: [32, 55, 43, 91, 81, 53],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Annotations on a Time Series",
+  annotations: [
+    %{
+      x: "2015-04-01",
+      y: 55,
+      xref: "x",
+      yref: "y",
+      text: "Local max",
+      showarrow: true,
+      arrowhead: 3,
+      ax: 0,
+      ay: -40
+    },
+    %{
+      x: "2015-08-01",
+      y: 91,
+      xref: "x",
+      yref: "y",
+      text: "Global max",
+      showarrow: true,
+      arrowhead: 3,
+      ax: 0,
+      ay: -40,
+      font: %{color: "red", size: 14}
+    },
+    %{
+      x: "2015-02-01",
+      y: 32,
+      xref: "x",
+      yref: "y",
+      text: "Start",
+      showarrow: false,
+      xanchor: "left"
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Subplot Annotations
+
+To annotate a specific subplot, set `xref` and `yref` to the subplot's axis
+names: `"x2"` / `"y2"` for the second subplot, `"x3"` / `"y3"` for the
+third, etc. Use `"paper"` references for annotations that span the whole figure.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], mode: "lines", name: "Subplot 1"))
+|> Figure.add_trace(
+  Scatter.new(
+    x: [20, 30, 40],
+    y: [50, 60, 70],
+    mode: "lines",
+    name: "Subplot 2",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Subplot Annotations",
+  xaxis: %{domain: [0, 0.45]},
+  xaxis2: %{domain: [0.55, 1]},
+  yaxis2: %{anchor: "x2"},
+  annotations: [
+    %{
+      x: 2,
+      y: 5,
+      xref: "x",
+      yref: "y",
+      text: "Left subplot",
+      showarrow: true,
+      arrowhead: 2,
+      ax: 0,
+      ay: -30
+    },
+    %{
+      x: 30,
+      y: 60,
+      xref: "x2",
+      yref: "y2",
+      text: "Right subplot",
+      showarrow: true,
+      arrowhead: 2,
+      ax: 0,
+      ay: -30
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > 3D Annotations
+
+Add annotations to 3D plots via `layout.scene.annotations` — a list of maps
+with `x`, `y`, `z` (data coordinates), `text`, and optional arrow/font
+settings. Set `showarrow: false` for floating text labels.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 3, 2, 4, 3],
+    z: [2, 4, 3, 5, 4],
+    mode: "markers+lines",
+    marker: %{size: 6}
+  )
+)
+|> Figure.update_layout(
+  title: "3D Annotations",
+  scene: %{
+    annotations: [
+      %{
+        x: 2,
+        y: 3,
+        z: 4,
+        text: "Peak Point",
+        showarrow: true,
+        arrowhead: 2,
+        font: %{size: 14, color: "red"}
+      },
+      %{
+        x: 4,
+        y: 4,
+        z: 5,
+        text: "Maximum",
+        showarrow: false,
+        font: %{size: 12, color: "blue"}
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Custom Text Color and Styling
+
+Use `textfont` on a trace (when `mode` includes `"text"`) to control the
+font of data-point labels. Accepts `family`, `size` (scalar or list), and
+`color` (scalar or list for per-point styling).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 1, 4, 3, 5],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    textposition: "top center",
+    textfont: %{
+      family: "Courier New, monospace",
+      size: [16, 14, 18, 12, 20],
+      color: ["red", "blue", "green", "orange", "purple"]
+    },
+    marker: %{size: 10}
+  )
+)
+|> Figure.update_layout(title: "Custom Text Color and Styling")
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Styling and Coloring Annotations
+
+Customize annotation boxes with `bgcolor`, `bordercolor`, `borderwidth`, and
+`opacity`. Style the text with `font`. Control the arrow with `arrowcolor`,
+`arrowsize`, and `arrowwidth`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 3, 5, 4], mode: "lines+markers")
+)
+|> Figure.update_layout(
+  title: "Styled Annotations",
+  annotations: [
+    %{
+      x: 2,
+      y: 4,
+      xref: "x",
+      yref: "y",
+      text: "Styled box",
+      showarrow: true,
+      arrowhead: 7,
+      ax: 0,
+      ay: -60,
+      bordercolor: "#c7c7c7",
+      borderwidth: 2,
+      borderpad: 4,
+      bgcolor: "#ff7f0e",
+      opacity: 0.8,
+      font: %{color: "white", size: 14}
+    },
+    %{
+      x: 4,
+      y: 5,
+      xref: "x",
+      yref: "y",
+      text: "Arrow styled",
+      showarrow: true,
+      arrowhead: 2,
+      arrowsize: 1.5,
+      arrowwidth: 2,
+      arrowcolor: "royalblue",
+      ax: -50,
+      ay: -30,
+      font: %{color: "royalblue", size: 13}
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > WebGL Text and Annotations
+
+`Scattergl` (WebGL-accelerated scatter) supports `mode: "text"` for
+rendering text labels efficiently over large datasets. The API is identical
+to `Scatter` — only the rendering engine differs. Use `Scattergl` when you
+have thousands of labelled points.
+
+Note: The JavaScript example also demonstrates a range slider to pan through
+data. Range sliders require JavaScript interactivity not available in
+Livebook; the static chart below shows the text rendering capability.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+# Generate a moderate dataset to demonstrate text rendering
+x = Enum.to_list(1..50)
+y = Enum.map(x, fn i -> :math.sin(i / 5.0) * 10 end)
+labels = Enum.map(x, fn i -> "P#{i}" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergl.new(
+    x: x,
+    y: y,
+    mode: "markers+text",
+    text: labels,
+    textposition: "top center",
+    textfont: %{size: 9},
+    marker: %{size: 4}
+  )
+)
+|> Figure.update_layout(
+  title: "WebGL Text Rendering (Scattergl)",
+  xaxis: %{title: "Index"},
+  yaxis: %{title: "Value"}
+)
+|> Plotly.show()
+```
+
+## Fundamentals: Shapes & Annotations > Tickmode - Linear
+
+Set `tickmode: "linear"` on an axis to place ticks at a fixed interval
+starting from `tick0`. The `dtick` value controls the step between ticks.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(y: [1, 2, 3, 4, 5], mode: "markers"))
+|> Figure.update_layout(
+  title: "Linear Tickmode",
+  xaxis: %{tickmode: "linear", tick0: 0.5, dtick: 0.75}
+)
+|> Plotly.show()
+```
