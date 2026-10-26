@@ -1,0 +1,61 @@
+# Create Annotation on Click Event
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+On each click, add a text annotation at the clicked point by updating the figure
+with a new `layout.annotations` list via `PlotlyLive.push/2`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+# Initial scatter trace
+base_fig =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [5, 2, 8, 1, 6, 3, 9, 4, 7, 2],
+    mode: "markers",
+    marker: %{size: 12, color: "coral"}
+  ))
+  |> Figure.update_layout(title: "Click to annotate points")
+
+chart = PlotlyLive.new(base_fig)
+
+# Listener: accumulates annotations and pushes updated figure
+defmodule AnnotationLoop do
+  def run(chart, base_fig, annotations) do
+    receive do
+      {:annotate, event} ->
+        [point | _] = event["data"]["points"] || []
+        new_ann = %{
+          x: point["x"],
+          y: point["y"],
+          text: "#{point["x"]}, #{point["y"]}",
+          showarrow: true,
+          arrowhead: 4,
+          ax: 30,
+          ay: -30
+        }
+        updated_annotations = [new_ann | annotations]
+        updated_fig = Figure.update_layout(base_fig, annotations: updated_annotations)
+        PlotlyLive.push(chart, updated_fig)
+        run(chart, base_fig, updated_annotations)
+    after
+      60_000 -> :ok
+    end
+  end
+end
+
+listener = spawn(fn -> AnnotationLoop.run(chart, base_fig, []) end)
+
+PlotlyLive.subscribe(chart, listener, :annotate, :click)
+chart
+```

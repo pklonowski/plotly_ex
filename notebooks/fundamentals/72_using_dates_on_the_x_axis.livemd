@@ -1,0 +1,31 @@
+# Using Dates on the X-Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass ISO 8601 date strings (`"YYYY-MM-DD"`) as x values. Set
+`xaxis.type: "date"` to ensure plotly parses them as dates even when
+there are only a few points. Plotly formats tick labels automatically and
+enables date-aware zoom/pan.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = ["2013-10-04", "2013-11-05", "2013-12-06", "2014-01-07", "2014-02-08",
+     "2014-03-09", "2014-04-10"]
+y = [1, 3, 6, 4, 7, 5, 8]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Using Dates on the X-Axis",
+  xaxis: %{type: "date"}
+)
+|> Plotly.show()
+```

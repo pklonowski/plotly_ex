@@ -1,0 +1,38 @@
+# Waterfall Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A waterfall chart shows cumulative change step by step. Each `"relative"`
+bar floats from the running total; `"total"` bars drop back to zero to
+display a subtotal or final value.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    x: ["Product Revenue", "Services Revenue", "Total Revenue",
+        "Fixed Costs", "Variable Costs", "Total"],
+    y: [400, 260, 660, -370, -75, 215],
+    measure: ["relative", "relative", "total",
+              "relative", "relative", "total"],
+    increasing: %{marker: %{color: "#26a65b"}},
+    decreasing: %{marker: %{color: "red"}},
+    totals: %{marker: %{color: "#4C8BE2"}},
+    connector: %{line: %{color: "rgb(63, 63, 63)"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Waterfall Bar Chart",
+  xaxis: %{tickangle: -30}
+)
+|> Plotly.show()
+```

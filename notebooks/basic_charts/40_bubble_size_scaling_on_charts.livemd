@@ -1,0 +1,43 @@
+# Bubble Size Scaling on Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`marker.sizemode` controls how `marker.size` values are interpreted:
+- `"diameter"` (default): `size` is the diameter in pixels
+- `"area"`: `size` is proportional to area — more perceptually accurate for data comparison
+
+`marker.sizeref` scales all sizes. Recommended formula: `sizeref = 2 * max(size) / max_px^2`
+where `max_px` is the desired pixel size of the largest bubble.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+sizes = [10, 20, 30, 40, 50]
+desired_max_px = 50
+sizeref = 2.0 * Enum.max(sizes) / desired_max_px ** 2
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 2, 3, 4, 5],
+    mode: "markers",
+    name: "sizemode: area",
+    marker: %{
+      size: sizes,
+      sizemode: "area",
+      sizeref: sizeref,
+      sizemin: 4
+    }
+  )
+)
+|> Figure.update_layout(title: "Bubble Size Scaling (sizemode: area)")
+|> Plotly.show()
+```

@@ -1,0 +1,87 @@
+# Advanced Violin Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combining all violin options in one chart:
+- `box: %{visible: true}` — overlays a box plot inside the violin
+- `points: "all"` — shows every data point as a jittered dot
+- `meanline: %{visible: true}` — draws a line at the mean
+- `jitter` — spreads the overlay points horizontally
+- `pointpos` — shifts the point cloud left or right of the violin centre
+
+Each trace is given an explicit `x` array so each violin sits at its own
+categorical x position. `pointpos: -1.0` shifts dots to the left of the violin
+centre without overflowing into the neighbouring violin — `±1.8` is only safe
+for a single isolated violin; for adjacent violins the shift lands the dots
+inside the neighbouring body. `xaxis: range` is extended slightly so the
+leftmost violin's (Kale) dots don't clip at the axis boundary.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n, shift ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0 - shift)
+  end
+end
+
+n = 60
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    x: List.duplicate("Kale", n),
+    y: gen.(n, 0.0),
+    name: "Kale",
+    box: %{visible: true},
+    meanline: %{visible: true},
+    points: "all",
+    jitter: 0.05,
+    pointpos: -1.0,
+    line: %{color: "green"},
+    marker: %{color: "green", size: 4}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    x: List.duplicate("Radishes", n),
+    y: gen.(n, 0.5),
+    name: "Radishes",
+    box: %{visible: true},
+    meanline: %{visible: true},
+    points: "all",
+    jitter: 0.05,
+    pointpos: -1.0,
+    line: %{color: "red"},
+    marker: %{color: "red", size: 4}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    x: List.duplicate("Carrots", n),
+    y: gen.(n, 1.0),
+    name: "Carrots",
+    box: %{visible: true},
+    meanline: %{visible: true},
+    points: "all",
+    jitter: 0.05,
+    pointpos: -1.0,
+    line: %{color: "orange"},
+    marker: %{color: "orange", size: 4}
+  )
+)
+|> Figure.update_layout(
+  title: "Advanced Violin Plot",
+  xaxis: %{range: [-0.8, 2.5]}
+)
+|> Plotly.show()
+```

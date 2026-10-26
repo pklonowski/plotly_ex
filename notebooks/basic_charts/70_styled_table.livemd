@@ -1,0 +1,43 @@
+# Styled Table
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Style `header` and `cells` independently using `fill`, `font`, `line`, and `align` sub-maps.
+`align` can be `"left"`, `"center"`, or `"right"`.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{
+      values: ["<b>Name</b>", "<b>Age</b>", "<b>City</b>"],
+      fill: %{color: "#4472C4"},
+      font: %{color: "white", size: 13},
+      line: %{color: "white", width: 1},
+      align: "center"
+    },
+    cells: %{
+      values: [
+        ["Alice", "Bob", "Charlie", "Diana"],
+        [25, 30, 35, 28],
+        ["New York", "Los Angeles", "Chicago", "Houston"]
+      ],
+      fill: %{color: "#D9E2F3"},
+      font: %{color: "black", size: 12},
+      line: %{color: "white", width: 1},
+      align: "left"
+    }
+  )
+)
+|> Figure.update_layout(title: "Styled Table")
+|> Plotly.show()
+```

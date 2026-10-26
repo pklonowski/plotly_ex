@@ -1,0 +1,25 @@
+# Tickmode - Linear
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `tickmode: "linear"` on an axis to place ticks at a fixed interval
+starting from `tick0`. The `dtick` value controls the step between ticks.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(y: [1, 2, 3, 4, 5], mode: "markers"))
+|> Figure.update_layout(
+  title: "Linear Tickmode",
+  xaxis: %{tickmode: "linear", tick0: 0.5, dtick: 0.75}
+)
+|> Plotly.show()
+```

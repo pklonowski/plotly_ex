@@ -1,0 +1,29 @@
+# Scatter Tile Map — MapLibre
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Markers and lines without an access token
+
+Use `Scattermap` with `layout.map`. The MapLibre implementation replaces the
+removed Mapbox trace; no access token is needed for `open-street-map` tiles.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(Scattermap.new(
+  lat: [40.705, 40.730, 40.758], lon: [-74.013, -73.995, -73.985],
+  text: ["Battery Park", "Washington Square", "Times Square"],
+  mode: "markers+lines", marker: %{size: 12}, line: %{width: 3}
+))
+|> Figure.update_layout(
+  title: "A route through Manhattan",
+  map: %{style: "open-street-map", center: %{lat: 40.73, lon: -74.0}, zoom: 11}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,36 @@
+# Color Bar Title
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`colorbar: %{title: %{text: "...", side: "..."}}` adds a title to the colour bar.
+`side:` accepts `"right"` (default), `"top"`, or `"bottom"`.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Hot",
+    colorbar: %{
+      title: %{text: "Amplitude", side: "right"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour — Color Bar Title")
+|> Plotly.show()
+```

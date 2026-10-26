@@ -1,0 +1,56 @@
+# Binding to Zoom Events
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`plotly_relayout` fires on zoom, pan, and axis range changes.
+The event data is a flat map of the changed layout keys,
+e.g. `%{"xaxis.range[0]" => 1.5, "xaxis.range[1]" => 3.2}`.
+
+Use `layout.yaxis.fixedrange: true` to constrain zooming to one axis.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..20),
+    y: Enum.map(1..20, fn i -> :math.sin(i / 3.0) end),
+    mode: "lines+markers"
+  ))
+  |> Figure.update_layout(
+    title: "Zoom or pan — relayout events appear below",
+    xaxis: %{title: "x"},
+    yaxis: %{title: "y", fixedrange: true}
+  )
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:relayout, %{"data" => data}} ->
+          changes =
+            data
+            |> Map.drop(["_index"])
+            |> Enum.map(fn {k, v} -> "#{k} = #{inspect(v)}" end)
+            |> Enum.join(", ")
+          Kino.Frame.render(output, Kino.Markdown.new("**relayout:** #{changes}"))
+      after 60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :relayout, :relayout)
+Kino.Layout.grid([chart, output])
+```

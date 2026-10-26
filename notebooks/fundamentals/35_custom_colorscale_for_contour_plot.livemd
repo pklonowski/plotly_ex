@@ -1,0 +1,33 @@
+# Custom Colorscale for Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Custom `[[stop, color], ...]` colorscales work on `Contour` traces exactly as on
+`Heatmap` traces. Add `contours: %{coloring: "heatmap"}` to fill contour bands
+with the custom colours.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 3.0) * :math.cos(j / 3.0))
+
+Figure.new()
+|> Figure.add_trace(Contour.new(
+  z: z,
+  colorscale: [
+    [0.0, "gold"],
+    [0.5, "mediumturquoise"],
+    [1.0, "lightsalmon"]
+  ],
+  contours: %{coloring: "heatmap"}
+))
+|> Figure.update_layout(title: "Custom Colorscale — Contour Plot")
+|> Plotly.show()
+```

@@ -1,0 +1,60 @@
+# Bind Dropdown Events to Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The idiomatic Elixir approach: use `Kino.Control.form/2` with `report_changes: true`
+to drive chart updates from Elixir. Every dropdown change fires the listener with all
+current field values, so there's no need to call `Kino.Input.read/1` from the callback
+process (which Kino forbids).
+
+This gives full Elixir logic in the callback — filter data, fetch from DB, transform — unlike the native JS approach which can only `restyle`/`relayout` the existing data.
+
+```elixir
+alias Plotly.{Figure, Scatter, Bar}
+alias Plotly.Kino.PlotlyLive
+
+# Dataset
+categories = ~w[Mon Tue Wed Thu Fri Sat Sun]
+data = %{
+  "Sales"    => [120, 145, 110, 160, 200, 230, 180],
+  "Traffic"  => [340, 390, 300, 420, 510, 600, 480],
+  "Returns"  => [12, 8, 15, 10, 18, 22, 16]
+}
+
+make_fig = fn chart_type, metric ->
+  key = metric |> to_string() |> String.capitalize()
+  y = data[key]
+  trace = case chart_type do
+    :bar     -> Bar.new(x: categories, y: y, name: key)
+    :line    -> Scatter.new(x: categories, y: y, mode: "lines+markers", name: key)
+    :scatter -> Scatter.new(x: categories, y: y, mode: "markers", name: key,
+                  marker: %{size: 12})
+  end
+  Figure.new()
+  |> Figure.add_trace(trace)
+  |> Figure.update_layout(title: "#{key} — #{chart_type}")
+end
+
+form = Kino.Control.form(
+  [
+    chart_type: Kino.Input.select("Chart type", [bar: "Bar", line: "Line", scatter: "Scatter"]),
+    metric: Kino.Input.select("Metric", [sales: "Sales", traffic: "Traffic", returns: "Returns"])
+  ],
+  report_changes: true
+)
+
+chart = make_fig.(:bar, :sales) |> PlotlyLive.new()
+
+Kino.listen(form, fn %{data: %{chart_type: ct, metric: m}} ->
+  PlotlyLive.push(chart, make_fig.(ct, m))
+end)
+
+Kino.Layout.grid([chart, form])
+```

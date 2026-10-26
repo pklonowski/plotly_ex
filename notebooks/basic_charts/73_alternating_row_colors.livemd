@@ -1,0 +1,59 @@
+# Alternating Row Colors
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`cells.fill.color` accepts a **2D list** — one list of colors per column, each with N colors for N rows.
+To alternate row colors across all columns, build a single `row_colors` list and repeat it once per column.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+headers = ["Rank", "Country", "Gold", "Silver", "Bronze"]
+
+data = [
+  [1, "USA",    39, 41, 33],
+  [2, "China",  38, 32, 18],
+  [3, "UK",     22, 21, 22],
+  [4, "Japan",  27, 14, 17],
+  [5, "Germany", 10, 11, 16]
+]
+
+columns = Enum.zip_with(data, &Function.identity/1)
+n_rows = length(data)
+n_cols = length(headers)
+
+# Alternate white and light blue by row index
+row_colors =
+  Enum.map(0..(n_rows - 1), fn i ->
+    if rem(i, 2) == 0, do: "white", else: "#EBF5FB"
+  end)
+
+# Repeat the row_colors list once per column
+fill_colors = List.duplicate(row_colors, n_cols)
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{
+      values: headers,
+      fill: %{color: "#2E4057"},
+      font: %{color: "white", size: 13},
+      align: "center"
+    },
+    cells: %{
+      values: columns,
+      fill: %{color: fill_colors},
+      align: ["center", "left", "center", "center", "center"]
+    }
+  )
+)
+|> Figure.update_layout(title: "Alternating Row Colors")
+|> Plotly.show()
+```

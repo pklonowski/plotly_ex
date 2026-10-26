@@ -1,0 +1,46 @@
+# Categorical Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When x (or y) values are strings, plotly automatically creates a categorical
+axis. Set `type: "category"` explicitly to force categorical treatment even
+for numeric-looking labels, or to control category ordering via
+`categoryorder`/`categoryarray`.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["giraffes", "orangutans", "monkeys"]
+y = [20, 14, 23]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: y))
+|> Figure.update_layout(title: "Categorical Axes (auto-detected)")
+|> Plotly.show()
+```
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = ["cat1", "cat2", "cat3", "cat4"]
+y = [2, 6, 3, 8]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "markers", marker: %{size: 14}))
+|> Figure.update_layout(
+  title: "Categorical Axis — Explicit Order",
+  xaxis: %{
+    type: "category",
+    categoryorder: "array",
+    categoryarray: ["cat3", "cat1", "cat4", "cat2"]
+  }
+)
+|> Plotly.show()
+```

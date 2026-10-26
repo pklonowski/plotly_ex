@@ -1,0 +1,56 @@
+# Bind Components to the Appearance of a Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The idiomatic Livebook approach: bind multiple `Kino.Input` controls to chart
+appearance. Each input change triggers an Elixir callback that rebuilds and pushes
+a new figure. This allows full Elixir logic — no limit to what can be changed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+xs = Enum.map(0..100, fn i -> i / 10.0 end)
+
+make_fig = fn freq, amp, color, mode ->
+  color_map = %{blue: "steelblue", red: "crimson", green: "seagreen"}
+  mode_map  = %{lines: "lines", markers: "markers", both: "lines+markers"}
+  ys = Enum.map(xs, fn x -> amp * :math.sin(freq * x / 5.0) end)
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: xs, y: ys,
+    mode: mode_map[mode],
+    line: %{color: color_map[color], width: 2},
+    marker: %{color: color_map[color], size: 4}
+  ))
+  |> Figure.update_layout(
+    title: "f=#{freq}, A=#{amp}",
+    yaxis: %{range: [-6, 6], autorange: false}
+  )
+end
+
+form = Kino.Control.form(
+  [
+    freq:  Kino.Input.range("Frequency", min: 1, max: 10, default: 3, step: 1),
+    amp:   Kino.Input.range("Amplitude", min: 1, max: 5,  default: 2, step: 1),
+    color: Kino.Input.select("Color", [blue: "Steelblue", red: "Crimson", green: "Seagreen"]),
+    mode:  Kino.Input.select("Mode",  [lines: "Lines", markers: "Markers", both: "Lines+Markers"])
+  ],
+  report_changes: true
+)
+
+chart = make_fig.(3, 2, :blue, :lines) |> PlotlyLive.new()
+
+Kino.listen(form, fn %{data: %{freq: freq, amp: amp, color: color, mode: mode}} ->
+  PlotlyLive.push(chart, make_fig.(freq, amp, color, mode))
+end)
+
+Kino.Layout.grid([chart, form])
+```

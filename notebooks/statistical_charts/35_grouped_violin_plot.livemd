@@ -1,0 +1,50 @@
+# Grouped Violin Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple Violin traces with the same categorical `x:` values group side-by-side.
+`layout.violinmode: "group"` places them next to each other (default is `"overlay"`).
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n, shift ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0 - shift)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(50, 0.0) ++ gen.(50, 0.0),
+    x: List.duplicate("Mon", 50) ++ List.duplicate("Tue", 50),
+    name: "Group A",
+    box: %{visible: true},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(50, 1.0) ++ gen.(50, 1.0),
+    x: List.duplicate("Mon", 50) ++ List.duplicate("Tue", 50),
+    name: "Group B",
+    box: %{visible: true},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.update_layout(
+  title: "Grouped Violin Plot",
+  violinmode: "group"
+)
+|> Plotly.show()
+```

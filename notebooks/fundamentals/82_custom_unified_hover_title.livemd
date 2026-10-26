@@ -1,0 +1,43 @@
+# Custom Unified Hover Title
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When using `hovermode: "x unified"`, the header of the unified hover box shows
+the x value. Customize it by styling the `hoverlabel` map: set `bgcolor`,
+`bordercolor`, and `font` to make the tooltip stand out.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-04-01", "2020-07-01", "2020-10-01"],
+    y: [100, 150, 130, 180],
+    name: "Series A",
+    mode: "lines"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-04-01", "2020-07-01", "2020-10-01"],
+    y: [80, 120, 160, 140],
+    name: "Series B",
+    mode: "lines"
+  )
+)
+|> Figure.update_layout(
+  title: "Custom Unified Hover Title",
+  hovermode: "x unified",
+  xaxis: %{type: "date"},
+  hoverlabel: %{bgcolor: "white", bordercolor: "black", font: %{size: 14}}
+)
+|> Plotly.show()
+```

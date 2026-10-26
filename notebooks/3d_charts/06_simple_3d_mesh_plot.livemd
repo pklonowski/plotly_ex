@@ -1,0 +1,48 @@
+# Simple 3D Mesh Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Mesh3d.new(x:, y:, z:, alphahull: N)` constructs a mesh from a point cloud using the
+alpha-hull algorithm. `alphahull: 5` gives a moderate hull — larger values produce a looser
+(more convex) hull; `alphahull: 0` uses the convex hull. `color:` and `opacity:` style the mesh.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Random point cloud on a sphere surface
+n = 100
+
+{xs, ys, zs} =
+  Enum.reduce(1..n, {[], [], []}, fn _, {xs, ys, zs} ->
+    theta = :rand.uniform() * 2 * :math.pi()
+    phi = :rand.uniform() * :math.pi()
+    x = :math.sin(phi) * :math.cos(theta)
+    y = :math.sin(phi) * :math.sin(theta)
+    z = :math.cos(phi)
+    {[x | xs], [y | ys], [z | zs]}
+  end)
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: xs,
+    y: ys,
+    z: zs,
+    alphahull: 5,
+    opacity: 0.4,
+    color: "cyan"
+  )
+)
+|> Figure.update_layout(
+  title: "Simple 3D Mesh (alphahull=5)",
+  scene: %{xaxis: %{title: "X"}, yaxis: %{title: "Y"}, zaxis: %{title: "Z"}}
+)
+|> Plotly.show()
+```

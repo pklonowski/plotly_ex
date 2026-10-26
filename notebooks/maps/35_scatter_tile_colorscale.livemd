@@ -1,0 +1,72 @@
+# Scatter Tile Maps — Adding Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`marker.color:` as a numeric list combined with `colorscale:` encodes a third
+variable visually. `showscale: true` adds the color bar legend.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+cnt = Enum.map(airports, fn a ->
+  case Integer.parse(a["cnt"]) do
+    {n, _} -> n
+    :error -> 0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: Enum.map(airports, fn a -> "#{a["airport"]}: #{a["cnt"]} flights" end),
+    hoverinfo: "text",
+    marker: %{
+      size: 6,
+      color: cnt,
+      colorscale: "Viridis",
+      showscale: true,
+      colorbar: %{title: %{text: "Flights"}},
+      opacity: 0.8
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "US Airports — February 2011 Traffic",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 37.8, lon: -96.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

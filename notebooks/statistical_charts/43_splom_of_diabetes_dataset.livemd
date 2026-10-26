@@ -1,0 +1,59 @@
+# Scatter Plot Matrix (SPLOM) — Styled
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`showupperhalf: false` hides the upper triangle, leaving only the lower half and diagonal.
+`diagonal: %{visible: false}` removes the histograms on the diagonal.
+`marker.size` can be reduced for denser datasets.
+
+This example uses synthetic 3-variable data to demonstrate multi-class colouring.
+
+```elixir
+alias Plotly.{Figure, Splom}
+
+:rand.seed(:exsss, {7, 14, 21})
+
+# 3 clusters of 20 points each, encoded as class 0/1/2
+gen_cluster = fn n, cx, cy, cz ->
+  for _ <- 1..n do
+    x = cx + ((for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0))
+    y = cy + ((for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0))
+    z = cz + ((for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0))
+    {x, y, z}
+  end
+end
+
+all = gen_cluster.(20, 0, 0, 0) ++ gen_cluster.(20, 5, 3, 2) ++ gen_cluster.(20, -4, 4, -2)
+x_vals = Enum.map(all, fn {x, _, _} -> x end)
+y_vals = Enum.map(all, fn {_, y, _} -> y end)
+z_vals = Enum.map(all, fn {_, _, z} -> z end)
+classes = List.duplicate(0, 20) ++ List.duplicate(1, 20) ++ List.duplicate(2, 20)
+
+Figure.new()
+|> Figure.add_trace(
+  Splom.new(
+    dimensions: [
+      %{label: "Feature A", values: x_vals},
+      %{label: "Feature B", values: y_vals},
+      %{label: "Feature C", values: z_vals}
+    ],
+    marker: %{
+      color: classes,
+      colorscale: "Portland",
+      size: 4,
+      showscale: false
+    },
+    showupperhalf: false,
+    diagonal: %{visible: false}
+  )
+)
+|> Figure.update_layout(title: "Styled SPLOM — Lower Half Only")
+|> Plotly.show()
+```

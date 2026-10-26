@@ -1,0 +1,64 @@
+# Basic SPC Control Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A Statistical Process Control (SPC) chart tracks a process over time with three
+horizontal reference lines: the mean (centre line), and upper/lower control
+limits (UCL/LCL), typically set at ±3σ.
+
+`layout.shapes` draws horizontal lines across the full x range.
+Each shape entry is a map with `type: "line"`, `x0`/`x1` (or use `"paper"` coordinates),
+and `y0`/`y1` set to the same value for a horizontal line.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+:rand.seed(:exsss, {10, 20, 30})
+
+n = 30
+# Simulated process measurements with occasional shift
+process = for i <- 1..n do
+  base = (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  if i > 20, do: base + 1.5, else: base
+end
+
+mean  = Enum.sum(process) / n
+sigma = :math.sqrt(Enum.sum(Enum.map(process, fn v -> (v - mean) * (v - mean) end)) / n)
+ucl   = mean + 3 * sigma
+lcl   = mean - 3 * sigma
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..n),
+    y: process,
+    mode: "lines+markers",
+    name: "Measurements",
+    marker: %{size: 6}
+  )
+)
+|> Figure.update_layout(
+  title: "Basic SPC Control Chart",
+  shapes: [
+    %{type: "line", x0: 1, x1: n, y0: mean, y1: mean,
+      line: %{color: "green", dash: "solid", width: 2}},
+    %{type: "line", x0: 1, x1: n, y0: ucl, y1: ucl,
+      line: %{color: "red", dash: "dash", width: 1.5}},
+    %{type: "line", x0: 1, x1: n, y0: lcl, y1: lcl,
+      line: %{color: "red", dash: "dash", width: 1.5}}
+  ],
+  annotations: [
+    %{x: n, y: mean, xanchor: "left", text: "Mean", showarrow: false},
+    %{x: n, y: ucl,  xanchor: "left", text: "UCL (+3σ)", showarrow: false},
+    %{x: n, y: lcl,  xanchor: "left", text: "LCL (−3σ)", showarrow: false}
+  ]
+)
+|> Plotly.show()
+```

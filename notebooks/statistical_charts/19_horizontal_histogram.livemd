@@ -1,0 +1,28 @@
+# Horizontal Histogram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass data as `y:` instead of `x:` to produce a horizontal histogram.
+The x-axis becomes the count axis; y-axis shows the bin ranges.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+y = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(y: y))
+|> Figure.update_layout(title: "Horizontal Histogram")
+|> Plotly.show()
+```

@@ -1,0 +1,55 @@
+# Animating the Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Frame-based animation: pre-compute all states as a `frames` list,
+add a `layout.updatemenus` Play button. Click ▶ Play to animate.
+
+Each frame is a plain map `%{name: "frameN", data: [partial_trace_update]}`.
+The `data` list has one entry per trace — only changed keys are needed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n_frames = 50
+frames =
+  for i <- 1..n_frames do
+    x = Enum.to_list(0..i)
+    y = Enum.map(x, fn xi -> :math.sin(xi * 0.3) + :math.cos(xi * 0.1) end)
+    %{name: "f#{i}", data: [%{x: x, y: y}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0.0], mode: "lines", name: "wave")],
+  layout: %{
+    title: "Animating the Data",
+    xaxis: %{range: [0, n_frames], autorange: false},
+    yaxis: %{range: [-2.2, 2.2], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 50, redraw: false}, transition: %{duration: 0}}]
+      }, %{
+        label: "⏸ Pause",
+        method: "animate",
+        args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

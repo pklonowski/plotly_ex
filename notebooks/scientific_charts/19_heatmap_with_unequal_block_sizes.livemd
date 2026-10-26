@@ -1,0 +1,42 @@
+# Heatmap with Unequal Block Sizes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When `x:` and `y:` are non-uniformly spaced numeric lists, the heatmap cells
+become rectangles of varying widths and heights, proportional to the coordinate
+intervals between adjacent values.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+# Non-uniform x coordinates: small gaps at start, large gap at end
+x = [0, 1, 2, 3, 4, 10]
+# Non-uniform y coordinates
+y = [0, 1, 2, 5, 8]
+
+# 5 rows × 6 columns
+z = for yi <- 0..4 do
+  for xi <- 0..5 do
+    :math.sin(xi / 3.0) * :math.cos(yi / 2.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Heatmap.new(
+    z: z,
+    x: x,
+    y: y,
+    colorscale: "Portland"
+  )
+)
+|> Figure.update_layout(title: "Heatmap with Unequal Block Sizes")
+|> Plotly.show()
+```

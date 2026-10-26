@@ -1,0 +1,31 @@
+# Colorscale for Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Named colorscales work on `Contour` traces the same way as on `Heatmap` traces —
+set `colorscale:` to any built-in name.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 3.0) * :math.cos(j / 3.0))
+
+Figure.new()
+|> Figure.add_trace(Contour.new(z: z, colorscale: "Jet"))
+|> Figure.update_layout(title: "Jet Colorscale — Contour Plot")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Contour.new(z: z, colorscale: "Viridis"))
+|> Figure.update_layout(title: "Viridis Colorscale — Contour Plot")
+|> Plotly.show()
+```

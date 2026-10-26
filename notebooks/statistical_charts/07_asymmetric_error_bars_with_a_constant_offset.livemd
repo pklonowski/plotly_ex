@@ -1,0 +1,29 @@
+# Asymmetric Error Bars with a Constant Offset
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`type: "constant"` + `value:` sets all upward bars to the same absolute value.
+Add `valueminus:` for a different constant in the downward direction.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [2, 4, 3, 5],
+    mode: "markers+lines",
+    error_y: %{type: "constant", value: 0.5, valueminus: 1.0, visible: true}
+  )
+)
+|> Figure.update_layout(title: "Asymmetric Error Bars — Constant Offset")
+|> Plotly.show()
+```

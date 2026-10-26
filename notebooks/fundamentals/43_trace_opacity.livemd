@@ -1,0 +1,45 @@
+# Trace Opacity
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The `opacity` property on a **trace** applies to the entire trace — markers,
+lines, and fill all become equally transparent. This is different from
+`marker.opacity` which only affects the marker symbols.
+
+Use trace opacity when you want overlapping traces to show through each other
+while keeping a consistent visual weight for each trace.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(0..20)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.sin(x / 3.0) * 4 + 5 end),
+  mode: "lines+markers",
+  fill: "tozeroy",
+  name: "opacity: 0.6",
+  opacity: 0.6,
+  marker: %{size: 8}
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.cos(x / 3.0) * 4 + 5 end),
+  mode: "lines+markers",
+  fill: "tozeroy",
+  name: "opacity: 0.6",
+  opacity: 0.6,
+  marker: %{size: 8}
+))
+|> Figure.update_layout(title: "Trace Opacity — affects markers, line, and fill equally")
+|> Plotly.show()
+```

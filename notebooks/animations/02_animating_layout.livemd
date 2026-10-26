@@ -1,0 +1,50 @@
+# Animating the Layout
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Frames can include a `layout` key to animate layout properties — title, axis
+ranges, annotations, etc. — alongside or instead of data changes.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 30
+x = Enum.to_list(0..n)
+y = Enum.map(x, fn xi -> :math.sin(xi * 0.4) end)
+
+frames =
+  for i <- 0..(n - 1) do
+    %{
+      name: "f#{i}",
+      data: [%{x: Enum.take(x, i + 2), y: Enum.take(y, i + 2)}],
+      layout: %{title: %{text: "Step #{i + 1} of #{n}"}}
+    }
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0.0], mode: "lines+markers", name: "sin")],
+  layout: %{
+    title: "Step 1 of #{n}",
+    xaxis: %{range: [0, n], autorange: false},
+    yaxis: %{range: [-1.2, 1.2], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 80, redraw: false}, transition: %{duration: 30}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

@@ -1,0 +1,51 @@
+# Toggling Axes Lines, Ticks, Labels, and Autorange
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Toggle axis grid lines with `showgrid`, tick labels with `showticklabels`,
+and use `autorange: true` (default) to let plotly fit the data automatically.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+y = [1, 4, 9, 16, 25]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "squares"))
+|> Figure.update_layout(
+  title: "No Grid Lines",
+  xaxis: %{showgrid: false},
+  yaxis: %{showgrid: false}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "squares"))
+|> Figure.update_layout(
+  title: "No Tick Labels",
+  xaxis: %{showticklabels: false},
+  yaxis: %{showticklabels: false}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "squares"))
+|> Figure.update_layout(
+  title: "Axis Not Visible",
+  xaxis: %{visible: false},
+  yaxis: %{visible: false}
+)
+|> Plotly.show()
+```

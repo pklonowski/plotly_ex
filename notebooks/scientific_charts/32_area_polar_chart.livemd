@@ -1,0 +1,48 @@
+# Area Polar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`fill: "toself"` on a `Scatterpolar` trace fills the area enclosed by the line.
+`fill: "tonext"` fills the area between this trace and the previous one.
+Useful for showing a confidence band or layered areas.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = for i <- 0..7, do: i * 45
+r_outer = [2.0, 1.5, 2.5, 1.8, 2.2, 1.0, 2.0, 1.5]
+r_inner = [1.0, 0.8, 1.2, 0.9, 1.1, 0.5, 1.0, 0.8]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r_outer ++ [hd(r_outer)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines",
+    fill: "toself",
+    fillcolor: "rgba(0, 100, 200, 0.3)",
+    line: %{color: "rgba(0, 100, 200, 0.8)"},
+    name: "Outer area"
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r_inner ++ [hd(r_inner)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines",
+    fill: "toself",
+    fillcolor: "rgba(200, 50, 50, 0.3)",
+    line: %{color: "rgba(200, 50, 50, 0.8)"},
+    name: "Inner area"
+  )
+)
+|> Figure.update_layout(title: "Area Polar Chart")
+|> Plotly.show()
+```

@@ -1,0 +1,59 @@
+# Defining Named Frames
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Frames have a `name:` field. The `args` list in a button's animation call can
+reference specific frame names to play a subset — `["frame1", "frame2"]` plays
+only those two frames.
+
+This example has named frames for each season, each with distinct sales data.
+The buttons swap the chart to that season's values.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+months = ~w[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec]
+
+spring_sales = [90,  85,  130, 200, 220, 180,  0,   0,   0,   0,   0,   0]
+summer_sales = [0,   0,   0,   0,   0,   210, 270, 290, 240,  0,   0,   0]
+autumn_sales = [0,   0,   0,   0,   0,   0,   0,   0,   200, 180, 150, 120]
+
+frames = [
+  %{name: "spring", data: [%{y: spring_sales}]},
+  %{name: "summer", data: [%{y: summer_sales}]},
+  %{name: "autumn", data: [%{y: autumn_sales}]}
+]
+
+button = fn label, frame_names ->
+  %{
+    label: label,
+    method: "animate",
+    args: [frame_names, %{frame: %{duration: 600}, transition: %{duration: 300}}]
+  }
+end
+
+Figure.new(
+  data: [Bar.new(x: months, y: spring_sales, name: "Sales")],
+  layout: %{
+    title: "Monthly Sales by Season — Named Frame Navigation",
+    yaxis: %{range: [0, 320]},
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [
+        button.("Spring", ["spring"]),
+        button.("Summer", ["summer"]),
+        button.("Autumn", ["autumn"])
+      ]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

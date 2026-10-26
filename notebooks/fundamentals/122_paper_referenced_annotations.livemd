@@ -1,0 +1,63 @@
+# Paper Referenced Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `xref: "paper"` and `yref: "paper"` on an annotation to position it
+relative to the plot area (0 = left/bottom, 1 = right/top), independent of
+data coordinates. Use `showarrow: false` for text-only labels.
+
+This is useful for adding titles, footnotes, or labels to specific corners
+of the chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], mode: "lines"))
+|> Figure.update_layout(
+  title: "Paper-Referenced Annotations",
+  annotations: [
+    %{
+      text: "Top-left corner",
+      xref: "paper",
+      yref: "paper",
+      x: 0,
+      y: 1,
+      xanchor: "left",
+      yanchor: "top",
+      showarrow: false,
+      font: %{size: 14, color: "blue"}
+    },
+    %{
+      text: "Bottom-right corner",
+      xref: "paper",
+      yref: "paper",
+      x: 1,
+      y: 0,
+      xanchor: "right",
+      yanchor: "bottom",
+      showarrow: false,
+      font: %{size: 14, color: "red"}
+    },
+    %{
+      text: "Centre",
+      xref: "paper",
+      yref: "paper",
+      x: 0.5,
+      y: 0.5,
+      xanchor: "center",
+      yanchor: "middle",
+      showarrow: false,
+      font: %{size: 16, color: "green"}
+    }
+  ]
+)
+|> Plotly.show()
+```

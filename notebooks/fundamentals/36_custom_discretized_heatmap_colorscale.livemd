@@ -1,0 +1,50 @@
+# Custom Discretized Heatmap Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A discretized colorscale uses closely-spaced stop pairs to create sharp, flat
+colour bands instead of a smooth gradient. Each band needs two stops at nearly the
+same value — one ending the previous colour and one starting the next.
+
+This is achieved by using a list of `[stop, color]` pairs where the stops jump
+abruptly (e.g. `[0.0, "red"], [0.33, "red"], [0.33, "blue"], [0.66, "blue"], ...`).
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(
+  z: z,
+  colorscale: [
+    [0.0,    "rgb(165,0,38)"],
+    [0.1111, "rgb(165,0,38)"],
+    [0.1111, "rgb(215,48,39)"],
+    [0.2222, "rgb(215,48,39)"],
+    [0.2222, "rgb(244,109,67)"],
+    [0.3333, "rgb(244,109,67)"],
+    [0.3333, "rgb(253,174,97)"],
+    [0.4444, "rgb(253,174,97)"],
+    [0.4444, "rgb(254,224,144)"],
+    [0.5556, "rgb(254,224,144)"],
+    [0.5556, "rgb(171,217,233)"],
+    [0.6667, "rgb(171,217,233)"],
+    [0.6667, "rgb(116,173,209)"],
+    [0.7778, "rgb(116,173,209)"],
+    [0.7778, "rgb(69,117,180)"],
+    [0.8889, "rgb(69,117,180)"],
+    [0.8889, "rgb(49,54,149)"],
+    [1.0,    "rgb(49,54,149)"]
+  ]
+))
+|> Figure.update_layout(title: "Custom Discretized Heatmap Colorscale")
+|> Plotly.show()
+```

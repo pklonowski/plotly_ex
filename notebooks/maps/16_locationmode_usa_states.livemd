@@ -1,0 +1,45 @@
+# locationmode: 'USA-states'
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`locationmode: "USA-states"` maps 2-letter postal abbreviations (e.g. `"CA"`, `"TX"`)
+to US state boundaries. Works with both `Scattergeo` (markers) and `Choropleth` (fills).
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# All 50 US state abbreviations
+states = ~w(AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD
+            MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC
+            SD TN TX UT VT VA WA WV WI WY)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    locations: states,
+    locationmode: "USA-states",
+    mode: "markers+text",
+    text: states,
+    textposition: "middle center",
+    marker: %{size: 6, color: "darkblue", symbol: "circle"}
+  )
+)
+|> Figure.update_layout(
+  title: "locationmode: 'USA-states' — All 50 State Codes",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```

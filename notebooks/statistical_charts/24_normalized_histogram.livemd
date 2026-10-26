@@ -1,0 +1,37 @@
+# Normalized Histogram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`histnorm` normalises the y-axis:
+- `""` (default) — raw counts
+- `"probability"` — each bar is count / total (sums to 1)
+- `"percent"` — each bar is (count / total) × 100 (sums to 100)
+- `"density"` — count / (bin width × total) — useful for comparing distributions of different sizes
+- `"probability density"` — density that integrates to 1
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+for norm <- ["", "probability", "percent", "density"] do
+  label = if norm == "", do: "count (default)", else: norm
+
+  Figure.new()
+  |> Figure.add_trace(Histogram.new(x: x, histnorm: (if norm == "", do: nil, else: norm)))
+  |> Figure.update_layout(title: "histnorm: \"#{label}\"")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

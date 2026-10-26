@@ -1,0 +1,42 @@
+# Scatter Plot with a Color Dimension
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass a list of numbers to `marker.color` to apply a continuous color scale
+to marker colors. Set `colorscale` to a named scale (e.g. `"Viridis"`,
+`"Plasma"`, `"RdBu"`) and `showscale: true` to display the color bar.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 50
+x = Enum.map(1..n, fn _ -> :rand.uniform() * 10 end)
+y = Enum.map(1..n, fn _ -> :rand.uniform() * 10 end)
+colors = Enum.map(1..n, fn _ -> :rand.uniform() * 100 end)
+sizes = Enum.map(1..n, fn _ -> trunc(:rand.uniform() * 30) + 10 end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{
+      color: colors,
+      colorscale: "Viridis",
+      showscale: true,
+      size: sizes,
+      opacity: 0.8
+    }
+  )
+)
+|> Figure.update_layout(title: "Scatter Plot with Color Dimension")
+|> Plotly.show()
+```

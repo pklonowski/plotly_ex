@@ -1,0 +1,57 @@
+# Branchvalues
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`branchvalues` controls how a parent node's `values` entry is interpreted:
+
+- `"remainder"` (default): the parent's `values` entry is the node's *own* contribution;
+  its sector size = its value + sum of children's values.
+- `"total"`: the parent's `values` entry is the *total* including all descendants;
+  the displayed sector equals exactly that value.
+
+Use `"total"` when your data already encodes the full subtree size.
+Use `"remainder"` when your data encodes only the leaf/own contribution.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+labels = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values = [65, 14, 12, 10, 2, 6, 6, 4, 4]
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "total",
+    domain: %{column: 0}
+  )
+)
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "remainder",
+    domain: %{column: 1}
+  )
+)
+|> Figure.update_layout(
+  title: "branchvalues: \"total\" vs \"remainder\"",
+  grid: %{columns: 2, rows: 1},
+  annotations: [
+    %{text: "total", x: 0.2, y: -0.05, showarrow: false, font: %{size: 14}},
+    %{text: "remainder", x: 0.8, y: -0.05, showarrow: false, font: %{size: 14}}
+  ]
+)
+|> Plotly.show()
+```

@@ -1,0 +1,17 @@
+# Chart Studio Link Text Was Removed
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Replace the old link
+
+Plotly.js v4 removed `config.linkText` together with the Chart Studio edit link.
+There is no replacement edit-link text option. Present your own notebook text
+or download the figure JSON using the `downloadJson` modebar button.
+
+The separate Upload to Cloud button is hidden by plotly_ex unless you explicitly
+set `showSendToCloud: true`, as demonstrated in notebook 12.

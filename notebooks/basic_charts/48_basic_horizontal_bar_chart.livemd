@@ -1,0 +1,27 @@
+# Basic Horizontal Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`orientation: "h"` flips the bar chart. With horizontal bars, `x` holds the values and `y` holds the categories.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    y: ["giraffes", "orangutans", "monkeys"],
+    x: [20, 14, 23],
+    orientation: "h"
+  )
+)
+|> Figure.update_layout(title: "Basic Horizontal Bar Chart")
+|> Plotly.show()
+```

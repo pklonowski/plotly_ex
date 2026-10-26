@@ -1,0 +1,25 @@
+# Upload to Cloud — Explicit Opt-In
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Choose whether to offer cloud upload
+
+Plotly.js v4 removed Edit in Chart Studio and its `showEditInChartStudio`
+configuration. Upload to Cloud is a separate button: plotly_ex hides it by
+default. This example deliberately enables it with `showSendToCloud: true`.
+Rendering the chart does not upload data; clicking the button starts the
+external cloud workflow.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(config: %{showSendToCloud: true})
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 5, 3], mode: "lines+markers"))
+|> Figure.update_layout(title: "Upload to Cloud is explicitly enabled here")
+|> Plotly.show()
+```

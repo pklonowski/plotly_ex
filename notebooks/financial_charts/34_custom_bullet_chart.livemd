@@ -1,0 +1,52 @@
+# Custom Bullet Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Full bullet styling: `gauge.bar: %{color:, thickness:}` styles the value bar. `gauge.bgcolor:`
+sets the bullet background. `delta.relative: true` shows percentage change from reference.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Revenue"},
+    delta: %{reference: 200, relative: true, position: "top"},
+    number: %{suffix: "$", font: %{size: 20}},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 300]},
+      bar: %{color: "darkblue", thickness: 0.2},
+      bgcolor: "white",
+      borderwidth: 2,
+      bordercolor: "gray",
+      steps: [
+        %{range: [0, 150], color: "cyan"},
+        %{range: [150, 250], color: "royalblue"}
+      ],
+      threshold: %{
+        line: %{color: "red", width: 2},
+        thickness: 0.75,
+        value: 280
+      }
+    },
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 250,
+  paper_bgcolor: "lavender"
+)
+|> Plotly.show()
+```

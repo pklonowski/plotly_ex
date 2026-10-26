@@ -1,0 +1,44 @@
+# Tickformatstops to Customize for Different Zoom Levels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`tickformatstops` is a list of maps, each with a `dtickrange` (two-element
+list of tick-step thresholds) and a `value` (the format string applied at
+that zoom level). Use `nil` as an open bound. This lets the tick format
+adapt as the user zooms in or out.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Generate hourly data for a few days
+start_ms = ~N[2020-01-01 00:00:00] |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(:millisecond)
+x = for h <- 0..72, do: start_ms + h * 3_600_000
+y = Enum.map(0..72, fn h -> :math.sin(h / 6.0) + :rand.uniform() * 0.2 end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines"))
+|> Figure.update_layout(
+  title: "Tickformatstops — zoom in/out to see format change",
+  xaxis: %{
+    type: "date",
+    tickformatstops: [
+      %{dtickrange: [nil, 1000],           value: "%H:%M:%S.%L ms"},
+      %{dtickrange: [1000, 60_000],         value: "%H:%M:%S s"},
+      %{dtickrange: [60_000, 3_600_000],    value: "%H:%M m"},
+      %{dtickrange: [3_600_000, 86_400_000], value: "%H:%M h"},
+      %{dtickrange: [86_400_000, 604_800_000], value: "%e. %b d"},
+      %{dtickrange: [604_800_000, "M1"],    value: "%e. %b w"},
+      %{dtickrange: ["M1", "M12"],          value: "%b '%y M"},
+      %{dtickrange: ["M12", nil],           value: "%Y Y"}
+    ]
+  }
+)
+|> Plotly.show()
+```

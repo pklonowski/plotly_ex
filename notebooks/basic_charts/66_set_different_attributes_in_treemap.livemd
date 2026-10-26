@@ -1,0 +1,40 @@
+# Set Different Attributes in Treemap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`tiling.packing` controls the layout algorithm:
+- `"squarify"` (default) — tries to make rectangles close to square
+- `"binary"` — binary subdivision
+- `"dice"` — horizontal slices only
+- `"slice"` — vertical slices only
+
+`textinfo` controls what text appears inside rectangles:
+`"label"`, `"value"`, `"percent parent"`, `"percent root"` — combine with `"+"`.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+labels  = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values  = [10, 14, 12, 10, 2, 6, 6, 4, 4]
+
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    tiling: %{packing: "squarify"},
+    textinfo: "label+value+percent parent"
+  )
+)
+|> Figure.update_layout(title: "Treemap with Custom Tiling and Text")
+|> Plotly.show()
+```

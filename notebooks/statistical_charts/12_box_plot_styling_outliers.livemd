@@ -1,0 +1,38 @@
+# Box Plot Styling Outliers
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`boxpoints: "suspectedoutliers"` shows only the statistical outlier points (beyond 1.5× IQR).
+`marker.outliercolor` sets the outlier point fill colour.
+`marker.line.outliercolor` and `marker.line.outlierwidth` style the outlier point border.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+data = [0.75, 5.25, 5.5, 6.0, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75,
+        8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10.0, 10.25, 11.5, 12.0, 16.0, 20.90, 22.3, 23.25]
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: data,
+    name: "Styled Outliers",
+    boxpoints: "suspectedoutliers",
+    marker: %{
+      color: "rgb(8,81,156)",
+      outliercolor: "rgba(219, 64, 82, 0.6)",
+      line: %{outliercolor: "rgba(219, 64, 82, 1.0)", outlierwidth: 2}
+    },
+    line: %{color: "rgb(8,81,156)"}
+  )
+)
+|> Figure.update_layout(title: "Box Plot Styling Outliers")
+|> Plotly.show()
+```

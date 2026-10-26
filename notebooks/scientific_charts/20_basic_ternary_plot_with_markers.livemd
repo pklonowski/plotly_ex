@@ -1,0 +1,38 @@
+# Basic Ternary Plot with Markers
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A ternary plot represents three-component compositions. Each point has coordinates
+`a`, `b`, `c` that sum to a constant (here 1.0). `layout.ternary` sets the axis titles.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterternary.new(
+    a: [0.1, 0.5, 0.2, 0.3],
+    b: [0.6, 0.2, 0.5, 0.4],
+    c: [0.3, 0.3, 0.3, 0.3],
+    mode: "markers",
+    name: "Sample A",
+    marker: %{size: 10, color: "steelblue"}
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Ternary Plot with Markers",
+  ternary: %{
+    aaxis: %{title: "Component A"},
+    baxis: %{title: "Component B"},
+    caxis: %{title: "Component C"}
+  }
+)
+|> Plotly.show()
+```

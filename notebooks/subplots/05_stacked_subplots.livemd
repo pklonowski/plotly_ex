@@ -1,0 +1,26 @@
+# Stacked Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Three rows, one column. Each trace gets its own y-axis but they share the x-axis column visually.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], name: "Top"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 3, 4], xaxis: "x2", yaxis: "y2", name: "Middle"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 4, 2], xaxis: "x3", yaxis: "y3", name: "Bottom"))
+|> Figure.update_layout(
+  title: "Stacked Subplots",
+  grid: %{rows: 3, columns: 1, pattern: "independent"}
+)
+|> Plotly.show()
+```

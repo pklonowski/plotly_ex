@@ -1,0 +1,39 @@
+# Define Node Position
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`node.x` and `node.y` set explicit positions (0–1 relative to canvas).
+`arrangement: "fixed"` is required to honour the specified positions; otherwise Plotly ignores x/y.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    arrangement: "fixed",
+    node: %{
+      label:  ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color:  ["black", "blue", "brown", "gold", "gray"],
+      pad: 20,
+      thickness: 30,
+      x: [0.1, 0.1, 0.1, 0.7, 0.9],
+      y: [0.1, 0.4, 0.7, 0.4, 0.3]
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(title: "Sankey with Fixed Node Positions", width: 800, height: 500)
+|> Plotly.show()
+```

@@ -1,0 +1,51 @@
+# Style Waterfall Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`decreasing:`, `increasing:`, and `totals:` maps each accept a `marker:` field with
+`color:` and `line:` for per-type bar styling. `layout.waterfallgap:` sets the gap fraction
+between bars (0–1). This allows full visual differentiation between positive, negative, and
+summary bars without needing to style each bar individually.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    x: [
+      ["2016", "2017", "2017", "2017", "2017", "2018", "2018", "2018", "2018"],
+      ["initial", "q1", "q2", "q3", "total", "q1", "q2", "q3", "total"]
+    ],
+    measure: [
+      "absolute",
+      "relative",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "relative",
+      "relative",
+      "total"
+    ],
+    y: [10, 20, 30, -10, nil, 10, 20, -40, nil],
+    base: 300,
+    decreasing: %{marker: %{color: "Maroon", line: %{color: "red", width: 2}}},
+    increasing: %{marker: %{color: "Teal"}},
+    totals: %{marker: %{color: "deep sky blue", line: %{color: "blue", width: 3}}}
+  )
+)
+|> Figure.update_layout(
+  title: "Profit and Loss Statement",
+  waterfallgap: 0.3,
+  xaxis: %{tickfont: %{size: 15}, ticks: "outside"}
+)
+|> Plotly.show()
+```

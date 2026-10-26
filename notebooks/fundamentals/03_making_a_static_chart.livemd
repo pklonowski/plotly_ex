@@ -1,0 +1,24 @@
+# Making a Static Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.staticPlot: true` disables all interactivity — no hover, no zoom, no
+modebar. Useful for embedding charts in reports where interaction is unwanted.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new(
+  data: [Bar.new(x: ["A", "B", "C", "D"], y: [3, 7, 2, 9])],
+  layout: %{title: "Static chart — no hover, no zoom"},
+  config: %{staticPlot: true}
+)
+|> Plotly.show()
+```

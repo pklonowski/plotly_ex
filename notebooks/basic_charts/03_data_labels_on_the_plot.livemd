@@ -1,0 +1,49 @@
+# Data Labels on The Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `mode` to include `"text"` to render labels directly on the plot (not
+just on hover). Use `textposition` to control placement: `"top center"`,
+`"bottom center"`, `"middle right"`, etc. Style labels with `textfont`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 1, 4, 3, 5],
+    mode: "markers+text",
+    name: "Team A",
+    text: ["A-1", "A-2", "A-3", "A-4", "A-5"],
+    textposition: "top center",
+    textfont: %{family: "Raleway, sans-serif"},
+    marker: %{size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [4, 3, 6, 5, 7],
+    mode: "markers+text",
+    name: "Team B",
+    text: ["B-1", "B-2", "B-3", "B-4", "B-5"],
+    textposition: "bottom center",
+    textfont: %{family: "Times New Roman"},
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(
+  title: "Data Labels on the Plot",
+  legend: %{y: 0.5, font: %{size: 16}}
+)
+|> Plotly.show()
+```

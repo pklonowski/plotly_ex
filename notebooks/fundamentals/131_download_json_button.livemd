@@ -1,0 +1,23 @@
+# Download Figure JSON
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Save a local copy from the modebar
+
+Plotly.js v4 adds the `downloadJson` modebar button. Hover over the chart and
+click **Download plot as a JSON file** to save its data and layout locally.
+This does not upload the figure to a cloud service.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(config: %{modeBarButtonsToAdd: ["downloadJson"], displayModeBar: true})
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 5, 3], mode: "lines+markers"))
+|> Figure.update_layout(title: "Download this figure as JSON")
+|> Plotly.show()
+```

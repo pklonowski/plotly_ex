@@ -1,0 +1,73 @@
+# Tile County Choropleth — Streets Tile
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+Same data as the basic tile example, but with `style: "open-street-map"`.
+Street context helps identify urban/rural patterns in the data.
+
+```elixir
+alias Plotly.{Figure, Choroplethmap}
+
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+ca_geojson = Map.update!(geojson, "features", fn features ->
+  Enum.filter(features, fn f -> String.starts_with?(f["id"], "06") end)
+end)
+
+data_url = "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
+body = Req.get!(data_url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r ->
+    r["fips"] != nil and r["fips"] != "" and String.starts_with?(String.pad_leading(r["fips"], 5, "0"), "06")
+  end)
+
+fips = Enum.map(data, fn r -> String.pad_leading(r["fips"], 5, "0") end)
+unemp = Enum.map(data, fn r ->
+  case Float.parse(r["unemp"]) do
+    {f, _} -> f
+    :error -> 0.0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choroplethmap.new(
+    geojson: ca_geojson,
+    locations: fips,
+    z: unemp,
+    featureidkey: "id",
+    colorscale: "YlOrRd",
+    zmin: 0,
+    zmax: 12,
+    colorbar: %{title: %{text: "Unemployment %"}},
+    marker: %{opacity: 0.7}
+  )
+)
+|> Figure.update_layout(
+  title: "California County Unemployment — Streets Tile",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 37.5, lon: -120.0},
+    zoom: 5
+  }
+)
+|> Plotly.show()
+```

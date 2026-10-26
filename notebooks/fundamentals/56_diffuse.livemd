@@ -1,0 +1,37 @@
+# Diffuse
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`lighting.diffuse` controls the intensity of angle-dependent (Lambertian)
+lighting — how much the surface brightens when facing the light source. Range
+is `0.0` to `1.0`. Default is `0.8`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis", lighting: %{diffuse: 0.1}))
+|> Figure.update_layout(title: "Diffuse: 0.1 (minimal angle effect)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis", lighting: %{diffuse: 1.0}))
+|> Figure.update_layout(title: "Diffuse: 1.0 (strong angle effect)")
+|> Plotly.show()
+```

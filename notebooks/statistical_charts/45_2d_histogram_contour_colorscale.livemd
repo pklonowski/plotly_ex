@@ -1,0 +1,43 @@
+# 2D Histogram Contour Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`colorscale:` picks the named colour scale for the contour fill.
+`reversescale: true` flips the colour direction (lowest count = darkest).
+`ncontours:` sets how many contour levels are drawn.
+
+```elixir
+alias Plotly.{Figure, Histogram2dcontour}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 300
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2dcontour.new(
+    x: x,
+    y: y,
+    colorscale: "Hot",
+    reversescale: true,
+    ncontours: 20
+  )
+)
+|> Figure.update_layout(title: "2D Histogram Contour — Custom Colorscale")
+|> Plotly.show()
+```

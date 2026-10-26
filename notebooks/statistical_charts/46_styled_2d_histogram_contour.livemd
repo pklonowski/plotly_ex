@@ -1,0 +1,52 @@
+# Styled 2D Histogram Contour
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`contours: %{showlines: false}` removes the contour outlines, leaving only the fill.
+`line: %{width: 0}` achieves the same result when using the `line` key.
+Overlaying a `Scatter` on top shows individual data points within the density map.
+
+```elixir
+alias Plotly.{Figure, Histogram2dcontour, Scatter}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 300
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2dcontour.new(
+    x: x,
+    y: y,
+    colorscale: "Blues",
+    ncontours: 15,
+    contours: %{showlines: false}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{color: "rgba(255,255,255,0.5)", size: 3},
+    showlegend: false
+  )
+)
+|> Figure.update_layout(title: "Styled 2D Histogram Contour")
+|> Plotly.show()
+```

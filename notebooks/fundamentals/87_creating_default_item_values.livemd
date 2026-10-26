@@ -1,0 +1,41 @@
+# Creating Default Item Values
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`annotationdefaults` (and similar `*defaults` keys) in a template apply
+styling to all items of that type that do NOT have a `templateitemname`. This
+is how you set global defaults without naming each item.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+template = %{
+  layout: %{
+    annotationdefaults: %{
+      font: %{size: 14, color: "green"},
+      showarrow: true,
+      arrowhead: 2,
+      arrowcolor: "green"
+    }
+  }
+}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], mode: "markers", marker: %{size: 12}))
+|> Figure.update_layout(
+  title: "Default Annotation Values from Template",
+  template: template,
+  annotations: [
+    %{text: "Peak", x: 2, y: 4, ax: 0, ay: -40},
+    %{text: "Start", x: 1, y: 2, ax: -40, ay: 0}
+  ]
+)
+|> Plotly.show()
+```

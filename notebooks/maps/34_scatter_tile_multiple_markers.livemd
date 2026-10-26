@@ -1,0 +1,55 @@
+# Scatter Tile Maps — Multiple Markers
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Scattermap` traces appear in the legend separately. Each trace can have
+its own `marker.color`, `marker.size`, and `name`. Useful for categorical data.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [40.7128, 41.8781, 42.3601],
+    lon: [-74.0060, -87.6298, -71.0589],
+    mode: "markers",
+    name: "Northeast",
+    marker: %{size: 12, color: "blue"}
+  )
+)
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [29.7604, 30.2672, 32.7767],
+    lon: [-95.3698, -97.7431, -96.7970],
+    mode: "markers",
+    name: "South",
+    marker: %{size: 12, color: "red"}
+  )
+)
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [37.7749, 34.0522, 47.6062],
+    lon: [-122.4194, -118.2437, -122.3321],
+    mode: "markers",
+    name: "West",
+    marker: %{size: 12, color: "green"}
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Marker Groups on Tile Map",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 38.0, lon: -97.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

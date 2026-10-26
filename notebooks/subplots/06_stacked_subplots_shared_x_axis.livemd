@@ -1,0 +1,30 @@
+# Stacked Subplots with a Shared X-Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`xaxis2.matches: "x"` and `xaxis3.matches: "x"` link all x-axes so zooming one zooms all.
+`showticklabels: false` hides redundant x tick labels on upper plots.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3], y: [10, 11, 12, 13], name: "Top"))
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3], y: [20, 18, 17, 16], xaxis: "x2", yaxis: "y2", name: "Middle"))
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3], y: [30, 29, 31, 28], xaxis: "x3", yaxis: "y3", name: "Bottom"))
+|> Figure.update_layout(
+  title: "Stacked Subplots — Shared X-Axis",
+  grid: %{rows: 3, columns: 1, pattern: "independent"},
+  xaxis: %{showticklabels: false},
+  xaxis2: %{matches: "x", showticklabels: false},
+  xaxis3: %{matches: "x"}
+)
+|> Plotly.show()
+```

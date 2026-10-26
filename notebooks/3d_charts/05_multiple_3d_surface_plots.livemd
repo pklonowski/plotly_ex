@@ -1,0 +1,49 @@
+# Multiple 3D Surface Plots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Surface` traces share the same 3D scene by default. Each can have its own
+`colorscale:` and `opacity:`. Setting `opacity:` below 1.0 makes surfaces translucent so
+overlapping surfaces remain visible.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+# Two sinusoidal surfaces offset in z
+size = 20
+indices = Enum.to_list(0..(size - 1))
+
+z1 =
+  for i <- indices do
+    for j <- indices do
+      :math.sin(i / 5) * :math.cos(j / 5)
+    end
+  end
+
+z2 =
+  for i <- indices do
+    for j <- indices do
+      :math.sin(i / 5) * :math.cos(j / 5) + 2
+    end
+  end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z1, colorscale: "Viridis", opacity: 0.8, name: "Surface 1"))
+|> Figure.add_trace(Surface.new(z: z2, colorscale: "RdBu", opacity: 0.6, name: "Surface 2"))
+|> Figure.update_layout(
+  title: "Multiple 3D Surfaces",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

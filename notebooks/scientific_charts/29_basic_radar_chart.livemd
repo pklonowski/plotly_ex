@@ -1,0 +1,37 @@
+# Basic Radar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A radar chart uses `Scatterpolar` with `fill: "toself"` to create a filled polygon
+on a polar axis. `theta:` holds category names (string list). Close the polygon
+by repeating the first element at the end of both `r:` and `theta:`.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+categories = ["Speed", "Strength", "Stamina", "Agility", "Flexibility", "Speed"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [80, 60, 70, 90, 55, 80],
+    theta: categories,
+    fill: "toself",
+    name: "Athlete A"
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Radar Chart",
+  polar: %{
+    radialaxis: %{visible: true, range: [0, 100]}
+  }
+)
+|> Plotly.show()
+```

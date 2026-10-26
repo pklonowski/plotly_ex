@@ -1,0 +1,53 @@
+# Scatter Plot Matrix (SPLOM) of the Iris Dataset
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Splom.new(dimensions: [...])` creates a Scatter Plot Matrix (SPLOM).
+Each dimension is a map with `label:` (axis title) and `values:` (numeric list).
+Every pair of dimensions gets its own scatter panel.
+
+The Iris dataset is inlined here as simple representative data.
+
+```elixir
+alias Plotly.{Figure, Splom}
+
+# Simplified Iris dataset (20 samples, 3 classes encoded as 0/1/2)
+sepal_len  = [5.1,4.9,4.7,4.6,5.0,5.4,4.6,5.0,4.4,4.9,7.0,6.4,6.9,5.5,6.5,5.7,6.3,4.9,6.6,5.2]
+sepal_wid  = [3.5,3.0,3.2,3.1,3.6,3.9,3.4,3.4,2.9,3.1,3.2,3.2,3.1,2.3,2.8,2.8,3.3,2.4,2.9,2.7]
+petal_len  = [1.4,1.4,1.3,1.5,1.4,1.7,1.4,1.5,1.4,1.5,4.7,4.5,4.9,4.0,4.6,4.5,4.7,3.3,4.6,3.9]
+petal_wid  = [0.2,0.2,0.2,0.2,0.2,0.4,0.3,0.2,0.2,0.1,1.4,1.5,1.5,1.3,1.5,1.3,1.6,1.0,1.3,1.4]
+species    = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]
+
+Figure.new()
+|> Figure.add_trace(
+  Splom.new(
+    dimensions: [
+      %{label: "Sepal Length", values: sepal_len},
+      %{label: "Sepal Width",  values: sepal_wid},
+      %{label: "Petal Length", values: petal_len},
+      %{label: "Petal Width",  values: petal_wid}
+    ],
+    marker: %{
+      color: species,
+      colorscale: "Viridis",
+      size: 5,
+      showscale: false,
+      line: %{width: 0.5, color: "white"}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "SPLOM — Iris Dataset",
+  dragmode: "select",
+  height: 700,
+  margin: %{l: 130}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,36 @@
+# Overlaid Histogram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.barmode: "overlay"` renders multiple histograms on top of each other.
+Use `opacity` (0–1) on each trace so the overlapping bins remain visible.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x1 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+x2 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(5.5)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x1, name: "x1", opacity: 0.5))
+|> Figure.add_trace(Histogram.new(x: x2, name: "x2", opacity: 0.5))
+|> Figure.update_layout(
+  title: "Overlaid Histogram",
+  barmode: "overlay"
+)
+|> Plotly.show()
+```

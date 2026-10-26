@@ -1,0 +1,28 @@
+# Marker Size on Bubble Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Bubble charts use `mode: "markers"` with `marker.size` as a list to scale each point individually.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 11, 12, 13],
+    mode: "markers",
+    marker: %{size: [40, 60, 80, 100]}
+  )
+)
+|> Figure.update_layout(title: "Marker Size on Bubble Charts")
+|> Plotly.show()
+```

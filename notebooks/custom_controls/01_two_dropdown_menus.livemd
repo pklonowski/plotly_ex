@@ -1,0 +1,63 @@
+# Add Two Dropdown Menus to a Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.updatemenus` accepts a list — each entry becomes a separate control.
+Use `type: "dropdown"` for a select menu. `method: "restyle"` updates trace
+properties client-side; `method: "relayout"` updates layout properties.
+
+Position with `x`, `y`, `xanchor`, `yanchor` (0–1 fractions of plot area).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..20)
+ys_sin = Enum.map(xs, fn x -> :math.sin(x / 3.0) end)
+ys_cos = Enum.map(xs, fn x -> :math.cos(x / 3.0) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_sin, name: "sin", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_cos, name: "cos", mode: "lines", visible: false))
+|> Figure.update_layout(
+  title: "Two Dropdown Menus",
+  updatemenus: [
+    # Dropdown 1: select trace (left side)
+    %{
+      type: "dropdown",
+      x: 0.1,
+      y: 1.15,
+      xanchor: "left",
+      showactive: true,
+      buttons: [
+        %{label: "sin",      method: "update",
+          args: [%{visible: [true, false]}, %{title: "sin(x/3)"}]},
+        %{label: "cos",      method: "update",
+          args: [%{visible: [false, true]}, %{title: "cos(x/3)"}]},
+        %{label: "sin + cos", method: "update",
+          args: [%{visible: [true, true]}, %{title: "sin and cos"}]}
+      ]
+    },
+    # Dropdown 2: select line colour (right side)
+    %{
+      type: "dropdown",
+      x: 0.55,
+      y: 1.15,
+      xanchor: "left",
+      showactive: true,
+      buttons: [
+        %{label: "Blue",   method: "restyle", args: [%{line: %{color: "steelblue"}}]},
+        %{label: "Red",    method: "restyle", args: [%{line: %{color: "crimson"}}]},
+        %{label: "Green",  method: "restyle", args: [%{line: %{color: "seagreen"}}]}
+      ]
+    }
+  ]
+)
+|> Plotly.show()
+```

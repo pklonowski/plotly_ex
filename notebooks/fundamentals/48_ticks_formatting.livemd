@@ -1,0 +1,35 @@
+# Ticks Formatting
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+3D axis tick properties live under `layout.scene.xaxis`, `layout.scene.yaxis`,
+and `layout.scene.zaxis`. The same keys as 2D axes apply: `nticks`,
+`tickformat`, `tickprefix`, `ticksuffix`, `tickfont`.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines"))
+|> Figure.update_layout(
+  title: "3D Ticks Formatting",
+  scene: %{
+    xaxis: %{nticks: 4, tickformat: ".2f", tickprefix: "x="},
+    yaxis: %{nticks: 4, tickformat: ".2f", tickprefix: "y="},
+    zaxis: %{nticks: 5, ticksuffix: " s", tickfont: %{size: 10, color: "grey"}}
+  }
+)
+|> Plotly.show()
+```

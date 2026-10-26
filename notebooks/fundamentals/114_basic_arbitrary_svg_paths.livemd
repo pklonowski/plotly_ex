@@ -1,0 +1,41 @@
+# Basic Arbitrary SVG Paths
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `type: "path"` with a `path` string containing SVG path commands:
+- `M x,y` — move to (start point)
+- `L x,y` — line to
+- `Q cx,cy x,y` — quadratic Bézier
+- `C cx1,cy1 cx2,cy2 x,y` — cubic Bézier
+- `Z` — close path
+
+All coordinates use `xref`/`yref` as with other shapes.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1.5], y: [1.5], mode: "markers", marker: %{size: 10}))
+|> Figure.update_layout(
+  title: "SVG Path Shapes",
+  xaxis: %{range: [0, 3]},
+  yaxis: %{range: [0, 3]},
+  shapes: [
+    # Triangle via SVG path
+    %{
+      type: "path",
+      path: "M 1 1 L 2 1 L 1.5 2 Z",
+      fillcolor: "rgba(44, 160, 101, 0.5)",
+      line: %{color: "rgb(44, 160, 101)"}
+    }
+  ]
+)
+|> Plotly.show()
+```

@@ -1,0 +1,35 @@
+# Multiple 3D Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+3D traces (`Surface`, `Scatter3d`, `Mesh3d`) use `scene:` instead of `xaxis:`/`yaxis:`.
+The first scene is `"scene"`, the second is `"scene2"`, etc.
+`layout.scene` and `layout.scene2` each accept a `domain: %{column: 0|1}` to assign to grid columns.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+# Simple z-surfaces
+n = 20
+xs = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))
+z1 = for x <- xs, do: (for y <- xs, do: :math.sin(:math.sqrt(x * x + y * y)))
+z2 = for x <- xs, do: (for y <- xs, do: :math.cos(:math.sqrt(x * x + y * y)))
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z1, colorscale: "Viridis", showscale: false))
+|> Figure.add_trace(Surface.new(z: z2, colorscale: "RdBu", showscale: false, scene: "scene2"))
+|> Figure.update_layout(
+  title: "Multiple 3D Subplots",
+  grid: %{rows: 1, columns: 2},
+  scene:  %{domain: %{column: 0}},
+  scene2: %{domain: %{column: 1}}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,36 @@
+# Heatmap with Categorical Axis Labels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Passing string lists as `x:` and `y:` creates categorical axes with labelled ticks.
+`x` labels the columns; `y` labels the rows. Length of `x` must equal number of
+columns in z; length of `y` must equal number of rows.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = [
+  [1,  20, 30, 50, 1 ],
+  [20, 1,  60, 80, 30],
+  [30, 60, 1,  5,  20]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Heatmap.new(
+    z: z,
+    x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    y: ["Morning", "Afternoon", "Evening"],
+    colorscale: "Viridis"
+  )
+)
+|> Figure.update_layout(title: "Heatmap with Categorical Axis Labels")
+|> Plotly.show()
+```

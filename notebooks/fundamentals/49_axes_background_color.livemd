@@ -1,0 +1,35 @@
+# Axes Background Color
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Each face of the 3D bounding box has its own background colour, set via
+`layout.scene.xaxis.backgroundcolor` (and y, z). Set `showbackground: true`
+to enable the coloured panels. `gridcolor` controls the grid lines on each face.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines"))
+|> Figure.update_layout(
+  title: "3D Axes Background Color",
+  scene: %{
+    xaxis: %{backgroundcolor: "rgb(200, 200, 230)", showbackground: true, gridcolor: "white", zerolinecolor: "white"},
+    yaxis: %{backgroundcolor: "rgb(230, 200, 230)", showbackground: true, gridcolor: "white", zerolinecolor: "white"},
+    zaxis: %{backgroundcolor: "rgb(230, 230, 200)", showbackground: true, gridcolor: "white", zerolinecolor: "white"}
+  }
+)
+|> Plotly.show()
+```

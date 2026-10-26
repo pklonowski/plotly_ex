@@ -1,0 +1,28 @@
+# Basic Sunburst Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Sunburst.new/1` takes `labels:`, `parents:`, and optionally `values:`.
+Each label's parent is set by the matching entry in `parents`. The root node has `parent: ""`.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"],
+    parents: ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"],
+    values: [10, 14, 12, 10, 2, 6, 6, 4, 4]
+  )
+)
+|> Figure.update_layout(title: "Basic Sunburst Chart")
+|> Plotly.show()
+```

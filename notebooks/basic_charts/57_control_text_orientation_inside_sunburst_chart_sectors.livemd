@@ -1,0 +1,43 @@
+# Control Text Orientation Inside Sunburst Chart Sectors
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`insidetextorientation` controls the rotation of labels inside sectors:
+- `"auto"` (default) — Plotly picks the best fit
+- `"horizontal"` — always horizontal
+- `"radial"` — radiates outward from the centre
+- `"tangential"` — perpendicular to the radius
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+labels = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values = [10, 14, 12, 10, 2, 6, 6, 4, 4]
+
+for orientation <- ["auto", "horizontal", "radial", "tangential"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Sunburst.new(
+      labels: labels,
+      parents: parents,
+      values: values,
+      insidetextorientation: orientation
+    )
+  )
+  |> Figure.update_layout(
+    title: "insidetextorientation: \"#{orientation}\"",
+    height: 400,
+    width: 500
+  )
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

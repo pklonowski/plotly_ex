@@ -1,0 +1,34 @@
+# Parallel Categories Diagram with Counts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`counts:` is a list of integers, one per unique combination of category values.
+It lets you pass pre-aggregated data instead of one row per observation.
+The length of `counts` must equal the number of *unique* value combinations.
+When using counts, each element of `values` in each dimension must be the same
+length as `counts`.
+
+```elixir
+alias Plotly.{Figure, Parcats}
+
+# Pre-aggregated: 4 unique combinations, with their counts
+Figure.new()
+|> Figure.add_trace(
+  Parcats.new(
+    dimensions: [
+      %{values: ["Female", "Female", "Male", "Male"], label: "Gender"},
+      %{values: ["1",      "2",      "1",    "2"],    label: "Class"}
+    ],
+    counts: [9, 40, 10, 41]
+  )
+)
+|> Figure.update_layout(title: "Parallel Categories with Counts")
+|> Plotly.show()
+```

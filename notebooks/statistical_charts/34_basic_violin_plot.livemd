@@ -1,0 +1,30 @@
+# Basic Violin Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Violin.new(y: [...])` creates a vertical violin plot.
+The shape mirrors a kernel density estimate (KDE) of the data.
+Like a box plot, it shows median, quartiles, and whiskers, but also the full
+distribution shape.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+y = for _ <- 1..100 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Violin.new(y: y, name: "Sample"))
+|> Figure.update_layout(title: "Basic Violin Plot")
+|> Plotly.show()
+```

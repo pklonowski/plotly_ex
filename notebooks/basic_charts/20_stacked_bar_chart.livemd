@@ -1,0 +1,23 @@
+# Stacked Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `layout.barmode: "stack"` to stack multiple Bar traces on top of each
+other at each x category.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [20, 14, 23], name: "SF Zoo"))
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [12, 18, 29], name: "LA Zoo"))
+|> Figure.update_layout(barmode: "stack")
+|> Plotly.show()
+```

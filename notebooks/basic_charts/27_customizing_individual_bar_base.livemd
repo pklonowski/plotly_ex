@@ -1,0 +1,40 @@
+# Customizing Individual Bar Base
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`base:` sets the starting point (base) of each bar. By default bars start
+at 0. Setting `base` to a list makes each bar start at a different y value,
+creating floating or waterfall-like bars.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["2016", "2017", "2018", "2019", "2020"],
+    y: [500, 600, 700, 1000, 900],
+    base: [-500, -600, -700, -1000, -900],
+    marker: %{color: "red"},
+    name: "Expenses"
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: ["2016", "2017", "2018", "2019", "2020"],
+    y: [300, 400, 500, 700, 600],
+    base: 0,
+    marker: %{color: "blue"},
+    name: "Revenue"
+  )
+)
+|> Figure.update_layout(title: "Bar Chart with Custom Base")
+|> Plotly.show()
+```

@@ -1,0 +1,46 @@
+# Line and Scatter Plot (Line Charts)
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Same modes as the Line and Scatter section: explicitly set `mode` to control
+how data is rendered. This example is from the Line Charts documentation
+section, showing the modes side by side.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17],
+    mode: "markers",
+    name: "Scatter"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 3, 4, 5],
+    y: [16, 5, 11, 9],
+    mode: "lines",
+    name: "Lines"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: "lines+markers",
+    name: "Lines and Markers"
+  )
+)
+|> Figure.update_layout(title: "Line and Scatter Plot")
+|> Plotly.show()
+```

@@ -1,0 +1,34 @@
+# Line Polar Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scatterpolar.new(r:, theta:, mode: "lines")` draws a line on polar axes.
+`theta:` values are in degrees by default (0 = right, increases counter-clockwise).
+`thetaunit: "radians"` switches to radians. `r:` is the distance from the centre.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = Enum.map(0..360, fn d -> d end)
+r     = Enum.map(theta, fn d -> :math.cos(d * :math.pi() / 180 * 4) + 1.5 end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r,
+    theta: theta,
+    mode: "lines",
+    name: "Rose curve",
+    line: %{color: "steelblue"}
+  )
+)
+|> Figure.update_layout(title: "Line Polar Plot — Rose Curve")
+|> Plotly.show()
+```

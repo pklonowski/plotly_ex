@@ -1,0 +1,24 @@
+# Hot Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`"Hot"` runs from black through red and orange to yellow and white — mimicking
+a glowing surface. Well-suited for thermal or intensity data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Hot"))
+|> Figure.update_layout(title: "Hot Colorscale Heatmap")
+|> Plotly.show()
+```

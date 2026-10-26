@@ -1,0 +1,18 @@
+# Coupled Hover Events
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Coupled Hover Events
+
+> **N/A — JavaScript-only linked subplot hover**
+>
+> The JS example synchronises hover across subplots using `Plotly.Fx.hover` called
+> inside a `plotly_hover` callback — requires direct access to multiple graph divs.
+>
+> In Livebook, `layout.hovermode: "x unified"` achieves a similar visual effect
+> natively (all traces at the same x show in one tooltip) without custom JS.

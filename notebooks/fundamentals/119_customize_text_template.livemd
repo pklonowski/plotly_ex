@@ -1,0 +1,42 @@
+# Customize Text Template
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`texttemplate` works on ternary scatter plots too. Available tokens include
+`%{text}` (from the `text` property), `%{a}`, `%{b}`, `%{c}` (ternary
+coordinates). Use D3 format strings like `:.2f` for decimal precision.
+
+Per-point `textfont` styling can be applied by passing lists for `size` and
+`color`.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterternary.new(
+    a: [0.1, 0.2, 0.3, 0.4, 0.5],
+    b: [0.5, 0.4, 0.3, 0.2, 0.1],
+    c: [0.4, 0.4, 0.4, 0.4, 0.4],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    texttemplate: "%{text}<br>(%{a:.2f}, %{b:.2f}, %{c:.2f})",
+    textposition: "bottom center",
+    textfont: %{
+      family: "sans-serif",
+      size: [14, 13, 12, 11, 10],
+      color: ["red", "blue", "green", "orange", "purple"]
+    },
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(title: "Customized Text Template on Ternary Plot")
+|> Plotly.show()
+```

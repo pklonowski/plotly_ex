@@ -1,0 +1,42 @@
+# Colored and Styled Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.bargap` sets the gap between bar groups (0–1). `layout.bargroupgap`
+sets the gap between bars within a group (0–1). Use these to control
+whitespace around bars.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    y: [28, 26, 30, 25, 22, 20, 17, 13, 10, 8],
+    name: "Primary",
+    marker: %{color: "rgba(255, 102, 0, 0.7)", line: %{color: "rgba(255, 102, 0, 1.0)", width: 1}}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    y: [50, 45, 55, 42, 36, 28, 20, 12, 8, 4],
+    name: "Comparison",
+    marker: %{color: "rgba(58, 71, 80, 0.7)", line: %{color: "rgba(58, 71, 80, 1.0)", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "Colored and Styled Bar Chart",
+  bargap: 0.15,
+  bargroupgap: 0.1
+)
+|> Plotly.show()
+```

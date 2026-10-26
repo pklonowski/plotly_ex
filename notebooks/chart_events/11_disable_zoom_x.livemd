@@ -1,0 +1,30 @@
+# Disabling Zoom Events for X Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`xaxis.fixedrange: true` prevents zooming/panning on the X axis.
+The Y axis remains zoomable. No event subscription needed — this is a layout config.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: Enum.to_list(1..20),
+  y: Enum.map(1..20, fn i -> :math.sin(i / 3.0) end),
+  mode: "lines+markers"
+))
+|> Figure.update_layout(
+  title: "X zoom disabled — try to zoom on each axis",
+  xaxis: %{fixedrange: true, title: "X — fixed range"},
+  yaxis: %{title: "Y — zoomable"}
+)
+|> Plotly.show()
+```

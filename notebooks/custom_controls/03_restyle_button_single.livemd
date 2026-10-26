@@ -1,0 +1,46 @@
+# Restyle Button — Single Attribute
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`method: "restyle"` updates one or more trace properties without replotting.
+The `args` list is `[update_map]` or `[update_map, trace_indices]`.
+
+Changing a single attribute — e.g. `mode`, `marker.color`, `line.dash` — is the simplest case.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..15)
+ys = Enum.map(xs, fn x -> :math.sin(x / 2.5) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys, mode: "lines+markers", name: "data",
+    line: %{color: "steelblue", width: 2},
+    marker: %{size: 8}))
+|> Figure.update_layout(
+  title: "Restyle — Single Attribute",
+  updatemenus: [%{
+    type: "buttons",
+    direction: "right",
+    x: 0.5,
+    xanchor: "center",
+    y: 1.1,
+    showactive: true,
+    buttons: [
+      %{label: "Lines",    method: "restyle", args: [%{mode: "lines"}]},
+      %{label: "Markers",  method: "restyle", args: [%{mode: "markers"}]},
+      %{label: "Both",     method: "restyle", args: [%{mode: "lines+markers"}]},
+      %{label: "Text",     method: "restyle",
+        args: [%{mode: "text", text: Enum.map(xs, &to_string/1)}]}
+    ]
+  }]
+)
+|> Plotly.show()
+```

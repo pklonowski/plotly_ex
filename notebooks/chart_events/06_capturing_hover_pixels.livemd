@@ -1,0 +1,53 @@
+# Capturing Hover Events: Cursor and Point Pixels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Position a custom tooltip
+
+Top-level `data["xPixel"]` and `data["yPixel"]` describe the cursor relative to
+the plot. Each point's `xPixel` and `yPixel` describe its centre. The two may
+differ because hover can select a nearby point. `bbox` contains the point's
+bounding box when provided upstream. Missing values are `nil`.
+
+Hover over or near a marker to compare all three measurements below.
+
+````elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5], y: [4, 2, 6, 1, 5],
+    mode: "markers", marker: %{size: 20, color: "steelblue"}
+  ))
+  |> Figure.update_layout(title: "Hover near a marker to compare pixels")
+  |> PlotlyLive.new()
+
+listener = spawn(fn ->
+  for _ <- 1..1000 do
+    receive do
+      {:hover_px, %{"data" => data}} ->
+        point = List.first(data["points"] || []) || %{}
+        details = %{
+          cursor_pixels: {data["xPixel"], data["yPixel"]},
+          point_pixels: {point["xPixel"], point["yPixel"]},
+          bbox: point["bbox"]
+        }
+        Kino.Frame.render(output, Kino.Markdown.new("```elixir\n#{inspect(details, pretty: true)}\n```"))
+    after
+      60_000 -> :timeout
+    end
+  end
+end)
+
+PlotlyLive.subscribe(chart, listener, :hover_px, :hover)
+Kino.Layout.grid([chart, output])
+````

@@ -1,0 +1,90 @@
+# Add a Play Button to Control a Slider
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A Play button (`method: "animate"`) combined with `layout.sliders` gives users both
+manual scrubbing (drag the slider) and automatic playback (click Play). This is the
+same pattern as `notebooks/animations/08_animating_with_slider.livemd` — see that
+notebook for the full slider animation reference.
+
+Here we show the minimal pattern: Play/Pause buttons + a year slider.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+years = 2010..2023
+n = Enum.count(years)
+
+:rand.seed(:exsplus, {7, 8, 9})
+# Simulated annual temperature anomaly
+base_anomaly = 0.5
+temps = Enum.map(years, fn y -> base_anomaly + (y - 2010) * 0.025 + (:rand.normal() * 0.15) end)
+
+frames =
+  Enum.with_index(years, fn year, i ->
+    %{
+      name: "#{year}",
+      data: [%{
+        x: Enum.slice(Enum.to_list(years), 0, i + 1),
+        y: Enum.slice(temps, 0, i + 1)
+      }],
+      layout: %{title: %{text: "Temperature Anomaly through #{year}"}}
+    }
+  end)
+
+slider_steps =
+  Enum.map(years, fn year ->
+    %{
+      label: "#{year}",
+      method: "animate",
+      args: [["#{year}"], %{mode: "immediate", frame: %{duration: 400}, transition: %{duration: 200}}]
+    }
+  end)
+
+Figure.new(
+  data: [Scatter.new(
+    x: [Enum.at(Enum.to_list(years), 0)],
+    y: [Enum.at(temps, 0)],
+    mode: "lines+markers",
+    line: %{color: "tomato", width: 2},
+    marker: %{size: 8}
+  )],
+  layout: %{
+    title: "Temperature Anomaly through 2010",
+    xaxis: %{range: [2009, 2024], autorange: false, title: "Year"},
+    yaxis: %{range: [0.2, 1.2], autorange: false, title: "°C anomaly"},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      yanchor: "top",
+      pad: %{t: 60},
+      buttons: [
+        %{label: "▶ Play", method: "animate",
+          args: [nil, %{frame: %{duration: 500}, transition: %{duration: 200}, fromcurrent: true}]},
+        %{label: "⏸ Pause", method: "animate",
+          args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]}
+      ]
+    }],
+    sliders: [%{
+      steps: slider_steps,
+      active: 0,
+      currentvalue: %{prefix: "Year: ", visible: true, xanchor: "center"},
+      pad: %{t: 50},
+      x: 0.05,
+      len: 0.9
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

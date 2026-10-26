@@ -1,0 +1,64 @@
+# Basic Streamtube Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Streamtube.new(x:, y:, z:, u:, v:, w:)` traces flow lines through a 3D vector field.
+The x/y/z arrays define a regular grid; u/v/w are the corresponding vector components.
+Plotly automatically seeds tube starting positions. `sizeref:` scales tube radius;
+`colorscale:` encodes flow magnitude (speed).
+
+```elixir
+alias Plotly.{Figure, Streamtube}
+
+# Regular grid: x,y each [-4..4 step 1], z [0..3 step 1]
+xs_vals = Enum.to_list(-4..4)
+ys_vals = Enum.to_list(-4..4)
+zs_vals = Enum.to_list(0..3)
+
+grid = for x <- xs_vals, y <- ys_vals, z <- zs_vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+# Vortex field with upward drift: u = -y/(r²), v = x/(r²), w = 0.3
+us = Enum.map(grid, fn {x, y, _z} ->
+  r2 = x * x + y * y
+  if r2 < 0.01, do: 0.0, else: -y / r2
+end)
+
+vs = Enum.map(grid, fn {x, y, _z} ->
+  r2 = x * x + y * y
+  if r2 < 0.01, do: 0.0, else: x / r2
+end)
+
+ws = List.duplicate(0.3, length(grid))
+
+Figure.new()
+|> Figure.add_trace(
+  Streamtube.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    colorscale: "Portland",
+    sizeref: 0.5,
+    showscale: true
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Streamtube — Rotational Field",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"},
+    camera: %{eye: %{x: 1.5, y: 1.5, z: 0.5}}
+  }
+)
+|> Plotly.show()
+```

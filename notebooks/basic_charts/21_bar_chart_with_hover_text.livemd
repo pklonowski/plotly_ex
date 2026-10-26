@@ -1,0 +1,33 @@
+# Bar Chart with Hover Text
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass a `text` list to a Bar trace to supply custom hover text per bar.
+Use `xaxis.tickangle` to rotate x-axis tick labels (negative = clockwise).
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Product A", "Product B", "Product C", "Product D"],
+    y: [20, 14, 23, 18],
+    text: ["20 units", "14 units", "23 units", "18 units"],
+    marker: %{color: "rgb(158, 202, 225)", opacity: 0.6,
+              line: %{color: "rgb(8, 48, 107)", width: 1.5}}
+  )
+)
+|> Figure.update_layout(
+  title: "Bar Chart with Custom Hover Text",
+  xaxis: %{tickangle: -45}
+)
+|> Plotly.show()
+```

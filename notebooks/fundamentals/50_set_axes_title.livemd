@@ -1,0 +1,35 @@
+# Set Axes Title
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set the label for each 3D axis via `layout.scene.xaxis.title`,
+`layout.scene.yaxis.title`, and `layout.scene.zaxis.title`. Accepts a string
+or a map with `text` and `font` keys.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "3D Axes Titles",
+  scene: %{
+    xaxis: %{title: "cos(t)"},
+    yaxis: %{title: "sin(t)"},
+    zaxis: %{title: "t (time)"}
+  }
+)
+|> Plotly.show()
+```

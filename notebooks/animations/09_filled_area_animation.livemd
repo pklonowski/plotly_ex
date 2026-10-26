@@ -1,0 +1,56 @@
+# Filled-Area Animation
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Animate a filled area chart by updating the trace data per frame.
+`fill: "tozeroy"` fills down to y=0.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..50)
+n_frames = 40
+
+frames =
+  for i <- 1..n_frames do
+    phase = i * 0.3
+    y = Enum.map(x, fn xi -> max(0, :math.sin(xi * 0.3 + phase) * 5 + 5) end)
+    %{name: "f#{i}", data: [%{x: x, y: y}]}
+  end
+
+init_y = Enum.map(x, fn xi -> max(0, :math.sin(xi * 0.3) * 5 + 5) end)
+
+Figure.new(
+  data: [Scatter.new(
+    x: x,
+    y: init_y,
+    mode: "lines",
+    fill: "tozeroy",
+    fillcolor: "rgba(100, 149, 237, 0.4)",
+    line: %{color: "steelblue"}
+  )],
+  layout: %{
+    title: "Filled-Area Animation",
+    xaxis: %{range: [0, 50], autorange: false},
+    yaxis: %{range: [0, 12], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 60, redraw: false}, transition: %{duration: 30}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

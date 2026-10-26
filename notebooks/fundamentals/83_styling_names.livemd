@@ -1,0 +1,31 @@
+# Styling Names
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `name:` on each trace to control what appears in the legend and hover.
+Style the plot title and axis titles by passing a map with `text:` and `font:`
+instead of a plain string.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "Experiment A", mode: "lines+markers"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "Experiment B", mode: "lines+markers"))
+|> Figure.update_layout(
+  title: %{
+    text: "Custom Styled Title",
+    font: %{family: "Arial", size: 24, color: "darkblue"}
+  },
+  xaxis: %{title: %{text: "Time (s)", font: %{size: 16, color: "gray"}}},
+  yaxis: %{title: %{text: "Value", font: %{size: 16, color: "gray"}}}
+)
+|> Plotly.show()
+```

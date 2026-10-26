@@ -1,0 +1,54 @@
+# Creating Tangent Lines with Shapes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Compute tangent lines analytically and draw them as `type: "line"` shapes.
+This example uses sin(x) and its derivative cos(x) to place tangent lines at
+specific points.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x_curve = for i <- 0..100, do: i * :math.pi() / 50
+y_curve = Enum.map(x_curve, &:math.sin/1)
+
+# Tangent at x0: y = sin(x0) + cos(x0) * (x - x0)
+tangent_at = fn x0 ->
+  y0 = :math.sin(x0)
+  slope = :math.cos(x0)
+  x1 = x0 - 0.6
+  x2 = x0 + 0.6
+  {x1, y0 + slope * (x1 - x0), x2, y0 + slope * (x2 - x0)}
+end
+
+{tx1_a, ty1_a, tx2_a, ty2_a} = tangent_at.(:math.pi() / 4)
+{tx1_b, ty1_b, tx2_b, ty2_b} = tangent_at.(:math.pi())
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x_curve, y: y_curve, mode: "lines", name: "sin(x)"))
+|> Figure.update_layout(
+  title: "Tangent Lines on sin(x)",
+  shapes: [
+    %{
+      type: "line",
+      xref: "x", yref: "y",
+      x0: tx1_a, y0: ty1_a, x1: tx2_a, y1: ty2_a,
+      line: %{color: "red", width: 2}
+    },
+    %{
+      type: "line",
+      xref: "x", yref: "y",
+      x0: tx1_b, y0: ty1_b, x1: tx2_b, y1: ty2_b,
+      line: %{color: "green", width: 2}
+    }
+  ]
+)
+|> Plotly.show()
+```

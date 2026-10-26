@@ -1,0 +1,56 @@
+# Add Contours
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Contourcarpet` draws contour lines mapped to the carpet coordinate system. The `Contourcarpet`
+trace must come before the `Carpet` trace so it renders beneath the carpet grid lines.
+`autocontour: false` with `contours: %{start:, end:, size:}` sets manual contour levels.
+
+```elixir
+alias Plotly.{Figure, Carpet, Contourcarpet}
+
+a = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3]
+b = [4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6]
+x = [2, 3, 4, 5, 2.2, 3.1, 4.1, 5.1, 1.5, 2.5, 3.5, 4.5]
+y = [1, 1.4, 1.6, 1.75, 2, 2.5, 2.7, 2.75, 3, 3.5, 3.7, 3.75]
+z = [1, 1.96, 2.56, 3.0625, 4, 5.0625, 1, 7.5625, 9, 12.25, 15.21, 14.0625]
+
+Figure.new()
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    z: z,
+    autocontour: false,
+    contours: %{start: 1, end: 14, size: 1},
+    line: %{width: 2, smoothing: 0},
+    colorbar: %{len: 0.4, y: 0.25}
+  )
+)
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    x: x,
+    y: y,
+    aaxis: %{tickprefix: "a = ", smoothing: 0, minorgridcount: 9, type: "linear"},
+    baxis: %{tickprefix: "b = ", smoothing: 0, minorgridcount: 9, type: "linear"}
+  )
+)
+|> Figure.update_layout(
+  title: "Cheater Plot with Contours",
+  margin: %{t: 40, r: 30, b: 30, l: 30},
+  yaxis: %{range: [0.388, 4.361]},
+  xaxis: %{range: [0.667, 5.932]}
+)
+|> Plotly.show()
+```

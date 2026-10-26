@@ -1,0 +1,31 @@
+# Multiple WebGL Contexts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple Livebook cells can each render a separate WebGL figure.
+Browsers limit the number of simultaneous WebGL contexts (typically 8–16),
+so don't create hundreds of `Scattergl` figures on the same page.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n = 50_000
+
+for label <- ["Dataset A", "Dataset B"] do
+  x = for _ <- 1..n, do: :rand.uniform()
+  y = for _ <- 1..n, do: :rand.uniform()
+
+  Figure.new()
+  |> Figure.add_trace(Scattergl.new(x: x, y: y, mode: "markers", marker: %{size: 2}))
+  |> Figure.update_layout(title: label)
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

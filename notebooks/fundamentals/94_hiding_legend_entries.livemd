@@ -1,0 +1,31 @@
+# Hiding Legend Entries
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `showlegend: false` on a specific trace to hide its entry from the legend
+while keeping the trace visible in the chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], name: "Visible", mode: "lines"))
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3],
+    y: [1, 2, 1],
+    name: "Hidden from Legend",
+    mode: "lines",
+    showlegend: false
+  )
+)
+|> Figure.update_layout(title: "Hiding a Specific Legend Entry")
+|> Plotly.show()
+```

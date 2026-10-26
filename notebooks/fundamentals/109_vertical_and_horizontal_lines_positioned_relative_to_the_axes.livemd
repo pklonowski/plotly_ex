@@ -1,0 +1,49 @@
+# Vertical and Horizontal Lines Positioned Relative to the Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `type: "line"` to draw straight lines. Set `x0 == x1` for vertical
+lines or `y0 == y1` for horizontal lines. `xref: "x"` / `yref: "y"` anchors
+to data coordinates. Use `line.dash` for dashed/dotted styles.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [2, 4, 6], y: [4, 2, 5], mode: "markers"))
+|> Figure.update_layout(
+  title: "Vertical and Horizontal Lines",
+  shapes: [
+    # Vertical line at x=2
+    %{
+      type: "line",
+      xref: "x",
+      yref: "paper",
+      x0: 2,
+      y0: 0,
+      x1: 2,
+      y1: 1,
+      line: %{color: "royalblue", width: 2, dash: "dot"}
+    },
+    # Horizontal line at y=3
+    %{
+      type: "line",
+      xref: "paper",
+      yref: "y",
+      x0: 0,
+      y0: 3,
+      x1: 1,
+      y1: 3,
+      line: %{color: "firebrick", width: 2, dash: "dashdot"}
+    }
+  ]
+)
+|> Plotly.show()
+```

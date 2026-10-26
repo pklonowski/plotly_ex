@@ -1,0 +1,47 @@
+# Lines Positioned Relative to the Plot and to the Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Mix `xref: "paper"` (plot-relative, 0–1) with `yref: "y"` (data-relative)
+to draw a line that always spans the full width at a fixed data y-value.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [0, 1, 2, 3, 4, 5], y: [1.5, 2, 3, 2.5, 4, 3], mode: "lines"))
+|> Figure.update_layout(
+  title: "Lines: Mixed Paper/Axis Reference",
+  shapes: [
+    %{
+      type: "line",
+      xref: "paper",
+      yref: "y",
+      x0: 0,
+      y0: 2.5,
+      x1: 1,
+      y1: 2.5,
+      line: %{color: "Crimson", width: 2, dash: "dot"}
+    }
+  ],
+  annotations: [
+    %{
+      text: "Threshold",
+      xref: "paper",
+      yref: "y",
+      x: 0.05,
+      y: 2.6,
+      showarrow: false,
+      font: %{color: "Crimson"}
+    }
+  ]
+)
+|> Plotly.show()
+```

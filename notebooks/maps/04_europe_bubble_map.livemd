@@ -1,0 +1,56 @@
+# Europe Bubble Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Bubble maps use `Scattergeo` with `marker.size:` as a list — each value scales
+the corresponding point's circle. `geo.scope: "europe"` zooms to Europe.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+cities = ["London", "Paris", "Berlin", "Madrid", "Rome", "Amsterdam", "Vienna", "Warsaw"]
+lat = [51.5074, 48.8566, 52.5200, 40.4168, 41.9028, 52.3676, 48.2082, 52.2297]
+lon = [-0.1278, 2.3522, 13.4050, -3.7038, 12.4964, 4.9041, 16.3738, 21.0122]
+population = [9_648_110, 2_148_271, 3_669_491, 3_305_408, 2_872_800, 921_402, 1_930_527, 1_790_658]
+
+# Scale population to reasonable bubble sizes
+max_pop = Enum.max(population)
+sizes = Enum.map(population, &(round(&1 / max_pop * 50) + 5))
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: Enum.map(Enum.zip(cities, population), fn {c, p} -> "#{c}: #{p}" end),
+    marker: %{
+      size: sizes,
+      color: sizes,
+      colorscale: "Viridis",
+      showscale: true,
+      colorbar: %{title: %{text: "Relative Size"}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Europe Bubble Map — City Populations",
+  geo: %{
+    scope: "europe",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    countrycolor: "#d1d1d1"
+  }
+)
+|> Plotly.show()
+```

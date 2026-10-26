@@ -1,0 +1,72 @@
+# LaTeX Typesetting
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The full plotly.js CDN bundle includes MathJax support. Any text field — chart
+title, axis titles, legend names, annotation text, trace `text` — accepts
+LaTeX enclosed in `$...$` (inline) or `$$...$$` (block).
+
+> **Note:** In Elixir strings, backslash must be escaped as `\\`. So the LaTeX
+> `\sin(x)` becomes `"\\sin(x)"` in Elixir source.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.map(0..100, fn i -> i / 20 end)
+ys = Enum.map(xs, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: ys,
+  mode: "lines",
+  name: "$y = \\sin(x)$"
+))
+|> Figure.update_layout(
+  title: "$\\text{Euler's formula: } e^{i\\theta} = \\cos\\theta + i\\sin\\theta$",
+  xaxis: %{title: "$x \\; \\text{(radians)}$"},
+  yaxis: %{title: "$\\sin(x)$"},
+  annotations: [%{
+    x: :math.pi(),
+    y: 0,
+    text: "$x = \\pi$",
+    showarrow: true,
+    arrowhead: 2,
+    ax: 40,
+    ay: -40
+  }]
+)
+|> Plotly.show()
+```
+
+Multiple equations:
+
+```elixir
+xs2 = Enum.map(0..100, fn i -> i / 20 end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs2,
+  y: Enum.map(xs2, &:math.sin/1),
+  mode: "lines", name: "$\\sin(x)$"
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs2,
+  y: Enum.map(xs2, &:math.cos/1),
+  mode: "lines", name: "$\\cos(x)$"
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs2,
+  y: Enum.map(xs2, fn x -> :math.sin(x) * :math.cos(x) end),
+  mode: "lines", name: "$\\sin(x)\\cos(x) = \\frac{1}{2}\\sin(2x)$"
+))
+|> Figure.update_layout(title: "$\\text{Trigonometric Identities}$")
+|> Plotly.show()
+```

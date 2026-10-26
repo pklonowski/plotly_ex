@@ -1,0 +1,52 @@
+# Canadian Cities Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattergeo` with `mode: "markers+text"` shows both dots and city name labels.
+`textposition:` controls where the label appears relative to the marker.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+cities = ["Toronto", "Montreal", "Vancouver", "Calgary", "Edmonton",
+          "Ottawa", "Winnipeg", "Quebec City", "Hamilton", "Halifax"]
+lat = [43.6532, 45.5017, 49.2827, 51.0447, 53.5461,
+       45.4215, 49.8951, 46.8139, 43.2557, 44.6488]
+lon = [-79.3832, -73.5673, -123.1207, -114.0719, -113.4938,
+       -75.6972, -97.1384, -71.2080, -79.8711, -63.5752]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers+text",
+    text: cities,
+    textposition: "top right",
+    marker: %{size: 8, color: "red", symbol: "circle"}
+  )
+)
+|> Figure.update_layout(
+  title: "Canadian Cities Map",
+  geo: %{
+    scope: "north america",
+    resolution: 50,
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    countrycolor: "#d1d1d1",
+    lataxis: %{range: [41, 65]},
+    lonaxis: %{range: [-140, -55]}
+  }
+)
+|> Plotly.show()
+```

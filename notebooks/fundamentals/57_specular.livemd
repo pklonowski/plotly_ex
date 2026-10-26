@@ -1,0 +1,37 @@
+# Specular
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`lighting.specular` controls the intensity of the specular highlight —
+the bright spot where the light source directly reflects toward the camera.
+Range is `0.0` (no highlight) to `2.0` (very strong). Default is `0.05`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Earth", lighting: %{specular: 0.05}))
+|> Figure.update_layout(title: "Specular: 0.05 (default, subtle)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Earth", lighting: %{specular: 2.0}))
+|> Figure.update_layout(title: "Specular: 2.0 (very shiny)")
+|> Plotly.show()
+```

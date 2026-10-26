@@ -1,0 +1,68 @@
+# Restyle Button — Multiple Attributes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A single `restyle` call can update multiple trace properties at once by including
+all keys in the update map. This is more efficient than chaining multiple calls.
+
+With multiple traces, pass a list of values — one per trace — or a scalar to apply to all.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..20)
+ys_a = Enum.map(xs, fn x -> :math.sin(x / 3.0) end)
+ys_b = Enum.map(xs, fn x -> :math.cos(x / 3.0) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_a, name: "Trace A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_b, name: "Trace B", mode: "lines"))
+|> Figure.update_layout(
+  title: "Restyle — Multiple Attributes",
+  updatemenus: [%{
+    type: "buttons",
+    direction: "down",
+    x: 1.1,
+    y: 1.0,
+    showactive: true,
+    buttons: [
+      %{
+        label: "Default",
+        method: "restyle",
+        args: [%{
+          mode: "lines",
+          line: [%{color: "steelblue", width: 2}, %{color: "coral", width: 2}],
+          opacity: 1.0
+        }]
+      },
+      %{
+        label: "Thick Dashed",
+        method: "restyle",
+        args: [%{
+          mode: "lines",
+          line: [%{color: "purple", width: 4, dash: "dash"}, %{color: "green", width: 4, dash: "dash"}],
+          opacity: 0.9
+        }]
+      },
+      %{
+        label: "Markers Only",
+        method: "restyle",
+        args: [%{
+          mode: "markers",
+          marker: [%{size: 10, color: "steelblue", symbol: "circle"},
+                   %{size: 10, color: "coral",     symbol: "diamond"}],
+          opacity: 0.8
+        }]
+      }
+    ]
+  }]
+)
+|> Plotly.show()
+```

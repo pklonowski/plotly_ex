@@ -1,0 +1,54 @@
+# Basic Isosurface Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Isosurface.new(x:, y:, z:, value:, isomin:, isomax:)` renders surfaces of constant scalar
+value through a 3D volume. The x/y/z arrays define a regular grid; `value` is the scalar at
+each grid point. `isomin`/`isomax` controls which isosurface level(s) are shown. Here the
+scalar field is `f(x,y,z) = x² + y² + z²` — the isosurfaces are concentric spherical shells.
+
+```elixir
+alias Plotly.{Figure, Isosurface}
+
+# 20×20×20 grid from -2 to 2
+n = 20
+vals = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))  # -2..2
+
+grid = for x <- vals, y <- vals, z <- vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+# Scalar field: distance squared from origin
+values = Enum.map(grid, fn {x, y, z} -> x * x + y * y + z * z end)
+
+Figure.new()
+|> Figure.add_trace(
+  Isosurface.new(
+    x: xs, y: ys, z: zs,
+    value: values,
+    isomin: 1,
+    isomax: 4,
+    colorscale: "RdBu",
+    showscale: true,
+    opacity: 0.6
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Isosurface — Spherical Shells (x²+y²+z²)",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

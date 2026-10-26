@@ -1,0 +1,46 @@
+# Select Hover Points
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`hoveron: "points+fills"` makes both the marker points and the filled region trigger hover.
+Without `"fills"`, only the exact marker points trigger hover.
+`hoverinfo: "x+y"` controls what data is shown in the tooltip.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    mode: "lines",
+    fill: "tozeroy",
+    hoveron: "points+fills",
+    hoverinfo: "x+y",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    mode: "lines",
+    fill: "tonexty",
+    hoveron: "points+fills",
+    hoverinfo: "x+y",
+    name: "Trace 2"
+  )
+)
+|> Figure.update_layout(title: "Select Hover Points on Filled Area")
+|> Plotly.show()
+```

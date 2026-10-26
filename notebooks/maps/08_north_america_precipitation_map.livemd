@@ -1,0 +1,74 @@
+# North America Precipitation Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`marker.color:` as a numeric list combined with `colorscale:` maps the precipitation
+value to a color. `showscale: true` adds a color bar legend.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2015_06_30_precipitation.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r ->
+    match?({_, _}, Float.parse(r["Lat"] || "")) and
+    match?({_, _}, Float.parse(r["Lon"] || "")) and
+    match?({_, _}, Float.parse(r["Globvalue"] || ""))
+  end)
+
+lat = Enum.map(data, &(elem(Float.parse(&1["Lat"]), 0)))
+lon = Enum.map(data, &(elem(Float.parse(&1["Lon"]), 0)))
+precip = Enum.map(data, &(elem(Float.parse(&1["Globvalue"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    marker: %{
+      size: 5,
+      color: precip,
+      colorscale: "Portland",
+      reversescale: false,
+      cmin: 0,
+      cmax: Enum.max(precip),
+      showscale: true,
+      colorbar: %{title: %{text: "Precipitation (in)"}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "North America Precipitation — June 30, 2015",
+  geo: %{
+    scope: "north america",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showlakes: true,
+    lakecolor: "#BDDDE4",
+    lataxis: %{range: [15, 75]},
+    lonaxis: %{range: [-180, -50]}
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,67 @@
+# Indicators Overview
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Indicator` traces display key metrics as numbers, deltas, or gauges. `mode:` is a `"+"` joined
+string combining `"number"`, `"delta"`, and/or `"gauge"`. Multiple indicators share a grid via
+`layout.grid` with `domain: %{row:, column:}` per trace.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta+gauge",
+    value: 200,
+    delta: %{reference: 160},
+    gauge: %{axis: %{visible: false, range: [0, 250]}},
+    domain: %{row: 0, column: 0}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 120,
+    gauge: %{shape: "bullet", axis: %{visible: false, range: [-200, 200]}},
+    domain: %{x: [0.1, 0.5], y: [0.15, 0.35]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 300,
+    domain: %{row: 0, column: 1}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "delta",
+    value: 40,
+    domain: %{row: 1, column: 1}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 400,
+  margin: %{t: 25, b: 25, l: 25, r: 25},
+  grid: %{rows: 2, columns: 2, pattern: "independent"},
+  template: %{
+    data: %{
+      indicator: [%{
+        title: %{text: "Speed"},
+        mode: "number+delta+gauge",
+        delta: %{reference: 90}
+      }]
+    }
+  }
+)
+|> Plotly.show()
+```

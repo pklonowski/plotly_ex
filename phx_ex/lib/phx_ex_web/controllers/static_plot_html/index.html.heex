@@ -1,0 +1,36 @@
+<div class="flex h-screen overflow-hidden">
+  <%!-- Sidebar nav --%>
+  <nav class="w-56 flex-shrink-0 border-r bg-gray-50 overflow-y-auto p-4">
+    <h1 class="text-base font-bold mb-4 text-gray-800">Plotly.ex Demo</h1>
+    <ul class="space-y-1">
+      <li>
+        <a
+          href="/"
+          class="block w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          ← LiveView Demo
+        </a>
+      </li>
+      <li>
+        <span class="block w-full px-3 py-2 rounded text-sm bg-blue-100 text-blue-800 font-medium">
+          Static Plot Example
+        </span>
+      </li>
+    </ul>
+  </nav>
+
+  <%!-- Main pane --%>
+  <main class="flex-1 overflow-y-auto p-6">
+    <h2 class="text-xl font-semibold mb-4 text-base-content">Static Plot Example</h2>
+
+    <%!-- Chart rendered via static_plot/2 — no LiveView hook --%>
+    <div class="mb-4 border rounded h-96 overflow-hidden">
+      <%= Plotly.Phoenix.Component.static_plot(@figure, id: "static-chart") %>
+    </div>
+
+    <%!-- Syntax-highlighted code --%>
+    <div class="rounded border overflow-auto text-sm">
+      {Phoenix.HTML.raw(MDEx.to_html!("```elixir\n#{@code}\n```"))}
+    </div>
+  </main>
+</div>

@@ -1,0 +1,37 @@
+# Setting Title Automargin
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Long titles can overlap with the plot area. Set `title.automargin: true` to
+have Plotly automatically expand the top margin to accommodate the title.
+Set `title.yref: "paper"` to position the title relative to the paper (0–1),
+which prevents it from overlapping tick labels.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [2, 4, 3, 5, 4, 6, 5, 7, 6, 8],
+    mode: "lines"
+  )
+)
+|> Figure.update_layout(
+  title: %{
+    text: "This Is a Very Long Title That Might Overlap the Plot Without Automargin",
+    automargin: true,
+    yref: "paper",
+    y: 1.0
+  }
+)
+|> Plotly.show()
+```

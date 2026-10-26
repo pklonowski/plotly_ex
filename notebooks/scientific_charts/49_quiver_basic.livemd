@@ -1,0 +1,36 @@
+# Quiver — A Two-Dimensional Vector Field
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Positions and vector components
+
+Quiver arrows start at `(x, y)` and carry horizontal/vertical components `(u, v)`.
+Here the field rotates around the origin. `lengthmode: "raw"` keeps vector
+lengths in data units; `lengthfactor` scales them for readability. Equal axis
+scales preserve the apparent direction. The title also demonstrates MathJax 4.
+
+```elixir
+alias Plotly.{Figure, Quiver}
+
+positions = for x <- -2..2, y <- -2..2, do: {x, y}
+
+Figure.new()
+|> Figure.add_trace(Quiver.new(
+  x: Enum.map(positions, &elem(&1, 0)),
+  y: Enum.map(positions, &elem(&1, 1)),
+  u: Enum.map(positions, fn {_x, y} -> -y end),
+  v: Enum.map(positions, fn {x, _y} -> x end),
+  lengthmode: "raw", lengthfactor: 0.3, anchor: "tail",
+  marker: %{color: "steelblue"}
+))
+|> Figure.update_layout(
+  title: %{text: "$\\vec{F}(x,y)=(-y,x)$"},
+  xaxis: %{range: [-3, 3]}, yaxis: %{range: [-3, 3], scaleanchor: "x"}
+)
+|> Plotly.show()
+```

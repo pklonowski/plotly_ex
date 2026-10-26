@@ -1,0 +1,38 @@
+# Logarithmic Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `type: "log"` on an axis to use a logarithmic scale. Plotly
+automatically formats the tick labels as powers of ten.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y = Enum.map(x, fn i -> :math.pow(10, i - 1) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "10^(x-1)"))
+|> Figure.update_layout(
+  title: "Logarithmic Y-Axis",
+  yaxis: %{type: "log", title: %{text: "log scale"}}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: y, y: x, mode: "lines+markers", name: "10^(x-1)"))
+|> Figure.update_layout(
+  title: "Logarithmic X-Axis",
+  xaxis: %{type: "log", title: %{text: "log scale"}}
+)
+|> Plotly.show()
+```

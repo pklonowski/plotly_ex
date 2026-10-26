@@ -1,0 +1,42 @@
+# Tick Placement, Color, and Style
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Control tick placement (`"outside"`, `"inside"`, `""`), colour, length, and
+width independently on each axis via `ticks`, `tickcolor`, `ticklen`, and
+`tickwidth`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..10)
+y = Enum.map(x, &(&1 * &1))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Tick Placement, Color, and Style",
+  xaxis: %{
+    ticks: "outside",
+    tickcolor: "crimson",
+    ticklen: 10,
+    tickwidth: 2,
+    showline: true
+  },
+  yaxis: %{
+    ticks: "inside",
+    tickcolor: "steelblue",
+    ticklen: 8,
+    tickwidth: 2,
+    showline: true
+  }
+)
+|> Plotly.show()
+```

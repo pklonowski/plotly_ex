@@ -1,0 +1,52 @@
+# Split Violin Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`side: "positive"` draws the KDE on the right side of the centre line only.
+`side: "negative"` draws only the left side.
+`violinmode: "overlay"` layers both traces on the same axis so the two halves
+form a single split violin for each category.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n, shift ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0 - shift)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(80, 0.0),
+    name: "Male",
+    side: "negative",
+    line: %{color: "blue"},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(80, 0.5),
+    name: "Female",
+    side: "positive",
+    line: %{color: "orchid"},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.update_layout(
+  title: "Split Violin Plot",
+  violinmode: "overlay"
+)
+|> Plotly.show()
+```

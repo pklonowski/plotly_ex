@@ -1,0 +1,35 @@
+# WebGL with 1 Million Points
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Generating 1 million points takes a few seconds in Elixir. WebGL renders them
+fluidly in the browser; SVG would freeze the page.
+
+Note: Sending 1M floats over the Kino wire takes a moment — this is expected.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n = 1_000_000
+x = for _ <- 1..n, do: :rand.uniform()
+y = for _ <- 1..n, do: :rand.uniform()
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergl.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{size: 1, color: "rgba(50, 100, 200, 0.3)"}
+  )
+)
+|> Figure.update_layout(title: "WebGL with 1 Million Points")
+|> Plotly.show()
+```

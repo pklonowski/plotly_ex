@@ -1,0 +1,51 @@
+# Large Number of Slices
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`maxdepth` limits how many levels are rendered at once. The full hierarchy is still navigable —
+clicking a node drills into it and displays its children up to `maxdepth` levels deep.
+Set `maxdepth: -1` to show all levels.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+labels = [
+  "Root",
+  "A", "B", "C",
+  "A1", "A2", "A3",
+  "B1", "B2",
+  "C1", "C2", "C3",
+  "A1a", "A1b", "A2a"
+]
+
+parents = [
+  "",
+  "Root", "Root", "Root",
+  "A", "A", "A",
+  "B", "B",
+  "C", "C", "C",
+  "A1", "A1", "A2"
+]
+
+values = [0, 0, 0, 0, 4, 3, 5, 6, 4, 2, 7, 3, 2, 2, 3]
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "remainder",
+    maxdepth: 2
+  )
+)
+|> Figure.update_layout(title: "Sunburst with maxdepth: 2 (click a node to drill down)")
+|> Plotly.show()
+```

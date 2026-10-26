@@ -1,0 +1,45 @@
+# Basic Carpet Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+This carpet uses scaled `a` and `b` values (scientific notation). `aaxis.tickprefix` and
+`ticksuffix` annotate the displayed tick labels. The `carpet: "c1"` ID will be referenced
+by subsequent scatter traces.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+a = Enum.map([4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6], &(&1 * 1.0e-6))
+b = Enum.map([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3], &(&1 * 1.0e6))
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{
+      tickprefix: "a = ",
+      ticksuffix: "m",
+      smoothing: 1,
+      minorgridcount: 9
+    },
+    baxis: %{
+      tickprefix: "b = ",
+      ticksuffix: "Pa",
+      smoothing: 1,
+      minorgridcount: 9
+    }
+  )
+)
+|> Figure.update_layout(title: "Basic Carpet Plot")
+|> Plotly.show()
+```

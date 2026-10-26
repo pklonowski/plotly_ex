@@ -1,0 +1,54 @@
+# 3D Mesh Cube
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A cube has 8 vertices and 6 faces. Each rectangular face is split into 2 triangles, giving
+12 triangular faces total. `facecolor:` accepts a list of 12 CSS color strings — one per
+triangle — for per-face coloring. This is the `Mesh3d` equivalent of painting each face
+of a cube a different color.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# 8 vertices of a unit cube
+x = [0, 0, 1, 1, 0, 0, 1, 1]
+y = [0, 1, 1, 0, 0, 1, 1, 0]
+z = [0, 0, 0, 0, 1, 1, 1, 1]
+
+# 12 triangular faces (each cube face = 2 triangles)
+# bottom: 0,1,2,3  top: 4,5,6,7  front: 0,3,7,4  back: 1,2,6,5  left: 0,1,5,4  right: 3,2,6,7
+i = [0, 0, 4, 4, 0, 0, 1, 1, 0, 0, 3, 3]
+j = [1, 2, 5, 6, 3, 7, 2, 6, 1, 5, 2, 6]
+k = [2, 3, 6, 7, 7, 4, 6, 5, 5, 4, 6, 7]
+
+# 2 triangles per face, 6 faces → pair up colors
+face_colors = List.flatten(List.duplicate(
+  ["red", "red", "blue", "blue", "green", "green",
+   "yellow", "yellow", "cyan", "cyan", "magenta", "magenta"], 1))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: x, y: y, z: z,
+    i: i, j: j, k: k,
+    facecolor: face_colors,
+    opacity: 0.8
+  )
+)
+|> Figure.update_layout(
+  title: "3D Mesh Cube — Per-Face Colors",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

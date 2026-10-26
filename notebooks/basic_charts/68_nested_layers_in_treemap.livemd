@@ -1,0 +1,49 @@
+# Nested Layers in Treemap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Deep hierarchies work the same way — just extend `labels`/`parents`/`values`.
+`branchvalues: "total"` means each non-leaf's `values` entry is the total including all descendants.
+`maxdepth` limits how many levels are shown at once (click to drill).
+`pathbar` shows a breadcrumb path bar above the chart.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+labels = [
+  "World",
+  "North America", "Europe", "Asia",
+  "USA", "Canada", "UK", "Germany", "China", "Japan",
+  "California", "Texas"
+]
+
+parents = [
+  "",
+  "World", "World", "World",
+  "North America", "North America", "Europe", "Europe", "Asia", "Asia",
+  "USA", "USA"
+]
+
+values = [0, 0, 0, 0, 0, 15, 12, 11, 60, 20, 40, 30]
+
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "remainder",
+    maxdepth: 3,
+    pathbar: %{visible: true}
+  )
+)
+|> Figure.update_layout(title: "Nested Layers in Treemap")
+|> Plotly.show()
+```

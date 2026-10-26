@@ -1,0 +1,38 @@
+# Basic Carpet Plot (Cheater)
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A cheater carpet provides both `x:` and `y:` to position the grid in data space. Here `a` and `b`
+index the rows and columns. The `aaxis`/`baxis` with `smoothing: 0` give sharp grid corners.
+This is the base for adding `Contourcarpet` traces in the next notebooks.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+    b: [4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+    x: [2, 3, 4, 5, 2.2, 3.1, 4.1, 5.1, 1.5, 2.5, 3.5, 4.5],
+    y: [1, 1.4, 1.6, 1.75, 2, 2.5, 2.7, 2.75, 3, 3.5, 3.7, 3.75],
+    aaxis: %{tickprefix: "a = ", smoothing: 0, minorgridcount: 9, type: "linear"},
+    baxis: %{tickprefix: "b = ", smoothing: 0, minorgridcount: 9, type: "linear"}
+  )
+)
+|> Figure.update_layout(
+  title: "Cheater Plot with 1D Input",
+  margin: %{t: 40, r: 30, b: 30, l: 30},
+  yaxis: %{range: [0.388, 4.361]},
+  xaxis: %{range: [0.667, 5.932]}
+)
+|> Plotly.show()
+```

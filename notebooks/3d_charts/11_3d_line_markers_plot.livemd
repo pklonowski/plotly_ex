@@ -1,0 +1,42 @@
+# 3D Line + Markers Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`mode: "lines+markers"` draws both the connecting line and a marker at each data point.
+`marker: %{symbol:, size:, color:}` and `line: %{color:, width:, dash:}` can be styled
+independently. `dash: "dot"` or `"dash"` makes the line dashed.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+n = 20
+t = Enum.map(0..(n - 1), &(&1 / (n - 1) * 2 * :math.pi()))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: Enum.map(t, &:math.cos/1),
+    y: Enum.map(t, &:math.sin/1),
+    z: Enum.map(0..(n - 1), &(&1 / n)),
+    mode: "lines+markers",
+    marker: %{symbol: "circle", size: 6, color: "red"},
+    line: %{color: "blue", width: 2, dash: "dot"}
+  )
+)
+|> Figure.update_layout(
+  title: "3D Line + Markers",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

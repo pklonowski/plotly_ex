@@ -1,0 +1,28 @@
+# Basic Treemap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Treemap.new/1` shares the same `labels`/`parents`/`values` API as Sunburst.
+The root node has `parents: [""]`. Area of each rectangle is proportional to `values`.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"],
+    parents: ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"],
+    values: [10, 14, 12, 10, 2, 6, 6, 4, 4]
+  )
+)
+|> Figure.update_layout(title: "Basic Treemap")
+|> Plotly.show()
+```

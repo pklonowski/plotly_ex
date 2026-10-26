@@ -1,0 +1,46 @@
+# Categorical Dot Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A categorical dot plot uses `Scatter` with categorical y-axis values.
+Each category appears as a row; multiple traces encode different groups with different colors.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+countries = ["Japan", "China", "Russia", "Brazil", "USA"]
+female = [19, 24, 30, 37, 46]
+male = [25, 28, 33, 39, 48]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: female,
+    y: countries,
+    mode: "markers",
+    name: "Female",
+    marker: %{color: "pink", size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: male,
+    y: countries,
+    mode: "markers",
+    name: "Male",
+    marker: %{color: "blue", size: 12}
+  )
+)
+|> Figure.update_layout(
+  title: "Categorical Dot Plot",
+  xaxis: %{title: "Life Expectancy at Birth (years)"}
+)
+|> Plotly.show()
+```

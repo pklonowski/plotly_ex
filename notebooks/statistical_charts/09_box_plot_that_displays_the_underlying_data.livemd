@@ -1,0 +1,31 @@
+# Box Plot That Displays the Underlying Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`boxpoints: "all"` overlays every raw data point on the box.
+`jitter` (0–1) adds horizontal scatter to the points so they don't overlap.
+`pointpos` shifts points relative to the box centre (negative = left).
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: [0, 1, 1, 2, 3, 5, 8, 13, 21],
+    name: "With Points",
+    boxpoints: "all",
+    jitter: 0.3,
+    pointpos: -1.8
+  )
+)
+|> Figure.update_layout(title: "Box Plot Displaying the Underlying Data")
+|> Plotly.show()
+```

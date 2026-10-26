@@ -1,0 +1,68 @@
+# Tile Density Heatmap — Stamen Terrain Tile
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`style: "open-street-map"` provides a freely available tile background.
+Density overlays on street tiles are useful for geographic/environmental data.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+# Earthquake data — natural fit for terrain background
+url = "https://raw.githubusercontent.com/plotly/datasets/master/earthquakes-23k.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+quakes =
+  rows
+  |> Enum.take(2000)
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn q ->
+    match?({_, _}, Float.parse(q["Latitude"] || "")) and
+    match?({_, _}, Float.parse(q["Longitude"] || ""))
+  end)
+
+lat = Enum.map(quakes, fn q -> elem(Float.parse(q["Latitude"]), 0) end)
+lon = Enum.map(quakes, fn q -> elem(Float.parse(q["Longitude"]), 0) end)
+mag = Enum.map(quakes, fn q ->
+  case Float.parse(q["Magnitude"]) do
+    {f, _} -> f
+    :error -> 1.0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Densitymap.new(
+    lat: lat,
+    lon: lon,
+    z: mag,
+    radius: 8,
+    colorscale: "Reds",
+    showscale: true,
+    colorbar: %{title: %{text: "Magnitude"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Earthquake Density — OpenStreetMap",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 0.0, lon: 0.0},
+    zoom: 1
+  }
+)
+|> Plotly.show()
+```

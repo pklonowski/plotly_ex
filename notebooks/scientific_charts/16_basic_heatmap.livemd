@@ -1,0 +1,29 @@
+# Basic Heatmap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Heatmap.new(z: [[...]])` renders a 2D matrix as a colour-encoded grid.
+Each inner list is a row. The default colour scale maps low values to blue
+and high values to red (`"RdBu"` reversed, or the default Plotly scale).
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = [
+  [1,  20, 30],
+  [20, 1,  60],
+  [30, 60, 1 ]
+]
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z))
+|> Figure.update_layout(title: "Basic Heatmap")
+|> Plotly.show()
+```

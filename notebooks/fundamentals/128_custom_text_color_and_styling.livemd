@@ -1,0 +1,37 @@
+# Custom Text Color and Styling
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `textfont` on a trace (when `mode` includes `"text"`) to control the
+font of data-point labels. Accepts `family`, `size` (scalar or list), and
+`color` (scalar or list for per-point styling).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 1, 4, 3, 5],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    textposition: "top center",
+    textfont: %{
+      family: "Courier New, monospace",
+      size: [16, 14, 18, 12, 20],
+      color: ["red", "blue", "green", "orange", "purple"]
+    },
+    marker: %{size: 10}
+  )
+)
+|> Figure.update_layout(title: "Custom Text Color and Styling")
+|> Plotly.show()
+```

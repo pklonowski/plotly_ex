@@ -1,0 +1,28 @@
+# Set X and Y Coordinates
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When `x` coordinate values are omitted a cheater plot will be created. A carpet with only
+`y:` has no `a`/`b` parameter values, so Plotly cannot lay out the grid: the chart below
+intentionally shows **empty axes**. Add `a:` and `b:` arrays (see the "Add Parameter
+Values" notebook) to draw it.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10]
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot — Y Coordinates Only")
+|> Plotly.show()
+```

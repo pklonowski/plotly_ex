@@ -1,0 +1,45 @@
+# locationmode: 'ISO-3'
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`locationmode: "ISO-3"` uses 3-letter ISO 3166-1 alpha-3 country codes.
+Plotly maps each code to its built-in country GeoJSON polygon.
+Provide `locations:` instead of `lat:`/`lon:` — no coordinate data needed.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# Sample G20 countries
+locations = ["ARG", "AUS", "BRA", "CAN", "CHN", "FRA", "DEU", "IND",
+             "IDN", "ITA", "JPN", "MEX", "RUS", "SAU", "ZAF",
+             "KOR", "TUR", "GBR", "USA", "EUN"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    locations: locations,
+    locationmode: "ISO-3",
+    mode: "markers",
+    text: locations,
+    marker: %{size: 8, color: "blue", symbol: "circle"}
+  )
+)
+|> Figure.update_layout(
+  title: "locationmode: 'ISO-3' — G20 Countries",
+  geo: %{
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```

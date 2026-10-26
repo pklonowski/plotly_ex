@@ -1,0 +1,32 @@
+# Basic Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Adding explicit `x:` and `y:` coordinate arrays maps the z matrix to real-world
+axis values. `x` must have the same length as the number of *columns* in z;
+`y` must have the same length as the number of *rows*.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+x = Enum.map(0..19, fn i -> -2.0 + i * 0.2 end)
+y = Enum.map(0..19, fn j -> -2.0 + j * 0.2 end)
+
+z = for yi <- y do
+  for xi <- x do
+    :math.exp(-((xi * xi) + (yi * yi)))
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Contour.new(x: x, y: y, z: z))
+|> Figure.update_layout(title: "Basic Contour Plot — Gaussian Surface")
+|> Plotly.show()
+```

@@ -1,0 +1,47 @@
+# Horizontal Violin Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`orientation: "h"` makes the violin horizontal. Pass data as `x:` instead of `y:`.
+Multiple horizontal violins stack vertically using categorical `y:` values.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    x: gen.(80),
+    y: List.duplicate("Group A", 80),
+    name: "Group A",
+    orientation: "h",
+    box: %{visible: true}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    x: gen.(80),
+    y: List.duplicate("Group B", 80),
+    name: "Group B",
+    orientation: "h",
+    box: %{visible: true}
+  )
+)
+|> Figure.update_layout(title: "Horizontal Violin Plot")
+|> Plotly.show()
+```

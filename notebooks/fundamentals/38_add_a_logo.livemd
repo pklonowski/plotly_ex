@@ -1,0 +1,50 @@
+# Add a Logo
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.images` accepts a list of image overlay maps. Each image needs a `source`
+URL and position/size specified in `"paper"` coordinates (0–1 relative to the
+plot area) or axis coordinates.
+
+Key fields:
+- `source` — publicly accessible image URL
+- `xref` / `yref` — `"paper"` for plot-relative, or `"x"` / `"y"` for axis coords
+- `x` / `y` — position of the anchor point
+- `sizex` / `sizey` — width and height in coordinate units
+- `xanchor` / `yanchor` — which corner of the image the x/y refers to
+- `layer` — `"above"` (default) or `"below"` traces
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [2, 4, 1, 5, 3],
+  mode: "lines+markers",
+  name: "Series A"
+))
+|> Figure.update_layout(
+  title: "Chart with Logo Overlay",
+  images: [%{
+    source: "https://placehold.co/120x40/4B9CD3/white?text=MyLogo",
+    xref: "paper",
+    yref: "paper",
+    x: 1.0,
+    y: 1.05,
+    sizex: 0.15,
+    sizey: 0.1,
+    xanchor: "right",
+    yanchor: "bottom",
+    layer: "above"
+  }]
+)
+|> Plotly.show()
+```

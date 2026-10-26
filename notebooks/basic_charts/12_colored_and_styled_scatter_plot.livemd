@@ -1,0 +1,54 @@
+# Colored and Styled Scatter Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Add a border to markers with `marker.line` (a nested map with `color` and
+`width`). Set axis titles with `xaxis.title` and `yaxis.title`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [52698, 43117],
+    y: [53, 31],
+    mode: "markers",
+    name: "North America",
+    text: ["United States", "Canada"],
+    marker: %{
+      color: "rgb(164, 194, 244)",
+      size: 12,
+      line: %{color: "black", width: 0.5}
+    }
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [39317, 37236, 35650, 30066, 29570, 27159, 23557, 21046, 18007],
+    y: [33, 20, 13, 19, 27, 19, 49, 44, 38],
+    mode: "markers",
+    name: "Europe",
+    text: ["Germany", "Britain", "France", "Spain", "Italy",
+           "Czech Rep.", "Greece", "Poland", "Portugal"],
+    marker: %{
+      color: "rgb(255, 217, 102)",
+      size: 12,
+      line: %{color: "black", width: 0.5}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Quarter 1 Growth",
+  xaxis: %{title: "GDP per Capita", showgrid: false, zeroline: false},
+  yaxis: %{title: "Percent", showline: false}
+)
+|> Plotly.show()
+```

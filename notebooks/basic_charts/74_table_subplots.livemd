@@ -1,0 +1,63 @@
+# Table Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `domain:` on a `Table` trace to restrict it to part of the canvas.
+Place a `Scatter` trace on the remaining area by restricting the axis domains in layout.
+
+```elixir
+alias Plotly.{Figure, Table, Scatter}
+
+years    = [2019, 2020, 2021, 2022, 2023]
+revenue  = [42, 38, 55, 61, 70]
+profit   = [8, 5, 12, 15, 18]
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    domain: %{x: [0, 0.45], y: [0, 1]},
+    header: %{
+      values: ["Year", "Revenue ($M)", "Profit ($M)"],
+      fill: %{color: "#2196F3"},
+      font: %{color: "white"}
+    },
+    cells: %{
+      values: [years, revenue, profit],
+      fill: %{color: "#E3F2FD"}
+    }
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: revenue,
+    mode: "lines+markers",
+    name: "Revenue",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: profit,
+    mode: "lines+markers",
+    name: "Profit",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Table and Chart Subplot",
+  xaxis2: %{domain: [0.55, 1.0]},
+  yaxis2: %{domain: [0.0, 1.0], title: "Amount ($M)"}
+)
+|> Plotly.show()
+```

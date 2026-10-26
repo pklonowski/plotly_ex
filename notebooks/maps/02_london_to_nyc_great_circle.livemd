@@ -1,0 +1,43 @@
+# London to NYC Great Circle
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A great circle is the shortest path between two points on a sphere.
+Plotly automatically interpolates great circle arcs when `lat:`/`lon:` endpoints are given.
+Use `layout.geo.projection.type: "natural earth"` for a standard world map view.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: [51.5074, 40.7128],
+    lon: [-0.1278, -74.0060],
+    mode: "lines+markers",
+    text: ["London", "New York"],
+    line: %{width: 3, color: "red"},
+    marker: %{size: 10}
+  )
+)
+|> Figure.update_layout(
+  title: "London to NYC Great Circle",
+  geo: %{
+    projection: %{type: "natural earth"},
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    showframe: false
+  }
+)
+|> Plotly.show()
+```

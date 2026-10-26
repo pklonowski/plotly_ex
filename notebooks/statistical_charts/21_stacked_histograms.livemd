@@ -1,0 +1,33 @@
+# Stacked Histograms
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.barmode: "stack"` stacks histogram bars of the same bin on top of each other.
+The total bar height shows the combined count across all traces for that bin.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x1 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+x2 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(5.5)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x1, name: "x1"))
+|> Figure.add_trace(Histogram.new(x: x2, name: "x2"))
+|> Figure.update_layout(title: "Stacked Histograms", barmode: "stack")
+|> Plotly.show()
+```

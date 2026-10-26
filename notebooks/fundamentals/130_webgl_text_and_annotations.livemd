@@ -1,0 +1,47 @@
+# WebGL Text and Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattergl` (WebGL-accelerated scatter) supports `mode: "text"` for
+rendering text labels efficiently over large datasets. The API is identical
+to `Scatter` — only the rendering engine differs. Use `Scattergl` when you
+have thousands of labelled points.
+
+Note: The JavaScript example also demonstrates a range slider to pan through
+data. Range sliders require JavaScript interactivity not available in
+Livebook; the static chart below shows the text rendering capability.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+# Generate a moderate dataset to demonstrate text rendering
+x = Enum.to_list(1..50)
+y = Enum.map(x, fn i -> :math.sin(i / 5.0) * 10 end)
+labels = Enum.map(x, fn i -> "P#{i}" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergl.new(
+    x: x,
+    y: y,
+    mode: "markers+text",
+    text: labels,
+    textposition: "top center",
+    textfont: %{size: 9},
+    marker: %{size: 4}
+  )
+)
+|> Figure.update_layout(
+  title: "WebGL Text Rendering (Scattergl)",
+  xaxis: %{title: "Index"},
+  yaxis: %{title: "Value"}
+)
+|> Plotly.show()
+```

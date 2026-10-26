@@ -1,0 +1,54 @@
+# Wind Rose Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A wind rose uses `Barpolar` traces to show directional frequency data.
+`r:` contains the magnitude (e.g. frequency or speed), `theta:` contains
+compass directions as strings or degree values.
+Multiple `Barpolar` traces show different speed categories stacked by direction.
+
+```elixir
+alias Plotly.{Figure, Barpolar}
+
+directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+              "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+# Frequencies (%) for each direction, two speed categories
+slow = [5.0, 1.5, 1.5, 2.2, 2.0, 2.0, 5.0, 4.0,
+        6.0, 5.0, 4.0, 4.0, 3.0, 2.5, 4.0, 4.0]
+fast = [2.0, 0.5, 0.5, 0.8, 1.0, 1.0, 2.0, 1.5,
+        3.0, 2.5, 2.0, 1.5, 1.5, 1.5, 2.0, 2.0]
+
+Figure.new()
+|> Figure.add_trace(
+  Barpolar.new(
+    r: slow,
+    theta: directions,
+    name: "< 5 m/s",
+    marker: %{color: "steelblue"}
+  )
+)
+|> Figure.add_trace(
+  Barpolar.new(
+    r: fast,
+    theta: directions,
+    name: "> 5 m/s",
+    marker: %{color: "firebrick"}
+  )
+)
+|> Figure.update_layout(
+  title: "Wind Rose Chart",
+  polar: %{
+    radialaxis: %{ticksuffix: "%", angle: 45, dtick: 2},
+    angularaxis: %{direction: "clockwise"}
+  }
+)
+|> Plotly.show()
+```

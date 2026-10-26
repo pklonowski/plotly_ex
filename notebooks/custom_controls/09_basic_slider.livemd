@@ -1,0 +1,52 @@
+# Basic Slider
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.sliders` adds a scrub bar to the chart. Each step can call `method: "restyle"`,
+`"relayout"`, or `"animate"`. The `currentvalue` section shows the active label.
+
+This example uses `method: "restyle"` to show one trace at a time — no `frames` needed
+since we pre-build all traces and toggle `visible`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+freqs = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]
+xs = Enum.map(0..100, fn i -> i / 10.0 end)
+
+traces =
+  for {freq, i} <- Enum.with_index(freqs) do
+    ys = Enum.map(xs, fn x -> :math.sin(freq * x) end)
+    Scatter.new(x: xs, y: ys, mode: "lines", name: "f=#{freq}", visible: i == 0)
+  end
+
+steps =
+  for {freq, i} <- Enum.with_index(freqs) do
+    visibility = Enum.map(0..(length(freqs) - 1), fn j -> j == i end)
+    %{
+      method: "restyle",
+      label: "#{freq}",
+      args: [%{visible: visibility}]
+    }
+  end
+
+Enum.reduce(traces, Figure.new(), &Figure.add_trace(&2, &1))
+|> Figure.update_layout(
+  title: "Basic Slider — Sin Frequency",
+  yaxis: %{range: [-1.2, 1.2], autorange: false},
+  sliders: [%{
+    steps: steps,
+    active: 0,
+    currentvalue: %{prefix: "Frequency: ", visible: true, xanchor: "center"},
+    pad: %{t: 50, b: 10}
+  }]
+)
+|> Plotly.show()
+```

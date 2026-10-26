@@ -1,0 +1,43 @@
+# Node Alignment
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`arrangement` controls how nodes are positioned:
+- `"snap"` (default) — nodes snap to the closest column
+- `"perpendicular"` — nodes are constrained to vertical columns, draggable along column
+- `"freeform"` — nodes can be dragged freely anywhere
+- `"fixed"` — nodes stay at x/y positions; not draggable
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+for arrangement <- ["snap", "perpendicular", "freeform", "fixed"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Sankey.new(
+      arrangement: arrangement,
+      node: %{
+        label: ["A", "B", "C", "D", "E"],
+        x: [0.1, 0.1, 0.1, 0.6, 0.9],
+        y: [0.1, 0.4, 0.7, 0.4, 0.5],
+        pad: 15
+      },
+      link: %{
+        source: [0, 1, 2, 0, 1],
+        target: [3, 3, 3, 4, 4],
+        value:  [8, 5, 6, 3, 4]
+      }
+    )
+  )
+  |> Figure.update_layout(title: "arrangement: \"#{arrangement}\"", width: 600, height: 400)
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

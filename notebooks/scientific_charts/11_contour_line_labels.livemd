@@ -1,0 +1,38 @@
+# Contour Line Labels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`contours: %{showlabels: true}` prints the z value on each contour line.
+`contours: %{labelfont: %{size:, color:, family:}}` styles these labels.
+Works best when combined with `coloring: "fill"` or `coloring: "heatmap"`.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Viridis",
+    contours: %{
+      showlabels: true,
+      labelfont: %{size: 12, color: "white"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour Plot with Line Labels")
+|> Plotly.show()
+```

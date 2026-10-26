@@ -1,0 +1,58 @@
+# Polar Chart Directions
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+By default, `theta: 0` is at the right (3 o'clock) and increases counter-clockwise.
+`layout.polar.angularaxis.direction: "clockwise"` reverses the rotation direction.
+`layout.polar.angularaxis.rotation: N` sets where `theta: 0` is (in degrees from right).
+Setting `rotation: 90` moves 0° to the top (12 o'clock), which is conventional for compass bearings.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = Enum.map(0..11, fn i -> i * 30 end)
+r     = [3, 2, 4, 3, 2, 5, 4, 3, 2, 4, 3, 2]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r ++ [hd(r)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Counter-clockwise (default)"
+  )
+)
+|> Figure.update_layout(
+  title: "Default direction (counter-clockwise, 0° at right)"
+)
+|> Plotly.show()
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r ++ [hd(r)],
+    theta: theta ++ [hd(theta)],
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Clockwise, 0° at top"
+  )
+)
+|> Figure.update_layout(
+  title: "Clockwise direction, 0° at top (compass convention)",
+  polar: %{
+    angularaxis: %{
+      direction: "clockwise",
+      rotation: 90
+    }
+  }
+)
+|> Plotly.show()
+```

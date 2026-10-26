@@ -1,0 +1,41 @@
+# Include Locale Config
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `config.locale` to a BCP 47 language tag (e.g. `"fr"`, `"de"`, `"es"`)
+to apply locale-specific number and date formatting. The locale file is
+loaded dynamically from the Plotly CDN (this is handled automatically by
+the PlotlyLive widget).
+
+Combined with `tickformat`, this formats date labels in the selected locale's
+language (e.g. French month names).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2020-01-01", "2020-02-01", "2020-03-01",
+        "2020-04-01", "2020-05-01", "2020-06-01"],
+    y: [10, 14, 12, 18, 16, 20],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Locale Config — French Date Formatting",
+  xaxis: %{tickformat: "%d %B %Y"}
+)
+|> Plotly.show(config: %{locale: "fr"})
+```
+
+Note: locale support requires an internet connection in Livebook to load the
+locale file from the Plotly CDN. See notebook 13 (Change the Default Locale)
+for more locale options.

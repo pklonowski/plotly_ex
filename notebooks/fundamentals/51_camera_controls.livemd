@@ -1,0 +1,47 @@
+# Camera Controls
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.scene.camera` sets the initial viewpoint of a 3D chart. Three vectors
+control the camera:
+- `eye` — position of the camera (default `{x: 1.25, y: 1.25, z: 1.25}`)
+- `center` — point the camera looks at (default origin `{x: 0, y: 0, z: 0}`)
+- `up` — which direction is "up" (default `{x: 0, y: 0, z: 1}`)
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "Camera — top-down view",
+  scene: %{
+    camera: %{eye: %{x: 0, y: 0, z: 2.5}, center: %{x: 0, y: 0, z: 0}, up: %{x: 0, y: 1, z: 0}}
+  }
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "Camera — side view",
+  scene: %{
+    camera: %{eye: %{x: 2.5, y: 0, z: 0.5}, center: %{x: 0, y: 0, z: 0}, up: %{x: 0, y: 0, z: 1}}
+  }
+)
+|> Plotly.show()
+```

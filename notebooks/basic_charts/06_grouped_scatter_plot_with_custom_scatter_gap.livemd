@@ -1,0 +1,37 @@
+# Grouped Scatter Plot with Custom Scatter Gap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.scattergap` controls the fraction of space between groups in a
+grouped scatter plot. Values range from 0 (no gap) to 1 (maximum gap).
+The default is 0.2.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+categories = ["Category 1", "Category 2", "Category 3", "Category 4"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(x: categories, y: [4, 3, 5, 2], mode: "markers", name: "Group A", marker: %{size: 14})
+)
+|> Figure.add_trace(
+  Scatter.new(x: categories, y: [3, 5, 2, 4], mode: "markers", name: "Group B", marker: %{size: 14})
+)
+|> Figure.add_trace(
+  Scatter.new(x: categories, y: [5, 2, 4, 3], mode: "markers", name: "Group C", marker: %{size: 14})
+)
+|> Figure.update_layout(
+  title: "Grouped Scatter with Custom Gap (scattergap: 0.7)",
+  scattermode: "group",
+  scattergap: 0.7
+)
+|> Plotly.show()
+```

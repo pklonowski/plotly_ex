@@ -1,0 +1,49 @@
+# Customizing Candlestick Chart Colors
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`increasing: %{line: %{color:}}` and `decreasing: %{line: %{color:}}` set the bar outline
+colours for up and down movements. `xaxis.range:` restricts the visible date window to a
+6-month period while the full dataset is loaded.
+
+```elixir
+alias Plotly.{Figure, Candlestick}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Candlestick.new(
+    x: dates, open: open, high: high, low: low, close: close,
+    increasing: %{line: %{color: "black"}},
+    decreasing: %{line: %{color: "red"}}
+  )
+)
+|> Figure.update_layout(
+  title: "AAPL — Custom Colors",
+  showlegend: false,
+  xaxis: %{
+    title: %{text: "Date"},
+    range: ["2016-06-01 12:00", "2017-01-01 12:00"]
+  }
+)
+|> Plotly.show()
+```

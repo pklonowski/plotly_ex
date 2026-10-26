@@ -1,0 +1,45 @@
+# Colored and Styled Error Bars
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`color:` sets the error bar colour. `thickness:` sets the line width of the bar.
+`width:` sets the length of the horizontal cap at the end of each bar.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2],
+    y: [6, 10, 2],
+    mode: "markers",
+    marker: %{color: "rgb(164, 194, 244)", size: 12},
+    error_y: %{
+      type: "data",
+      array: [1, 2, 3],
+      visible: true,
+      color: "purple",
+      thickness: 2.5,
+      width: 8
+    },
+    error_x: %{
+      type: "data",
+      array: [0.1, 0.2, 0.1],
+      visible: true,
+      color: "purple",
+      thickness: 2.5,
+      width: 8
+    }
+  )
+)
+|> Figure.update_layout(title: "Colored and Styled Error Bars")
+|> Plotly.show()
+```

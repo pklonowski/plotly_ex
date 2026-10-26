@@ -1,0 +1,106 @@
+# 2D Histogram Contour Plot with Histogram Subplots (Slider Control)
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A `Histogram2dcontour` in the centre with marginal `Histogram` traces on the
+top and right. The `layout.sliders` widget (same technique as
+`custom_controls/09_basic_slider.livemd`) uses `method: "restyle"` to update
+the `ncontours` property on the contour trace in real time — no JavaScript
+callbacks required.
+
+Subplot domains:
+
+| region | xaxis | yaxis | x domain | y domain |
+|--------|-------|-------|----------|----------|
+| contour (main) | x | y | [0, 0.85] | [0, 0.85] |
+| top histogram  | x | y2 | [0, 0.85] | [0.85, 1] |
+| right histogram | x2 | y | [0.85, 1] | [0, 0.85] |
+
+```elixir
+alias Plotly.{Figure, Histogram, Histogram2dcontour}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 500
+x = gen.(n)
+y = gen.(n)
+
+ncontours_values = [3, 5, 10, 15, 20, 30]
+
+slider_steps =
+  for {nc, _i} <- Enum.with_index(ncontours_values) do
+    %{
+      method: "restyle",
+      label: "#{nc}",
+      args: [%{ncontours: nc}, [0]]
+    }
+  end
+
+# Default active index — ncontours = 20 is index 4
+default_index = Enum.find_index(ncontours_values, &(&1 == 20))
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2dcontour.new(
+    x: x, y: y,
+    ncontours: 20,
+    colorscale: "Blues",
+    reversescale: true,
+    showscale: false,
+    xaxis: "x",
+    yaxis: "y"
+  )
+)
+|> Figure.add_trace(
+  Histogram.new(
+    x: x,
+    xaxis: "x",
+    yaxis: "y2",
+    showlegend: false,
+    marker: %{color: "rgba(31, 119, 180, 0.7)"}
+  )
+)
+|> Figure.add_trace(
+  Histogram.new(
+    y: y,
+    xaxis: "x2",
+    yaxis: "y",
+    showlegend: false,
+    marker: %{color: "rgba(31, 119, 180, 0.7)"}
+  )
+)
+|> Figure.update_layout(
+  title: "2D Contour Histogram with Marginals — Slider Controls Contour Count",
+  showlegend: false,
+  autosize: false,
+  width: 600,
+  height: 580,
+  margin: %{t: 60, l: 50, r: 20, b: 110},
+  hovermode: "closest",
+  bargap: 0,
+  xaxis: %{domain: [0, 0.85], showgrid: false, zeroline: false, title: "x"},
+  yaxis: %{domain: [0, 0.85], showgrid: false, zeroline: false, title: "y"},
+  xaxis2: %{domain: [0.85, 1], showgrid: false, zeroline: false},
+  yaxis2: %{domain: [0.85, 1], showgrid: false, zeroline: false},
+  sliders: [%{
+    steps: slider_steps,
+    active: default_index,
+    currentvalue: %{prefix: "Contours: ", visible: true, xanchor: "center"},
+    pad: %{t: 60, b: 10}
+  }]
+)
+|> Plotly.show()
+```

@@ -1,0 +1,42 @@
+# Connect Gaps Between Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `nil` in the y (or x) list to represent missing values. By default,
+Plotly leaves a gap in the line where nil values appear. Set
+`connectgaps: true` to bridge across missing values instead.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [10, 20, nil, 15, 10, 5, 15, nil, 20, 10, 10, 15, 25, 20, 10],
+    mode: "lines+markers",
+    connectgaps: false,
+    name: "Gaps (connectgaps: false)"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [5, 15, nil, 10, 5, 0, 10, nil, 15, 5, 5, 10, 20, 15, 5],
+    mode: "lines+markers",
+    connectgaps: true,
+    name: "Connected (connectgaps: true)"
+  )
+)
+|> Figure.update_layout(title: "Connect Gaps Between Data")
+|> Plotly.show()
+```

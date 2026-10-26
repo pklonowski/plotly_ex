@@ -1,0 +1,46 @@
+# Fixed Ratio Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.scene.aspectmode` controls the aspect ratio of the 3D bounding box:
+- `"auto"` (default) — plotly chooses based on data range
+- `"cube"` — forces all three axes equal length
+- `"data"` — axes scaled proportionally to data ranges
+- `"manual"` — set explicit ratios via `layout.scene.aspectratio`
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "cube aspect"))
+|> Figure.update_layout(
+  title: "Fixed Ratio — aspectmode: cube",
+  scene: %{aspectmode: "cube"}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "manual aspect"))
+|> Figure.update_layout(
+  title: "Fixed Ratio — aspectmode: manual (x:y:z = 1:1:2)",
+  scene: %{
+    aspectmode: "manual",
+    aspectratio: %{x: 1, y: 1, z: 2}
+  }
+)
+|> Plotly.show()
+```

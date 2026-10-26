@@ -1,0 +1,34 @@
+# Basic Funnel Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Funnel.new(x:, y:)` — `x` holds the numeric values per stage, `y` holds the stage labels.
+Plotly automatically calculates percent-initial and percent-previous values for hover and
+display. Stages shrink left-to-right following the value order.
+
+```elixir
+alias Plotly.{Figure, Funnel}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnel.new(
+    y: ["Website visit", "Downloads", "Potential customers", "Invoice sent", "Closed deals"],
+    x: [13873, 10533, 5443, 2703, 908],
+    hoverinfo: "x+percent previous+percent initial"
+  )
+)
+|> Figure.update_layout(
+  title: "Sales Funnel",
+  margin: %{l: 150},
+  width: 600,
+  height: 500
+)
+|> Plotly.show()
+```

@@ -1,0 +1,46 @@
+# Add Multiple Images
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Add multiple entries to `layout.images` to overlay several images. Each entry is
+independent — different positions, sizes, and layers are supported.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(
+  x: ["Q1", "Q2", "Q3", "Q4"],
+  y: [120, 145, 132, 160],
+  name: "Revenue"
+))
+|> Figure.update_layout(
+  title: "Quarterly Revenue with Branding",
+  images: [
+    %{
+      source: "https://placehold.co/120x40/4B9CD3/white?text=TopLogo",
+      xref: "paper", yref: "paper",
+      x: 0.0, y: 1.1,
+      sizex: 0.15, sizey: 0.1,
+      xanchor: "left", yanchor: "bottom"
+    },
+    %{
+      source: "https://placehold.co/80x80/E84393/white?text=Seal",
+      xref: "paper", yref: "paper",
+      x: 0.5, y: 0.5,
+      sizex: 0.15, sizey: 0.15,
+      xanchor: "center", yanchor: "middle",
+      opacity: 0.2,
+      layer: "below"
+    }
+  ]
+)
+|> Plotly.show()
+```

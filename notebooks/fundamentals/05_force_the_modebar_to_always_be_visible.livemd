@@ -1,0 +1,24 @@
+# Force The Modebar to Always Be Visible
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+By default the modebar fades in only on hover. `config.displayModeBar: true` pins
+it permanently — useful in dashboards where users need constant access to the tools.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3], y: [4, 5, 6], mode: "lines+markers")],
+  layout: %{title: "Modebar always visible"},
+  config: %{displayModeBar: true}
+)
+|> Plotly.show()
+```

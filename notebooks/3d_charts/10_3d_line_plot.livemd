@@ -1,0 +1,41 @@
+# 3D Line Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scatter3d.new(mode: "lines")` draws a connected line in 3D space. `line: %{color:, width:}`
+styles the line. Parametric curves (helix, Lissajous, etc.) are natural candidates for
+3D line plots.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+n = 100
+t = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 * :math.pi()))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: Enum.map(t, &:math.cos/1),
+    y: Enum.map(t, &:math.sin/1),
+    z: Enum.map(t, &(&1 / (4 * :math.pi()))),
+    mode: "lines",
+    line: %{color: "blue", width: 3}
+  )
+)
+|> Figure.update_layout(
+  title: "3D Line Plot — Helix",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

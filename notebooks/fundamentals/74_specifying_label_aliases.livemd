@@ -1,0 +1,38 @@
+# Specifying Label Aliases
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`labelalias` is a map from tick value (as a string key) to a replacement
+display label. Useful for showing human-friendly names on numeric or coded
+axes without changing the underlying data.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..6)
+y = [2, 4, 6, 8, 10, 12]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Specifying Label Aliases",
+  xaxis: %{
+    labelalias: %{
+      "1" => "Jan",
+      "2" => "Feb",
+      "3" => "Mar",
+      "4" => "Apr",
+      "5" => "May",
+      "6" => "Jun"
+    }
+  }
+)
+|> Plotly.show()
+```

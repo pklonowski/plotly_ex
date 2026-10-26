@@ -1,0 +1,60 @@
+# Country GDP Choropleth Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+World GDP data fetched from Plotly's datasets. `colorscale: "Plasma"` works well
+for economic data spanning several orders of magnitude. `reversescale: true` makes
+higher values darker.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r -> match?({_, _}, Float.parse(r["GDP (BILLIONS)"] || "")) end)
+
+locations = Enum.map(data, & &1["CODE"])
+gdp = Enum.map(data, &(elem(Float.parse(&1["GDP (BILLIONS)"]), 0)))
+text = Enum.map(data, fn r -> "#{r["COUNTRY"]}: $#{r["GDP (BILLIONS)"]}B" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: locations,
+    z: gdp,
+    text: text,
+    locationmode: "ISO-3",
+    colorscale: "Plasma",
+    reversescale: true,
+    colorbar: %{title: %{text: "GDP (Billions USD)"}},
+    hoverinfo: "text"
+  )
+)
+|> Figure.update_layout(
+  title: "World GDP — 2014",
+  geo: %{
+    showframe: false,
+    showcoastlines: false,
+    projection: %{type: "natural earth"}
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,40 @@
+# Marker Opacity
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`marker.opacity` makes **only the marker symbols** transparent — the line
+connecting them remains fully opaque. This differs from trace `opacity`, which
+affects the entire trace uniformly.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..10)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.sin(x / 2.0) * 3 end),
+  mode: "lines+markers",
+  name: "marker.opacity: 0.3",
+  marker: %{size: 18, color: "steelblue", opacity: 0.3},
+  line: %{color: "steelblue", width: 2}
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs,
+  y: Enum.map(xs, fn x -> :math.cos(x / 2.0) * 3 end),
+  mode: "lines+markers",
+  name: "marker.opacity: 1.0",
+  marker: %{size: 18, color: "tomato", opacity: 1.0},
+  line: %{color: "tomato", width: 2}
+))
+|> Figure.update_layout(title: "Marker Opacity — line stays fully opaque")
+|> Plotly.show()
+```

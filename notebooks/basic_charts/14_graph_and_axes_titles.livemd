@@ -1,0 +1,46 @@
+# Graph and Axes Titles
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set the plot title via `layout.title`. Set axis titles via `xaxis.title`
+and `yaxis.title`. Both accept a plain string or a map with `text` and
+`font` for styled titles.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 6, 3, 6, 1],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Plot Title",
+  xaxis: %{title: "x Axis Title"},
+  yaxis: %{title: "y Axis Title"}
+)
+|> Plotly.show()
+```
+
+Styled with font:
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 4], mode: "lines"))
+|> Figure.update_layout(
+  title: %{text: "Styled Title", font: %{family: "Courier New, monospace", size: 24, color: "#7f7f7f"}},
+  xaxis: %{title: %{text: "x Axis", font: %{family: "Courier New, monospace", size: 18, color: "#7f7f7f"}}},
+  yaxis: %{title: %{text: "y Axis", font: %{family: "Courier New, monospace", size: 18, color: "#7f7f7f"}}}
+)
+|> Plotly.show()
+```

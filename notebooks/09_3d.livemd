@@ -1,0 +1,1126 @@
+# 3D Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## 3D Charts > 3D Scatter Plot
+
+`Scatter3d.new(x:, y:, z:)` places points in 3D space. The `marker` map supports `size:`,
+`color:` (as a list for per-point coloring), `colorscale:`, `opacity:`, and `showscale:`.
+`layout.scene` configures the 3D axes and camera.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+# Generate synthetic helix data
+n = 50
+t = Enum.map(0..(n - 1), &(&1 / n * 4 * :math.pi()))
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = Enum.map(0..(n - 1), &(&1 / n))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: x,
+    y: y,
+    z: z,
+    mode: "markers",
+    marker: %{
+      size: 8,
+      color: z,
+      colorscale: "Viridis",
+      opacity: 0.8,
+      showscale: true
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "3D Scatter — Helix",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Basic Ribbon Plot
+
+A ribbon plot is created from multiple `Scatter3d` traces with `mode: "lines"` and
+`surfaceaxis: 1`. `surfaceaxis` fills the area below the line onto the specified axis plane
+(0 = x, 1 = y, 2 = z). Each trace becomes one ribbon. `surfacecolor:` sets the fill color.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+x_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+ribbons = [
+  {0, [1, 3, 2, 4, 5, 3, 4, 2, 3], "blue"},
+  {1, [2, 4, 3, 1, 4, 2, 3, 5, 2], "green"},
+  {2, [3, 2, 4, 5, 3, 2, 1, 3, 4], "red"}
+]
+
+fig =
+  Enum.reduce(ribbons, Figure.new(), fn {y_pos, z_vals, color}, fig ->
+    Figure.add_trace(
+      fig,
+      Scatter3d.new(
+        x: x_vals,
+        y: List.duplicate(y_pos, length(x_vals)),
+        z: z_vals,
+        mode: "lines",
+        surfaceaxis: 1,
+        surfacecolor: color,
+        line: %{color: "black", width: 4}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Ribbon Plot",
+  showlegend: false,
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Category"},
+    zaxis: %{title: "Value"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Topographical 3D Surface Plot
+
+`Surface.new(z:)` renders a 3D surface from a z matrix (list of rows). Optional `x:` and `y:`
+arrays set axis coordinates. `colorscale:` accepts any named colorscale string. Here we fetch
+the Mt Bruno topography dataset — a 25×25 elevation grid — from plotly's dataset repository.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+csv =
+  Req.get!(
+    "https://raw.githubusercontent.com/plotly/datasets/master/api_docs/mt_bruno_elevation.csv"
+  ).body
+
+z =
+  csv
+  |> String.split("\n", trim: true)
+  |> Enum.drop(1)
+  |> Enum.map(fn row ->
+    row |> String.split(",") |> Enum.drop(1) |> Enum.map(&String.to_float/1)
+  end)
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis"))
+|> Figure.update_layout(
+  title: "Mt Bruno Elevation",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Elevation (m)"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Surface Plot with Contours
+
+`contours:` on a `Surface` trace projects contour lines onto each axis plane.
+Each axis key (`x:`, `y:`, `z:`) accepts `%{show: true, usecolormap: true, highlightcolor:, project: %{x: true}}`.
+`show:` enables the contour lines; `project:` projects them onto the axis wall.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+csv =
+  Req.get!(
+    "https://raw.githubusercontent.com/plotly/datasets/master/api_docs/mt_bruno_elevation.csv"
+  ).body
+
+z =
+  csv
+  |> String.split("\n", trim: true)
+  |> Enum.drop(1)
+  |> Enum.map(fn row ->
+    row |> String.split(",") |> Enum.drop(1) |> Enum.map(&String.to_float/1)
+  end)
+
+Figure.new()
+|> Figure.add_trace(
+  Surface.new(
+    z: z,
+    colorscale: "Viridis",
+    contours: %{
+      x: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{x: true}},
+      y: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{y: true}},
+      z: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{z: true}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Surface with Contour Projections",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"},
+    camera: %{eye: %{x: 1.87, y: 0.88, z: 0.64}}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Multiple 3D Surface Plots
+
+Multiple `Surface` traces share the same 3D scene by default. Each can have its own
+`colorscale:` and `opacity:`. Setting `opacity:` below 1.0 makes surfaces translucent so
+overlapping surfaces remain visible.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+# Two sinusoidal surfaces offset in z
+size = 20
+indices = Enum.to_list(0..(size - 1))
+
+z1 =
+  for i <- indices do
+    for j <- indices do
+      :math.sin(i / 5) * :math.cos(j / 5)
+    end
+  end
+
+z2 =
+  for i <- indices do
+    for j <- indices do
+      :math.sin(i / 5) * :math.cos(j / 5) + 2
+    end
+  end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z1, colorscale: "Viridis", opacity: 0.8, name: "Surface 1"))
+|> Figure.add_trace(Surface.new(z: z2, colorscale: "RdBu", opacity: 0.6, name: "Surface 2"))
+|> Figure.update_layout(
+  title: "Multiple 3D Surfaces",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Simple 3D Mesh Plot
+
+`Mesh3d.new(x:, y:, z:, alphahull: N)` constructs a mesh from a point cloud using the
+alpha-hull algorithm. `alphahull: 5` gives a moderate hull — larger values produce a looser
+(more convex) hull; `alphahull: 0` uses the convex hull. `color:` and `opacity:` style the mesh.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Random point cloud on a sphere surface
+n = 100
+
+{xs, ys, zs} =
+  Enum.reduce(1..n, {[], [], []}, fn _, {xs, ys, zs} ->
+    theta = :rand.uniform() * 2 * :math.pi()
+    phi = :rand.uniform() * :math.pi()
+    x = :math.sin(phi) * :math.cos(theta)
+    y = :math.sin(phi) * :math.sin(theta)
+    z = :math.cos(phi)
+    {[x | xs], [y | ys], [z | zs]}
+  end)
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: xs,
+    y: ys,
+    z: zs,
+    alphahull: 5,
+    opacity: 0.4,
+    color: "cyan"
+  )
+)
+|> Figure.update_layout(
+  title: "Simple 3D Mesh (alphahull=5)",
+  scene: %{xaxis: %{title: "X"}, yaxis: %{title: "Y"}, zaxis: %{title: "Z"}}
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Mesh Plot with Alphahull
+
+`alphahull:` controls how tightly the mesh wraps around the point cloud. `alphahull: 0` = convex hull
+(loosest possible mesh). Larger values = tighter wrapping that can capture concave features.
+Here we show the same point cloud with two different alphahull values side by side using subplots.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Same random sphere points for both
+n = 80
+:rand.seed(:exsplus, {1, 2, 3})
+
+{xs, ys, zs} =
+  Enum.reduce(1..n, {[], [], []}, fn _, {xs, ys, zs} ->
+    theta = :rand.uniform() * 2 * :math.pi()
+    phi = :rand.uniform() * :math.pi()
+    {[:math.sin(phi) * :math.cos(theta) | xs],
+     [:math.sin(phi) * :math.sin(theta) | ys],
+     [:math.cos(phi) | zs]}
+  end)
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(x: xs, y: ys, z: zs, alphahull: 0, color: "cyan", opacity: 0.5,
+             name: "alphahull=0 (convex)", scene: "scene")
+)
+|> Figure.add_trace(
+  Mesh3d.new(x: xs, y: ys, z: zs, alphahull: 7, color: "magenta", opacity: 0.5,
+             name: "alphahull=7 (tight)", scene: "scene2")
+)
+|> Figure.update_layout(
+  title: "Alphahull Comparison",
+  scene: %{domain: %{x: [0, 0.5]}, xaxis: %{title: "X"}, yaxis: %{title: "Y"}, zaxis: %{title: "Z"}},
+  scene2: %{domain: %{x: [0.5, 1]}, xaxis: %{title: "X"}, yaxis: %{title: "Y"}, zaxis: %{title: "Z"}}
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Mesh Tetrahedron
+
+When `i:`, `j:`, `k:` are provided, `Mesh3d` uses explicit triangle face connectivity instead
+of computing faces from the point cloud. Each element of `i`/`j`/`k` is a 0-based vertex index;
+the three together define one triangular face. A tetrahedron has 4 vertices and 4 faces.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    # 4 vertices of a tetrahedron
+    x: [0, 1, 2, 0],
+    y: [0, 0, 1, 2],
+    z: [0, 2, 0, 1],
+    # 4 triangular faces (indices into x/y/z)
+    i: [0, 0, 0, 1],
+    j: [1, 2, 3, 2],
+    k: [2, 3, 1, 3],
+    # per-face or per-vertex intensity for coloring
+    intensity: [0, 0.33, 0.66, 1.0],
+    colorscale: "Viridis",
+    opacity: 0.7
+  )
+)
+|> Figure.update_layout(
+  title: "Tetrahedron — Explicit Face Connectivity",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Mesh Cube
+
+A cube has 8 vertices and 6 faces. Each rectangular face is split into 2 triangles, giving
+12 triangular faces total. `facecolor:` accepts a list of 12 CSS color strings — one per
+triangle — for per-face coloring. This is the `Mesh3d` equivalent of painting each face
+of a cube a different color.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# 8 vertices of a unit cube
+x = [0, 0, 1, 1, 0, 0, 1, 1]
+y = [0, 1, 1, 0, 0, 1, 1, 0]
+z = [0, 0, 0, 0, 1, 1, 1, 1]
+
+# 12 triangular faces (each cube face = 2 triangles)
+# bottom: 0,1,2,3  top: 4,5,6,7  front: 0,3,7,4  back: 1,2,6,5  left: 0,1,5,4  right: 3,2,6,7
+i = [0, 0, 4, 4, 0, 0, 1, 1, 0, 0, 3, 3]
+j = [1, 2, 5, 6, 3, 7, 2, 6, 1, 5, 2, 6]
+k = [2, 3, 6, 7, 7, 4, 6, 5, 5, 4, 6, 7]
+
+# 2 triangles per face, 6 faces → pair up colors
+face_colors = List.flatten(List.duplicate(
+  ["red", "red", "blue", "blue", "green", "green",
+   "yellow", "yellow", "cyan", "cyan", "magenta", "magenta"], 1))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: x, y: y, z: z,
+    i: i, j: j, k: k,
+    facecolor: face_colors,
+    opacity: 0.8
+  )
+)
+|> Figure.update_layout(
+  title: "3D Mesh Cube — Per-Face Colors",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Line Plot
+
+`Scatter3d.new(mode: "lines")` draws a connected line in 3D space. `line: %{color:, width:}`
+styles the line. Parametric curves (helix, Lissajous, etc.) are natural candidates for
+3D line plots.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+n = 100
+t = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 * :math.pi()))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: Enum.map(t, &:math.cos/1),
+    y: Enum.map(t, &:math.sin/1),
+    z: Enum.map(t, &(&1 / (4 * :math.pi()))),
+    mode: "lines",
+    line: %{color: "blue", width: 3}
+  )
+)
+|> Figure.update_layout(
+  title: "3D Line Plot — Helix",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Line + Markers Plot
+
+`mode: "lines+markers"` draws both the connecting line and a marker at each data point.
+`marker: %{symbol:, size:, color:}` and `line: %{color:, width:, dash:}` can be styled
+independently. `dash: "dot"` or `"dash"` makes the line dashed.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+n = 20
+t = Enum.map(0..(n - 1), &(&1 / (n - 1) * 2 * :math.pi()))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: Enum.map(t, &:math.cos/1),
+    y: Enum.map(t, &:math.sin/1),
+    z: Enum.map(0..(n - 1), &(&1 / n)),
+    mode: "lines+markers",
+    marker: %{symbol: "circle", size: 6, color: "red"},
+    line: %{color: "blue", width: 2, dash: "dot"}
+  )
+)
+|> Figure.update_layout(
+  title: "3D Line + Markers",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Line Spiral Plot
+
+Setting `line.color` to a numeric list (same length as x/y/z) + `line.colorscale:` colors
+the line by a variable — here z-position. This creates a gradient spiral showing how the
+line progresses through space.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+n = 300
+t = Enum.map(0..(n - 1), &(&1 / (n - 1) * 10 * :math.pi()))
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = Enum.map(t, & &1)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: x,
+    y: y,
+    z: z,
+    mode: "lines",
+    line: %{
+      color: z,
+      colorscale: "Viridis",
+      width: 4
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "3D Line Spiral — Color by Z",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Random Walk Plot
+
+A random walk is built by computing the cumulative sum of random step deltas.
+`Enum.scan(deltas, 0, fn d, acc -> acc + d end)` builds the running total in Elixir.
+Three separate `Scatter3d` traces (one per walk) give each a distinct color.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+:rand.seed(:exsplus, {1, 2, 3})
+
+n = 500
+step = fn -> :rand.normal() * 0.1 end
+
+walk = fn ->
+  xs = Enum.scan(1..n, 0.0, fn _, acc -> acc + step.() end)
+  ys = Enum.scan(1..n, 0.0, fn _, acc -> acc + step.() end)
+  zs = Enum.scan(1..n, 0.0, fn _, acc -> acc + step.() end)
+  {xs, ys, zs}
+end
+
+{x1, y1, z1} = walk.()
+{x2, y2, z2} = walk.()
+{x3, y3, z3} = walk.()
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x1, y: y1, z: z1, mode: "lines", name: "Walk 1",
+     line: %{color: "blue", width: 2}))
+|> Figure.add_trace(Scatter3d.new(x: x2, y: y2, z: z2, mode: "lines", name: "Walk 2",
+     line: %{color: "red", width: 2}))
+|> Figure.add_trace(Scatter3d.new(x: x3, y: y3, z: z3, mode: "lines", name: "Walk 3",
+     line: %{color: "green", width: 2}))
+|> Figure.update_layout(
+  title: "3D Random Walk",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Basic Trisurf Plot
+
+The plotly.js "Tri-Surf" examples use `Mesh3d` with parametric surfaces sampled as point
+clouds, then reconstructed using `alphahull`. Here we sample a hemisphere surface, pass the
+points to `Mesh3d`, and use `alphahull: 0` (convex hull) to reconstruct the mesh.
+`intensity:` colors the surface by z-height.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Sample hemisphere: theta [0, pi/2], phi [0, 2pi]
+n_theta = 20
+n_phi = 30
+
+points = for i <- 0..(n_theta - 1), j <- 0..(n_phi - 1) do
+  theta = i / (n_theta - 1) * :math.pi() / 2
+  phi   = j / (n_phi - 1) * 2 * :math.pi()
+  {:math.sin(theta) * :math.cos(phi),
+   :math.sin(theta) * :math.sin(phi),
+   :math.cos(theta)}
+end
+
+xs = Enum.map(points, &elem(&1, 0))
+ys = Enum.map(points, &elem(&1, 1))
+zs = Enum.map(points, &elem(&1, 2))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: xs,
+    y: ys,
+    z: zs,
+    alphahull: 0,
+    intensity: zs,
+    colorscale: "Viridis",
+    opacity: 0.9
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Trisurf — Hemisphere",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Trisurf Cube
+
+A cube can also be built as a Tri-Surf: sample points on each of the 6 faces and let
+`alphahull: 0` reconstruct the surface. This gives the same result as explicit `i/j/k`
+but from a parametric point-sampling approach. Each face contributes a uniform grid of
+points.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Sample each face of a unit cube as a grid of points
+steps = [0, 0.25, 0.5, 0.75, 1.0]
+
+face_points =
+  # bottom (z=0), top (z=1)
+  (for x <- steps, y <- steps, z <- [0, 1], do: {x, y, z}) ++
+  # front (y=0), back (y=1)
+  (for x <- steps, z <- steps, y <- [0, 1], do: {x, y, z}) ++
+  # left (x=0), right (x=1)
+  (for y <- steps, z <- steps, x <- [0, 1], do: {x, y, z})
+
+# Deduplicate
+face_points = Enum.uniq(face_points)
+
+xs = Enum.map(face_points, &elem(&1, 0))
+ys = Enum.map(face_points, &elem(&1, 1))
+zs = Enum.map(face_points, &elem(&1, 2))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: xs, y: ys, z: zs,
+    alphahull: 0,
+    intensity: zs,
+    colorscale: "Portland",
+    opacity: 0.7
+  )
+)
+|> Figure.update_layout(
+  title: "Trisurf Cube — Sampled Faces",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Extending the Cube Example for Boxes
+
+A general rectangular box is just a cube with independent scaling per axis. Scale the
+unit-cube sample points by `(a, b, c)` to get a box of size `a × b × c`. Here we define
+a helper function and render two boxes with different proportions.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+box_points = fn a, b, c ->
+  steps = [0, 0.25, 0.5, 0.75, 1.0]
+  pts =
+    (for x <- steps, y <- steps, z <- [0, 1], do: {x * a, y * b, z * c}) ++
+    (for x <- steps, z <- steps, y <- [0, 1], do: {x * a, y * b, z * c}) ++
+    (for y <- steps, z <- steps, x <- [0, 1], do: {x * a, y * b, z * c})
+  pts = Enum.uniq(pts)
+  {Enum.map(pts, &elem(&1, 0)),
+   Enum.map(pts, &elem(&1, 1)),
+   Enum.map(pts, &elem(&1, 2))}
+end
+
+{x1, y1, z1} = box_points.(1, 2, 3)
+{x2, y2, z2} = box_points.(3, 1, 1)
+
+# Offset second box so they don't overlap
+x2 = Enum.map(x2, &(&1 + 4))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(x: x1, y: y1, z: z1, alphahull: 0, color: "cyan", opacity: 0.6, name: "1×2×3")
+)
+|> Figure.add_trace(
+  Mesh3d.new(x: x2, y: y2, z: z2, alphahull: 0, color: "magenta", opacity: 0.6, name: "3×1×1")
+)
+|> Figure.update_layout(
+  title: "Rectangular Boxes via Trisurf",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Point Clustering
+
+To visualize clustered 3D data, use one `Scatter3d` trace per cluster — each gets its own
+`name:` (legend entry) and `marker.color:`. This is preferable to a single trace with
+per-point colors because each cluster can be toggled via the legend independently.
+`:rand.normal()` generates standard-normal samples; multiply by σ and add μ for any Gaussian.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+:rand.seed(:exsplus, {42, 0, 0})
+
+gen_cluster = fn n, cx, cy, cz, sigma ->
+  xs = for(_ <- 1..n, do: cx + :rand.normal() * sigma)
+  ys = for(_ <- 1..n, do: cy + :rand.normal() * sigma)
+  zs = for(_ <- 1..n, do: cz + :rand.normal() * sigma)
+  {xs, ys, zs}
+end
+
+{x1, y1, z1} = gen_cluster.(100, 0, 0, 0, 0.5)
+{x2, y2, z2} = gen_cluster.(100, 3, 3, 3, 0.5)
+{x3, y3, z3} = gen_cluster.(100, 0, 3, 6, 0.5)
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x1, y: y1, z: z1, mode: "markers", name: "Cluster A",
+     marker: %{size: 4, color: "blue", opacity: 0.7}))
+|> Figure.add_trace(Scatter3d.new(x: x2, y: y2, z: z2, mode: "markers", name: "Cluster B",
+     marker: %{size: 4, color: "red", opacity: 0.7}))
+|> Figure.add_trace(Scatter3d.new(x: x3, y: y3, z: z3, mode: "markers", name: "Cluster C",
+     marker: %{size: 4, color: "green", opacity: 0.7}))
+|> Figure.update_layout(
+  title: "3D Point Clustering",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Basic 3D Cone
+
+`Cone.new(x:, y:, z:, u:, v:, w:)` visualizes a vector field. Each `(x,y,z)` is a cone
+position; `(u,v,w)` is the vector direction and magnitude. `sizemode: "absolute"` makes
+cone size proportional to vector magnitude. `colorscale:` maps magnitude to color.
+`anchor: "tail"` positions the cone's base at the given point.
+
+```elixir
+alias Plotly.{Figure, Cone}
+
+# 3×3×3 grid with a simple rotational vector field: u=-y, v=x, w=0
+positions = for x <- [-1, 0, 1], y <- [-1, 0, 1], z <- [-1, 0, 1], do: {x, y, z}
+
+xs = Enum.map(positions, &elem(&1, 0))
+ys = Enum.map(positions, &elem(&1, 1))
+zs = Enum.map(positions, &elem(&1, 2))
+
+# Rotational field: vectors circle around the z-axis
+us = Enum.map(ys, &(-&1))
+vs = Enum.map(xs, & &1)
+ws = List.duplicate(0, length(xs))
+
+Figure.new()
+|> Figure.add_trace(
+  Cone.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    colorscale: "Blues",
+    sizemode: "absolute",
+    sizeref: 0.5,
+    anchor: "tail",
+    showscale: true
+  )
+)
+|> Figure.update_layout(
+  title: "Basic 3D Cone — Rotational Field",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Multiple 3D Cone
+
+Multiple `Cone` traces can be combined on the same scene — useful for comparing two
+vector fields or showing field lines at different scales. Each trace has its own
+`colorscale:` and `sizeref:`. Setting `showscale: false` on all but one avoids
+cluttering the color bar.
+
+```elixir
+alias Plotly.{Figure, Cone}
+
+# Field 1: rotation around z-axis (z=0 plane)
+pos1 = for x <- [-1, 0, 1], y <- [-1, 0, 1], do: {x, y, 0}
+x1 = Enum.map(pos1, &elem(&1, 0))
+y1 = Enum.map(pos1, &elem(&1, 1))
+z1 = List.duplicate(0, length(pos1))
+u1 = Enum.map(y1, &(-&1))
+v1 = Enum.map(x1, & &1)
+w1 = List.duplicate(0, length(pos1))
+
+# Field 2: diverging field (radially outward) at z=2
+pos2 = for x <- [-1, 0, 1], y <- [-1, 0, 1], do: {x, y, 2}
+x2 = Enum.map(pos2, &elem(&1, 0))
+y2 = Enum.map(pos2, &elem(&1, 1))
+z2 = List.duplicate(2, length(pos2))
+u2 = x2
+v2 = y2
+w2 = List.duplicate(0, length(pos2))
+
+Figure.new()
+|> Figure.add_trace(
+  Cone.new(x: x1, y: y1, z: z1, u: u1, v: v1, w: w1,
+           colorscale: "Blues", sizeref: 0.4, showscale: true, name: "Rotational")
+)
+|> Figure.add_trace(
+  Cone.new(x: x2, y: y2, z: z2, u: u2, v: v2, w: w2,
+           colorscale: "Reds", sizeref: 0.4, showscale: false, name: "Diverging")
+)
+|> Figure.update_layout(
+  title: "Multiple 3D Cone Traces",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > 3D Cone Lighting
+
+`Cone` supports the same `lighting:` properties as `Surface` and `Mesh3d`:
+`ambient`, `diffuse`, `specular`, `roughness`, `fresnel`. `lightposition: %{x:, y:, z:}`
+sets the light source in scene coordinates. High `specular` + low `roughness` = glossy;
+high `roughness` = matte.
+
+```elixir
+alias Plotly.{Figure, Cone}
+
+# Dense grid for impressive lighting demo
+positions = for x <- [-1, -0.5, 0, 0.5, 1],
+                y <- [-1, -0.5, 0, 0.5, 1],
+                z <- [-1, -0.5, 0, 0.5, 1], do: {x, y, z}
+
+xs = Enum.map(positions, &elem(&1, 0))
+ys = Enum.map(positions, &elem(&1, 1))
+zs = Enum.map(positions, &elem(&1, 2))
+
+# Radially outward field
+us = xs
+vs = ys
+ws = zs
+
+Figure.new()
+|> Figure.add_trace(
+  Cone.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    colorscale: "Viridis",
+    sizemode: "absolute",
+    sizeref: 0.3,
+    lighting: %{
+      ambient: 0.3,
+      diffuse: 0.8,
+      specular: 2.0,
+      roughness: 0.3,
+      fresnel: 1.0
+    },
+    lightposition: %{x: 1000, y: 1000, z: 1000},
+    showscale: false
+  )
+)
+|> Figure.update_layout(
+  title: "3D Cone Lighting",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Basic Streamtube Plot
+
+`Streamtube.new(x:, y:, z:, u:, v:, w:)` traces flow lines through a 3D vector field.
+The x/y/z arrays define a regular grid; u/v/w are the corresponding vector components.
+Plotly automatically seeds tube starting positions. `sizeref:` scales tube radius;
+`colorscale:` encodes flow magnitude (speed).
+
+```elixir
+alias Plotly.{Figure, Streamtube}
+
+# Regular grid: x,y each [-4..4 step 1], z [0..3 step 1]
+xs_vals = Enum.to_list(-4..4)
+ys_vals = Enum.to_list(-4..4)
+zs_vals = Enum.to_list(0..3)
+
+grid = for x <- xs_vals, y <- ys_vals, z <- zs_vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+# Vortex field with upward drift: u = -y/(r²), v = x/(r²), w = 0.3
+us = Enum.map(grid, fn {x, y, _z} ->
+  r2 = x * x + y * y
+  if r2 < 0.01, do: 0.0, else: -y / r2
+end)
+
+vs = Enum.map(grid, fn {x, y, _z} ->
+  r2 = x * x + y * y
+  if r2 < 0.01, do: 0.0, else: x / r2
+end)
+
+ws = List.duplicate(0.3, length(grid))
+
+Figure.new()
+|> Figure.add_trace(
+  Streamtube.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    colorscale: "Portland",
+    sizeref: 0.5,
+    showscale: true
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Streamtube — Rotational Field",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"},
+    camera: %{eye: %{x: 1.5, y: 1.5, z: 0.5}}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Starting Position and Segments
+
+`starts: %{x:, y:, z:}` seeds streamtubes from specific positions rather than auto-placing
+them. This controls where flow lines begin, making the visualization more targeted.
+`maxdisplayed:` limits the total number of tubes shown (useful for dense fields).
+Here we use Plotly's wind dataset — a real 3D atmospheric wind-field grid.
+
+```elixir
+alias Plotly.{Figure, Streamtube}
+
+csv =
+  Req.get!(
+    "https://raw.githubusercontent.com/plotly/datasets/master/streamtube-wind.csv"
+  ).body
+
+parse_num = fn s ->
+  case Float.parse(String.trim(s)) do
+    {f, _} -> f
+    :error -> 0.0
+  end
+end
+
+[header_row | data_rows] = String.split(csv, "\n", trim: true)
+headers = header_row |> String.split(",") |> Enum.drop(1) |> Enum.map(&String.trim/1)
+
+by_name =
+  data_rows
+  |> Enum.map(fn row -> row |> String.split(",") |> Enum.drop(1) |> Enum.map(parse_num) end)
+  |> Enum.zip()
+  |> Enum.map(&Tuple.to_list/1)
+  |> then(&Enum.zip(headers, &1))
+  |> Map.new()
+
+[xs, ys, zs, us, vs, ws] = Enum.map(~w[x y z u v w], &by_name[&1])
+
+Figure.new()
+|> Figure.add_trace(
+  Streamtube.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    starts: %{
+      x: List.duplicate(80, 16),
+      y: List.flatten(List.duplicate([20, 30, 40, 50], 4)),
+      z: [0, 0, 0, 0, 5, 5, 5, 5, 10, 10, 10, 10, 15, 15, 15, 15]
+    },
+    sizeref: 0.3,
+    colorscale: "Portland",
+    showscale: false,
+    maxdisplayed: 3000
+  )
+)
+|> Figure.update_layout(
+  title: "Streamtube — Custom Starting Positions",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Basic Isosurface Plot
+
+`Isosurface.new(x:, y:, z:, value:, isomin:, isomax:)` renders surfaces of constant scalar
+value through a 3D volume. The x/y/z arrays define a regular grid; `value` is the scalar at
+each grid point. `isomin`/`isomax` controls which isosurface level(s) are shown. Here the
+scalar field is `f(x,y,z) = x² + y² + z²` — the isosurfaces are concentric spherical shells.
+
+```elixir
+alias Plotly.{Figure, Isosurface}
+
+# 20×20×20 grid from -2 to 2
+n = 20
+vals = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))  # -2..2
+
+grid = for x <- vals, y <- vals, z <- vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+# Scalar field: distance squared from origin
+values = Enum.map(grid, fn {x, y, z} -> x * x + y * y + z * z end)
+
+Figure.new()
+|> Figure.add_trace(
+  Isosurface.new(
+    x: xs, y: ys, z: zs,
+    value: values,
+    isomin: 1,
+    isomax: 4,
+    colorscale: "RdBu",
+    showscale: true,
+    opacity: 0.6
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Isosurface — Spherical Shells (x²+y²+z²)",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Isosurface with Additional Slices
+
+`slices: %{x: %{show: true, locations: [0]}, y: ..., z: ...}` cuts cross-section slices
+through the volume at the specified axis positions. The slice reveals the scalar field
+interior — useful for understanding the full 3D structure. Combine with an isosurface
+for context.
+
+```elixir
+alias Plotly.{Figure, Isosurface}
+
+n = 20
+vals = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))
+
+grid = for x <- vals, y <- vals, z <- vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+values = Enum.map(grid, fn {x, y, z} -> x * x + y * y + z * z end)
+
+Figure.new()
+|> Figure.add_trace(
+  Isosurface.new(
+    x: xs, y: ys, z: zs,
+    value: values,
+    isomin: 1,
+    isomax: 4,
+    colorscale: "RdBu",
+    showscale: true,
+    opacity: 0.3,
+    slices: %{
+      x: %{show: true, locations: [0]},
+      y: %{show: true, locations: [0]},
+      z: %{show: true, locations: [0]}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Isosurface with Cross-Section Slices",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```
+
+## 3D Charts > Multiple Isosurfaces with Caps
+
+`surface: %{count: N}` draws N evenly-spaced isosurfaces between `isomin` and `isomax`.
+`caps: %{x: %{show: false}, y: %{show: false}, z: %{show: true}}` controls whether the
+volume is capped at the bounding-box faces. Disabling x and y caps while keeping z creates
+an open tube-like view of the nested shells.
+
+```elixir
+alias Plotly.{Figure, Isosurface}
+
+n = 20
+vals = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))
+
+grid = for x <- vals, y <- vals, z <- vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+values = Enum.map(grid, fn {x, y, z} -> x * x + y * y + z * z end)
+
+Figure.new()
+|> Figure.add_trace(
+  Isosurface.new(
+    x: xs, y: ys, z: zs,
+    value: values,
+    isomin: 0.5,
+    isomax: 4,
+    surface: %{count: 4},
+    colorscale: "RdBu",
+    showscale: true,
+    opacity: 0.6,
+    caps: %{
+      x: %{show: false},
+      y: %{show: false},
+      z: %{show: true}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Isosurfaces with Caps",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

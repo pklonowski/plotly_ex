@@ -1,0 +1,45 @@
+# Pie Chart Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Place multiple Pie charts side-by-side using `domain:` on each trace to
+define its position on the figure (0–1 in x and y). Use `layout.grid` to
+create a grid of subplots.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Residential", "Non-Residential", "Utility"],
+    values: [19, 26, 55],
+    name: "GHG Emissions",
+    hoverinfo: "label+percent+name",
+    domain: %{row: 0, column: 0}
+  )
+)
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["US", "China", "European Union", "Russian Federation", "Brazil", "India", "Rest of World"],
+    values: [16, 15, 12, 6, 5, 4, 42],
+    name: "CO2 Emissions",
+    hoverinfo: "label+percent+name",
+    domain: %{row: 0, column: 1}
+  )
+)
+|> Figure.update_layout(
+  title: "Global Emissions 1990-2011",
+  height: 400,
+  showlegend: true,
+  grid: %{rows: 1, columns: 2}
+)
+|> Plotly.show()
+```

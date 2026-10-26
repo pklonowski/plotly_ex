@@ -1,0 +1,32 @@
+# Rounded Corners on Bars
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `layout.barcornerradius` to apply rounded corners to all bars in the
+figure. The value is in pixels. Introduced in plotly.js v2.25.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Apples", "Bananas", "Cherries", "Dates"],
+    y: [5, 4, 7, 3],
+    name: "Fruits",
+    marker: %{color: ["#FF6B6B", "#FFD93D", "#C084FC", "#6BCB77"]}
+  )
+)
+|> Figure.update_layout(
+  title: "Rounded Corners on Bars",
+  barcornerradius: 15
+)
+|> Plotly.show()
+```

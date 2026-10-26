@@ -1,0 +1,55 @@
+# Disabling Buttons for Specific Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Certain modebar buttons can be disabled on a per-axis basis using the axis-level
+`fixedrange` layout property. Setting `fixedrange: true` on an axis prevents
+zooming and panning on that axis, disabling the corresponding modebar buttons for it.
+
+This is a **layout** property, not a `config` property.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Lock the y-axis range — users can only zoom/pan horizontally
+Figure.new(
+  data: [
+    Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn x -> :math.sin(x / 3.0) end),
+      mode: "lines"
+    )
+  ],
+  layout: %{
+    title: "Y-axis is locked (fixedrange: true)",
+    yaxis: %{fixedrange: true}
+  }
+)
+|> Plotly.show()
+```
+
+```elixir
+# Lock both axes — effectively disables all zoom/pan
+Figure.new(
+  data: [
+    Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn x -> :math.sin(x / 3.0) end),
+      mode: "lines"
+    )
+  ],
+  layout: %{
+    title: "Both axes locked",
+    xaxis: %{fixedrange: true},
+    yaxis: %{fixedrange: true}
+  }
+)
+|> Plotly.show()
+```

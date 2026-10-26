@@ -1,0 +1,58 @@
+# Multiple Isosurfaces with Caps
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`surface: %{count: N}` draws N evenly-spaced isosurfaces between `isomin` and `isomax`.
+`caps: %{x: %{show: false}, y: %{show: false}, z: %{show: true}}` controls whether the
+volume is capped at the bounding-box faces. Disabling x and y caps while keeping z creates
+an open tube-like view of the nested shells.
+
+```elixir
+alias Plotly.{Figure, Isosurface}
+
+n = 20
+vals = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))
+
+grid = for x <- vals, y <- vals, z <- vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+values = Enum.map(grid, fn {x, y, z} -> x * x + y * y + z * z end)
+
+Figure.new()
+|> Figure.add_trace(
+  Isosurface.new(
+    x: xs, y: ys, z: zs,
+    value: values,
+    isomin: 0.5,
+    isomax: 4,
+    surface: %{count: 4},
+    colorscale: "RdBu",
+    showscale: true,
+    opacity: 0.6,
+    caps: %{
+      x: %{show: false},
+      y: %{show: false},
+      z: %{show: true}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Isosurfaces with Caps",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,40 @@
+# Customizing Size and Range of a Contour Plot's Contours
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+By default Plotly auto-selects contour levels. Use `contours: %{start:, end:, size:}` to
+control them manually:
+- `start:` — the lowest contour level value
+- `end:` — the highest contour level value
+- `size:` — the step between levels (smaller = more lines)
+
+`autocontour: false` must be set (or is implied) when you specify `start`/`end`/`size`.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Jet",
+    autocontour: false,
+    contours: %{start: -1.0, end: 1.0, size: 0.25}
+  )
+)
+|> Figure.update_layout(title: "Contour with Custom Level Range and Step Size")
+|> Plotly.show()
+```

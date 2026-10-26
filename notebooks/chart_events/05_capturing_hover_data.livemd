@@ -1,0 +1,60 @@
+# Capturing Hover Events: Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Display x/y values, trace name, and point index from hover events in a live table.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [5, 2, 8, 1, 6, 3, 9, 4, 7, 2],
+    name: "Series A",
+    mode: "lines+markers"
+  ))
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [3, 6, 2, 7, 4, 8, 1, 5, 3, 9],
+    name: "Series B",
+    mode: "lines+markers"
+  ))
+  |> Figure.update_layout(title: "Hover to capture data", hovermode: "closest")
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:hover, event} ->
+          [pt | _] = event["data"]["points"] || []
+          md = """
+          | Field | Value |
+          |-------|-------|
+          | x | #{pt["x"]} |
+          | y | #{pt["y"]} |
+          | trace | #{pt["name"]} |
+          | curveNumber | #{pt["curveNumber"]} |
+          | pointIndex | #{pt["pointIndex"]} |
+          """
+          Kino.Frame.render(output, Kino.Markdown.new(md))
+      after 60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :hover, :hover)
+Kino.Layout.grid([chart, output])
+```

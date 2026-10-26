@@ -1,0 +1,32 @@
+# Colorscale for Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`colorscale:` accepts any named Plotly colour scale string: `"Viridis"`, `"Hot"`,
+`"RdBu"`, `"Portland"`, etc. `reversescale: true` flips the direction.
+`showscale: false` hides the colour bar.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+for {scale, reverse} <- [{"Viridis", false}, {"Hot", false}, {"RdBu", true}] do
+  Figure.new()
+  |> Figure.add_trace(Contour.new(z: z, colorscale: scale, reversescale: reverse))
+  |> Figure.update_layout(title: "Contour — colorscale: #{scale}#{if reverse, do: " (reversed)", else: ""}")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 3)
+```

@@ -1,0 +1,43 @@
+# Basic Waterfall Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Waterfall.new(x:, y:, measure:)` — `measure` is a list of strings:
+- `"relative"` — bar height = the y value (positive or negative increment)
+- `"total"` — bar shows the running total (y value ignored; set to 0)
+- `"absolute"` — bar starts from zero (used for the initial bar)
+
+`connector: %{line:}` styles the horizontal lines connecting bar tops.
+`textposition: "outside"` and `text:` add value labels above/below each bar.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    name: "2018",
+    orientation: "v",
+    measure: ["relative", "relative", "total", "relative", "relative", "total"],
+    x: ["Sales", "Consulting", "Net revenue", "Purchases", "Other expenses", "Profit before tax"],
+    textposition: "outside",
+    text: ["+60", "+80", "", "-40", "-20", "Total"],
+    y: [60, 80, 0, -40, -20, 0],
+    connector: %{line: %{color: "rgb(63, 63, 63)"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Profit and Loss Statement 2018",
+  xaxis: %{type: "category"},
+  yaxis: %{type: "linear"},
+  showlegend: true
+)
+|> Plotly.show()
+```

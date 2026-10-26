@@ -1,0 +1,26 @@
+# Grouped Horizontal Box Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combine `orientation: "h"` with categorical `y:` values and `layout.boxmode: "group"` for grouped horizontal boxes.
+With horizontal orientation, `x:` holds the data values and `y:` holds the category.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+y = ["day 1", "day 1", "day 1", "day 2", "day 2", "day 2"]
+
+Figure.new()
+|> Figure.add_trace(Box.new(x: [0.2, 0.2, 0.6, 1.0, 0.5, 0.4], y: y, name: "kale",     orientation: "h", marker: %{color: "#3D9970"}))
+|> Figure.add_trace(Box.new(x: [0.6, 0.7, 0.3, 0.6, 0.0, 0.5], y: y, name: "radishes", orientation: "h", marker: %{color: "#FF4136"}))
+|> Figure.add_trace(Box.new(x: [0.1, 0.3, 0.1, 0.9, 0.6, 0.6], y: y, name: "carrots",  orientation: "h", marker: %{color: "#FF851B"}))
+|> Figure.update_layout(title: "Grouped Horizontal Box Plot", boxmode: "group")
+|> Plotly.show()
+```

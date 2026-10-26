@@ -1,0 +1,49 @@
+# Set Default Trace Colors with colorway
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.colorway` overrides the default colour cycle used for successive traces.
+Without it, plotly.js cycles through its built-in palette. With `colorway`, you
+control which colours each trace gets — useful for brand guidelines or
+accessible colour schemes.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+categories = ["Q1", "Q2", "Q3", "Q4"]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: categories, y: [4, 6, 3, 7], name: "Product A"))
+|> Figure.add_trace(Bar.new(x: categories, y: [2, 5, 4, 6], name: "Product B"))
+|> Figure.add_trace(Bar.new(x: categories, y: [5, 3, 6, 4], name: "Product C"))
+|> Figure.update_layout(
+  title: "Custom Colorway",
+  barmode: "group",
+  colorway: ["#e41a1c", "#377eb8", "#4daf4a"]
+)
+|> Plotly.show()
+```
+
+Use an accessible colour palette:
+
+```elixir
+# Wong (2011) colour-blind-safe palette
+Figure.new()
+|> Figure.add_trace(Bar.new(x: categories, y: [4, 6, 3, 7], name: "Series 1"))
+|> Figure.add_trace(Bar.new(x: categories, y: [2, 5, 4, 6], name: "Series 2"))
+|> Figure.add_trace(Bar.new(x: categories, y: [5, 3, 6, 4], name: "Series 3"))
+|> Figure.add_trace(Bar.new(x: categories, y: [3, 4, 5, 3], name: "Series 4"))
+|> Figure.update_layout(
+  title: "Colour-blind-safe Palette (Wong 2011)",
+  barmode: "group",
+  colorway: ["#E69F00", "#56B4E9", "#009E73", "#CC79A7"]
+)
+|> Plotly.show()
+```

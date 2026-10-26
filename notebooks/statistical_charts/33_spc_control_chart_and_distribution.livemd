@@ -1,0 +1,101 @@
+# SPC Control Chart and Distribution
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The control chart (left, 70% width) shows measurements with UCL/LCL and a centre
+line drawn as scatter traces so they appear in the legend. Points outside the
+control limits are highlighted as violation markers.
+
+The distribution histogram (right, 20% width) uses `orientation: "h"` so bins run
+along the shared y-scale. It has its own independent `yaxis2` anchored to `xaxis2`,
+with tick labels hidden to avoid duplication.
+
+```elixir
+alias Plotly.{Figure, Scatter, Histogram}
+
+:rand.seed(:exsss, {10, 20, 30})
+
+n = 30
+process =
+  for i <- 1..n do
+    base = (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+    if i > 20, do: base + 1.5, else: base
+  end
+
+mean  = Enum.sum(process) / n
+sigma = :math.sqrt(Enum.sum(Enum.map(process, fn v -> (v - mean) * (v - mean) end)) / n)
+ucl   = mean + 3 * sigma
+lcl   = mean - 3 * sigma
+
+violations =
+  process
+  |> Enum.with_index(1)
+  |> Enum.filter(fn {v, _i} -> v > ucl or v < lcl end)
+
+viol_x = Enum.map(violations, fn {_v, i} -> i end)
+viol_y = Enum.map(violations, fn {v, _i} -> v end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..n),
+    y: process,
+    mode: "lines+markers",
+    name: "Data",
+    line: %{color: "blue", width: 2},
+    marker: %{color: "blue", size: 8, symbol: "circle"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: viol_x,
+    y: viol_y,
+    mode: "markers",
+    name: "Violation",
+    marker: %{color: "rgb(255,65,54)", size: 12, symbol: "circle-open", line: %{width: 3}, opacity: 0.5}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0.5, n + 0.5, nil, 0.5, n + 0.5],
+    y: [lcl, lcl, nil, ucl, ucl],
+    mode: "lines",
+    name: "LCL/UCL",
+    line: %{color: "red", dash: "dash", width: 2}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0.5, n + 0.5],
+    y: [mean, mean],
+    mode: "lines",
+    name: "Centre",
+    line: %{color: "grey", width: 2}
+  )
+)
+|> Figure.add_trace(
+  Histogram.new(
+    y: process,
+    orientation: "h",
+    name: "Distribution",
+    xaxis: "x2",
+    yaxis: "y2",
+    marker: %{color: "blue", line: %{color: "white", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "SPC Control Chart and Distribution",
+  xaxis: %{domain: [0, 0.7], zeroline: false},
+  yaxis: %{zeroline: false},
+  xaxis2: %{domain: [0.8, 1]},
+  yaxis2: %{anchor: "x2", matches: "y", showticklabels: false}
+)
+|> Plotly.show()
+```

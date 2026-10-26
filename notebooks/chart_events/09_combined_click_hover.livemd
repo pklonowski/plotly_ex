@@ -1,0 +1,50 @@
+# Combined Click and Hover Events
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A single subscriber can differentiate events by checking `event["type"]`.
+This example listens for both `plotly_click` and `plotly_hover` on the same chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 4, 1, 5, 3],
+    mode: "markers",
+    marker: %{size: 14, color: "purple"}
+  ))
+  |> Figure.update_layout(title: "Hover or click the points")
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:chart_event, %{"type" => type} = event} ->
+          [pt | _] = event["data"]["points"] || []
+          label = if type == "plotly_click", do: "click", else: "hover"
+          Kino.Frame.render(
+            output,
+            Kino.Markdown.new("**#{label}** — x: #{pt["x"]}, y: #{pt["y"]}")
+          )
+      after 60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :chart_event)
+Kino.Layout.grid([chart, output])
+```

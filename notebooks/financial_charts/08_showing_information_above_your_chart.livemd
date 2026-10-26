@@ -1,0 +1,44 @@
+# Showing Information above Your Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+An `Indicator` trace can be positioned over other chart types by giving it a `domain` that
+occupies the upper portion of the plot area. A regular `Scatter` trace fills the lower portion.
+Both share the same figure; the indicator overlays as a floating label.
+
+```elixir
+alias Plotly.{Figure, Indicator, Scatter}
+
+y_data = [325, 324, 405, 400, 424, 404, 417, 432, 419, 394, 410, 426, 413, 419, 404,
+          408, 401, 377, 368, 361, 356, 359, 375, 397, 394, 418, 437, 450, 430, 442,
+          424, 443, 420, 418, 423, 423, 426, 440, 437, 436, 447, 460, 478, 472, 450,
+          456, 436, 418, 429, 412, 429, 442, 464, 447, 434, 457, 474, 480, 499, 497,
+          480, 502, 512, 492]
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 492,
+    title: %{text: "Users online"},
+    delta: %{reference: 512, valueformat: ".0f"},
+    domain: %{y: [0, 1], x: [0.25, 0.75]}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(y: y_data)
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 450,
+  xaxis: %{range: [0, 62]}
+)
+|> Plotly.show()
+```

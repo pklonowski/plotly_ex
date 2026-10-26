@@ -1,0 +1,39 @@
+# Scatter Tile Maps — Basic Example
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattermap` is the tile-map counterpart to `Scattergeo`. It uses `lat:`/`lon:`
+coordinates and renders on a tile base map configured by `layout.map`.
+This is the minimal working example.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [45.5051, 47.6062, 37.7749, 34.0522, 41.8781],
+    lon: [-122.6750, -122.3321, -122.4194, -118.2437, -87.6298],
+    mode: "markers",
+    text: ["Portland", "Seattle", "San Francisco", "Los Angeles", "Chicago"],
+    hoverinfo: "text",
+    marker: %{size: 14, color: "blue"}
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Scatter Tile Map",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 40.0, lon: -100.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

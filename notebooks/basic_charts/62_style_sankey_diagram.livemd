@@ -1,0 +1,53 @@
+# Style Sankey Diagram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combine all node and link styling into a fully styled diagram.
+`layout.paper_bgcolor` and `layout.plot_bgcolor` set the background.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    valueformat: ".0f",
+    valuesuffix: " TWh",
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color: ["black", "steelblue", "saddlebrown", "goldenrod", "dimgray"],
+      pad: 20,
+      thickness: 25,
+      line: %{color: "white", width: 1}
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15],
+      color: [
+        "rgba(0,0,0,0.35)",
+        "rgba(70,130,180,0.35)",
+        "rgba(139,69,19,0.35)",
+        "rgba(0,0,0,0.2)",
+        "rgba(70,130,180,0.2)"
+      ]
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Styled Sankey Diagram",
+  width: 800,
+  height: 500,
+  font: %{size: 12, color: "white"},
+  paper_bgcolor: "#1a1a2e",
+  plot_bgcolor: "#1a1a2e"
+)
+|> Plotly.show()
+```

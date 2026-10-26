@@ -1,0 +1,23 @@
+# Legend Names
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `name:` on each trace to control the text shown in the legend. Without a
+`name`, Plotly uses the trace index ("trace 0", "trace 1", etc.).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 4, 3], name: "Blue Trace", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 1, 2], name: "Red Trace", mode: "lines"))
+|> Figure.update_layout(title: "Named Legend Entries")
+|> Plotly.show()
+```

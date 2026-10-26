@@ -1,0 +1,49 @@
+# Polar Chart Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple polar subplots use `subplot: "polar"` (default first polar) and
+`subplot: "polar2"` (second). Define each polar axis with `layout.polar` and
+`layout.polar2` respectively. Use `layout.grid` for positioning.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = for i <- 0..12, do: i * 30
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [1, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1],
+    theta: theta,
+    mode: "lines",
+    fill: "toself",
+    name: "Polar 1",
+    subplot: "polar"
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 3, 4],
+    theta: theta,
+    mode: "lines",
+    fill: "toself",
+    name: "Polar 2",
+    subplot: "polar2"
+  )
+)
+|> Figure.update_layout(
+  title: "Polar Chart Subplots",
+  grid: %{rows: 1, columns: 2},
+  polar: %{domain: %{column: 0}},
+  polar2: %{domain: %{column: 1}}
+)
+|> Plotly.show()
+```

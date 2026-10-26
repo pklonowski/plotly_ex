@@ -1,0 +1,34 @@
+# Basic Table
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Plotly.Table.new/1` takes `header:` and `cells:` as plain maps.
+`header.values` — list of column header strings.
+`cells.values` — **list of columns** (not rows): each element is a list of values for that column.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{values: ["Name", "Age", "City"]},
+    cells: %{
+      values: [
+        ["Alice", "Bob", "Charlie", "Diana"],
+        [25, 30, 35, 28],
+        ["New York", "Los Angeles", "Chicago", "Houston"]
+      ]
+    }
+  )
+)
+|> Figure.update_layout(title: "Basic Table")
+|> Plotly.show()
+```

@@ -1,0 +1,55 @@
+# Hover and Click Anywhere
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Events between points and on unhover
+
+Set `layout.hoveranywhere` and `layout.clickanywhere` to receive events even
+when no point is hit. These remain `plotly_hover` and `plotly_click` events:
+`points` is empty between points, while `xvals`/`yvals` contain axis values and
+top-level `xPixel`/`yPixel` contain cursor pixels. Point pixel fields describe
+point centres when a point is present. `plotly_unhover` is forwarded too.
+
+Move between markers, click empty plot space, then leave a marker or the plot.
+The output shows the latest event without assuming a nonempty points list.
+
+````elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(x: [1, 3, 5], y: [1, 4, 2], mode: "markers"))
+  |> Figure.update_layout(
+    title: "Hover or click anywhere in the axes",
+    hoveranywhere: true, clickanywhere: true,
+    xaxis: %{range: [0, 6]}, yaxis: %{range: [0, 5]}
+  )
+  |> PlotlyLive.new()
+
+listener = spawn(fn ->
+  for _ <- 1..1000 do
+    receive do
+      {:anywhere_event, %{"type" => type, "data" => data}} ->
+        details = Map.take(data, ["points", "xvals", "yvals", "xPixel", "yPixel"])
+        text = "**#{type}**\n\n```elixir\n#{inspect(details, pretty: true)}\n```"
+        Kino.Frame.render(output, Kino.Markdown.new(text))
+    after
+      60_000 -> :timeout
+    end
+  end
+end)
+
+for filter <- [:hover, :click, :unhover] do
+  PlotlyLive.subscribe(chart, listener, :anywhere_event, filter)
+end
+
+Kino.Layout.grid([chart, output])
+````

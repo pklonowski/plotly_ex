@@ -1,0 +1,34 @@
+# Smoothing Contour Lines
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`line: %{smoothing: N}` controls how curved the contour lines are.
+- `0` — straight line segments between grid points (sharp)
+- `1.3` — maximum smoothing (curved, spline-like)
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..9 do
+  for j <- 0..9 do
+    :math.sin(i / 3.0) * :math.cos(j / 3.0)
+  end
+end
+
+for smoothing <- [0, 0.65, 1.3] do
+  Figure.new()
+  |> Figure.add_trace(
+    Contour.new(z: z, line: %{smoothing: smoothing}, colorscale: "Portland")
+  )
+  |> Figure.update_layout(title: "Contour Line Smoothing: #{smoothing}")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 3)
+```

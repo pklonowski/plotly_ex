@@ -1,0 +1,220 @@
+# Plotly for Elixir: Express API
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:explorer, "~> 0.11"}
+])
+```
+
+## Section
+
+The `plotly_ex` library offers an **Express API** that mirrors `plotly.py`'s
+high-level interface. Pass a list of maps (or an Explorer DataFrame) plus column
+names and get an interactive chart in one call.
+
+## Scatter
+
+`Plotly.scatter/2` maps each row to a point. The `x:` and `y:` options name the
+map keys to use for each axis. Rows and selectors may use **atom or string keys**.
+An exact key takes precedence when both forms occur in a row.
+
+```elixir
+cities = [
+  %{"city" => "New York",    "population" => 8_336_817, "area" => 783.8},
+  %{"city" => "Los Angeles", "population" => 3_979_576, "area" => 1_302.0},
+  %{"city" => "Chicago",     "population" => 2_693_976, "area" => 606.1},
+  %{"city" => "Houston",     "population" => 2_320_268, "area" => 1_777.0},
+  %{"city" => "Phoenix",     "population" => 1_680_992, "area" => 1_340.0},
+]
+
+Plotly.scatter(cities,
+  x: "area",
+  y: "population",
+  title: "US Cities: Area vs Population"
+)
+|> Plotly.show()
+```
+
+## Bar
+
+`Plotly.bar/2` draws one rectangular bar per row. Add `color:` to split rows
+into groups — `scatter`, `bar`, `line`, and `quiver` support
+color grouping; each group becomes a separate trace, and plotly.js renders them
+side by side by default.
+
+```elixir
+monthly = [
+  %{"month" => "Jan", "sales" => 42},
+  %{"month" => "Feb", "sales" => 55},
+  %{"month" => "Mar", "sales" => 61},
+  %{"month" => "Apr", "sales" => 48},
+  %{"month" => "May", "sales" => 73}
+]
+
+Plotly.bar(monthly, x: "month", y: "sales", title: "Monthly Sales")
+|> Plotly.show()
+```
+
+```elixir
+regional = [
+  %{"quarter" => "Q1", "sales" => 120, "region" => "North"},
+  %{"quarter" => "Q2", "sales" => 145, "region" => "North"},
+  %{"quarter" => "Q3", "sales" => 162, "region" => "North"},
+  %{"quarter" => "Q1", "sales" =>  98, "region" => "South"},
+  %{"quarter" => "Q2", "sales" => 112, "region" => "South"},
+  %{"quarter" => "Q3", "sales" => 130, "region" => "South"}
+]
+
+Plotly.bar(regional, x: "quarter", y: "sales", color: "region",
+  title: "Sales by Region (grouped)")
+|> Plotly.show()
+```
+
+## Line
+
+`Plotly.line/2` is `scatter` with `mode: "lines"` forced. Ideal for time-series
+data where you want connected points rather than individual markers.
+
+```elixir
+temps = [
+  %{"month" => "Jan", "temp" =>  2.3},
+  %{"month" => "Feb", "temp" =>  3.1},
+  %{"month" => "Mar", "temp" =>  7.5},
+  %{"month" => "Apr", "temp" => 12.8},
+  %{"month" => "May", "temp" => 17.2},
+  %{"month" => "Jun", "temp" => 20.9},
+  %{"month" => "Jul", "temp" => 22.4},
+  %{"month" => "Aug", "temp" => 21.8},
+  %{"month" => "Sep", "temp" => 17.6},
+  %{"month" => "Oct", "temp" => 12.1},
+  %{"month" => "Nov", "temp" =>  6.7},
+  %{"month" => "Dec", "temp" =>  3.2}
+]
+
+Plotly.line(temps, x: "month", y: "temp", title: "Average Monthly Temperature (°C)")
+|> Plotly.show()
+```
+
+## Histogram
+
+`Plotly.histogram/2` bins a single numeric column. Supply `x:` (required) and
+plotly.js chooses sensible bin widths automatically.
+
+```elixir
+heights = [
+  %{"height" => 163}, %{"height" => 170}, %{"height" => 175}, %{"height" => 168},
+  %{"height" => 172}, %{"height" => 165}, %{"height" => 178}, %{"height" => 171},
+  %{"height" => 169}, %{"height" => 174}, %{"height" => 167}, %{"height" => 176},
+  %{"height" => 173}, %{"height" => 164}, %{"height" => 179}, %{"height" => 170},
+  %{"height" => 166}, %{"height" => 177}, %{"height" => 171}, %{"height" => 173}
+]
+
+Plotly.histogram(heights, x: "height", title: "Height Distribution (cm)")
+|> Plotly.show()
+```
+
+## Box
+
+`Plotly.box/2` requires **both** `x:` (category) and `y:` (numeric values) —
+passing only one raises `KeyError`. Each unique `x` value gets its own box
+showing median, quartiles, and outliers.
+
+```elixir
+scores = [
+  %{"group" => "A", "score" => 72}, %{"group" => "A", "score" => 85},
+  %{"group" => "A", "score" => 78}, %{"group" => "A", "score" => 91},
+  %{"group" => "A", "score" => 68}, %{"group" => "A", "score" => 88},
+  %{"group" => "B", "score" => 55}, %{"group" => "B", "score" => 62},
+  %{"group" => "B", "score" => 70}, %{"group" => "B", "score" => 58},
+  %{"group" => "B", "score" => 65}, %{"group" => "B", "score" => 73},
+  %{"group" => "C", "score" => 90}, %{"group" => "C", "score" => 95},
+  %{"group" => "C", "score" => 88}, %{"group" => "C", "score" => 92},
+  %{"group" => "C", "score" => 86}, %{"group" => "C", "score" => 97}
+]
+
+Plotly.box(scores, x: "group", y: "score", title: "Test Scores by Group")
+|> Plotly.show()
+```
+
+## Pie
+
+`Plotly.pie/2` requires `values:` (numeric, required) and accepts `names:`
+(labels, optional). If `names:` is omitted, plotly.js numbers the slices.
+
+```elixir
+budget = [
+  %{"category" => "Housing",       "amount" => 1_500},
+  %{"category" => "Food",          "amount" =>   600},
+  %{"category" => "Transport",     "amount" =>   350},
+  %{"category" => "Entertainment", "amount" =>   200},
+  %{"category" => "Savings",       "amount" =>   500},
+  %{"category" => "Other",         "amount" =>   250}
+]
+
+Plotly.pie(budget, values: "amount", names: "category", title: "Monthly Budget")
+|> Plotly.show()
+```
+
+## Explorer DataFrames
+
+Every Express function accepts an `Explorer.DataFrame` in place of a list of
+maps — the API is identical. The library detects the DataFrame struct and
+extracts columns via `Explorer.Series.to_list/1`.
+
+```elixir
+alias Explorer.DataFrame, as: DF
+
+# Rebuild the cities data as a DataFrame
+cities_df = DF.new(%{
+  "area"       => [783.8, 1_302.0, 606.1, 1_777.0, 1_340.0],
+  "population" => [8_336_817, 3_979_576, 2_693_976, 2_320_268, 1_680_992],
+  "city"       => ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"]
+})
+
+# Identical call — just swap the list for the DataFrame
+Plotly.scatter(cities_df, x: "area", y: "population",
+  title: "US Cities: Area vs Population (DataFrame)")
+|> Plotly.show()
+```
+
+```elixir
+monthly_df = DF.new(%{
+  "month" => ["Jan", "Feb", "Mar", "Apr", "May"],
+  "sales" => [42, 55, 61, 48, 73]
+})
+
+Plotly.bar(monthly_df, x: "month", y: "sales",
+  title: "Monthly Sales (DataFrame)")
+|> Plotly.show()
+```
+
+## Atom-keyed rows and named templates
+
+Named templates are expanded by Elixir before rendering, so they work in both
+live and static Kino widgets without a browser template registry. Inline maps
+are also supported, and explicit layout values override template defaults.
+
+```elixir
+measurements = [%{time: 1, value: 2}, %{time: 2, value: 5}, %{time: 3, value: 3}]
+
+dark_figure = Plotly.scatter(measurements,
+  x: :time, y: :value, template: "plotly_dark", title: "Bundled dark template"
+)
+
+Kino.Layout.grid([
+  Plotly.show(dark_figure),
+  Plotly.Kino.PlotlyStatic.new(dark_figure)
+])
+```
+
+Empty lists remain arrays in JSON. Use `%{}` when an empty object is intended.
+
+```elixir
+empty_figure = Plotly.scatter([], x: :time, y: :value)
+empty_json = empty_figure |> Plotly.Figure.to_render_json() |> Jason.decode!()
+[] = hd(empty_json["data"])["x"]
+[] = hd(empty_json["data"])["y"]
+empty_json
+```

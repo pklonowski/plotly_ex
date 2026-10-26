@@ -1,0 +1,40 @@
+# WebGL Polar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scatterpolargl` is the WebGL-accelerated version of `Scatterpolar`.
+It has an identical API but renders using WebGL, making it much faster for
+large datasets (thousands of points) in polar coordinates.
+
+```elixir
+alias Plotly.{Figure, Scatterpolargl}
+
+:rand.seed(:exsss, {42, 42, 42})
+
+# 1000 random polar points
+n = 1000
+r     = for _ <- 1..n, do: :rand.uniform()
+theta = for _ <- 1..n, do: :rand.uniform() * 360
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolargl.new(
+    r: r,
+    theta: theta,
+    mode: "markers",
+    name: "1000 points (WebGL)",
+    marker: %{size: 3, color: theta, colorscale: "Viridis", showscale: true}
+  )
+)
+|> Figure.update_layout(
+  title: "WebGL Polar Chart — 1000 Random Points"
+)
+|> Plotly.show()
+```

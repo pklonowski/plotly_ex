@@ -1,0 +1,28 @@
+# Responsive Plots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A responsive (fluid) plot fills its container and automatically resizes when the
+window or panel changes size. Set `config.responsive: true` together with
+`layout.autosize: true`.
+
+In Livebook, Kino cells resize dynamically — `responsive: true` is recommended
+for all charts to avoid fixed-width overflow.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: Enum.to_list(1..10), y: [2, 4, 1, 5, 3, 7, 2, 6, 4, 8], mode: "lines+markers")],
+  layout: %{title: "Responsive plot — resize the panel to see it reflow", autosize: true},
+  config: %{responsive: true}
+)
+|> Plotly.show()
+```

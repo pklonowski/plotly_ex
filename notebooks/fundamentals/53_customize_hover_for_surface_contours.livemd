@@ -1,0 +1,36 @@
+# Customize Hover for Surface Contours
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The `contours` key on a `Surface` trace enables projected contour lines on the
+axis planes and highlights the contour under the cursor on hover. Set
+`show: true` and `usecolormap: true` to colour them from the surface colorscale.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 5.0) * :math.cos(j / 5.0))
+
+Figure.new()
+|> Figure.add_trace(Surface.new(
+  z: z,
+  colorscale: "RdBu",
+  contours: %{
+    x: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{x: true}},
+    y: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{y: true}},
+    z: %{show: true, usecolormap: true, highlightcolor: "#42f462"}
+  }
+))
+|> Figure.update_layout(
+  title: "3D Hover — Surface Contours (hover to highlight)",
+  scene: %{camera: %{eye: %{x: 1.5, y: 1.5, z: 1.2}}}
+)
+|> Plotly.show()
+```

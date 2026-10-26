@@ -1,0 +1,51 @@
+# Scatter Tile Maps — Adding Lines
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`mode: "lines"` connects lat/lon points in sequence — useful for routes, tracks,
+or boundaries. Separate traces create separate line segments.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# US cross-country routes
+routes = [
+  {[40.7128, 39.7392, 34.0522], [-74.0060, -104.9903, -118.2437], "NYC → Denver → LA", "blue"},
+  {[41.8781, 35.2271, 29.7604], [-87.6298, -80.8431, -95.3698], "Chicago → Charlotte → Houston", "red"},
+  {[47.6062, 45.5051, 37.7749], [-122.3321, -122.6750, -122.4194], "Seattle → Portland → SF", "green"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(routes, fig, fn {lats, lons, name, color}, acc ->
+    Figure.add_trace(acc,
+      Scattermap.new(
+        lat: lats,
+        lon: lons,
+        mode: "lines+markers",
+        name: name,
+        line: %{width: 2, color: color},
+        marker: %{size: 8}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "US Routes on Tile Map",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 39.0, lon: -98.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

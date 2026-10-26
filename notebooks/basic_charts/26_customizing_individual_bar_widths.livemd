@@ -1,0 +1,33 @@
+# Customizing Individual Bar Widths
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass a list to `width:` to set different widths for each bar. Values are
+in the same units as the x axis. This is useful for variable-width bar
+charts (also called Marimekko or Mekko charts).
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: [1, 2, 3, 5.5, 10],
+    y: [10, 8, 6, 4, 2],
+    width: [0.8, 0.8, 0.8, 3.5, 4],
+    marker: %{color: "rgba(100, 200, 102, 0.7)", line: %{color: "rgba(100, 200, 102, 1.0)", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "Customized Bar Widths",
+  bargap: 0.05
+)
+|> Plotly.show()
+```

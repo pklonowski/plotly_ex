@@ -1,0 +1,50 @@
+# Style the Buttons
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Style Buttons
+
+> **N/A — HTML/CSS styling only**
+>
+> The JS example adds CSS classes and inline styles to the `layout.updatemenus`
+> button container (position, font, background colour, border).
+>
+> In Livebook, button appearance is controlled by Plotly.js's own rendering — there
+> is no HTML DOM to style. The visual look of native buttons can be adjusted via
+> `layout.updatemenus` properties: `bgcolor`, `font`, `bordercolor`, `borderwidth`.
+>
+> For Elixir-driven controls using `Kino.Input`, styling is determined by Livebook's
+> own UI framework.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Example: style native buttons via updatemenus layout properties
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [1, 4, 9, 16, 25],
+  mode: "lines+markers"
+))
+|> Figure.update_layout(
+  title: "Styled Buttons (via layout properties)",
+  updatemenus: [%{
+    type: "buttons",
+    bgcolor: "#2c7bb6",
+    font: %{color: "white", size: 13},
+    bordercolor: "#1a5276",
+    borderwidth: 2,
+    buttons: [
+      %{label: "Lines",    method: "restyle", args: [%{mode: "lines"}]},
+      %{label: "Markers",  method: "restyle", args: [%{mode: "markers"}]},
+      %{label: "Both",     method: "restyle", args: [%{mode: "lines+markers"}]}
+    ]
+  }]
+)
+|> Plotly.show()
+```

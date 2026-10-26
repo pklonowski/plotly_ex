@@ -1,0 +1,39 @@
+# Change the Default Locale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.locale` sets the interface language for the chart. `PlotlyLive` automatically
+loads the corresponding locale registration script from the plotly CDN when this
+is set — no extra setup needed in Livebook.
+
+Available locales include `"fr"`, `"de"`, `"es"`, `"zh-CN"`, `"pt-BR"`, `"ja"`,
+and many others. See the full list at
+https://github.com/plotly/plotly.js/tree/master/dist (files named `plotly-locale-*.js`).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "French locale — hover and modebar buttons translated"},
+  config: %{locale: "fr"}
+)
+|> Plotly.show()
+```
+
+```elixir
+# German locale
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [5, 3, 7, 2, 8], mode: "lines+markers")],
+  layout: %{title: "German locale"},
+  config: %{locale: "de"}
+)
+|> Plotly.show()
+```

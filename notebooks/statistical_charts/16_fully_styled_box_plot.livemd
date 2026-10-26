@@ -1,0 +1,54 @@
+# Fully Styled Box Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combining all box plot styling: fill colour, border, mean line, underlying data points, jitter, and layout customisation.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+# Generate some sample data groups
+:rand.seed(:exsss, {1, 2, 3})
+make_data = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: make_data.(50),
+    name: "Group A",
+    fillcolor: "rgba(93, 164, 214, 0.5)",
+    marker: %{color: "rgb(93, 164, 214)", size: 4, outliercolor: "rgba(219,64,82,0.6)"},
+    line: %{color: "rgb(8, 48, 107)"},
+    boxmean: "sd",
+    boxpoints: "suspectedoutliers"
+  )
+)
+|> Figure.add_trace(
+  Box.new(
+    y: make_data.(50),
+    name: "Group B",
+    fillcolor: "rgba(255, 144, 14, 0.5)",
+    marker: %{color: "rgb(255, 144, 14)", size: 4, outliercolor: "rgba(219,64,82,0.6)"},
+    line: %{color: "rgb(107, 48, 8)"},
+    boxmean: "sd",
+    boxpoints: "suspectedoutliers"
+  )
+)
+|> Figure.update_layout(
+  title: "Fully Styled Box Plot",
+  yaxis: %{zeroline: false},
+  showlegend: true
+)
+|> Plotly.show()
+```

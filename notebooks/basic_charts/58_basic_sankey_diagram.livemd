@@ -1,0 +1,54 @@
+# Basic Sankey Diagram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Sankey.new/1` takes `node:` and `link:` as plain maps.
+`node.label` — list of node names. Nodes are referenced by zero-based index in `link`.
+`link.source` / `link.target` — index into the node list. `link.value` — flow magnitude.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"]
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(title: "Basic Sankey Diagram")
+|> Plotly.show()
+```
+
+## Reverse direction and preserve input order
+
+Plotly.js v4 adds `direction: "reversed"` and `node.sort` / `link.sort`.
+Set both sorts to `"input"` to preserve the supplied ordering rather than
+letting the automatic arrangement sort the flows.
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Sankey.new(
+  direction: "reversed",
+  node: %{label: ["Coal", "Natural Gas", "Electricity", "Losses"], sort: "input"},
+  link: %{
+    source: [0, 0, 1, 1], target: [2, 3, 2, 3],
+    value: [25, 10, 20, 15], sort: "input"
+  }
+))
+|> Figure.update_layout(title: "Reversed Sankey with input ordering")
+|> Plotly.show()
+```

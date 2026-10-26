@@ -1,0 +1,30 @@
+# Reversed Axes with Range (Min/Max) Specified
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+To reverse an axis with an explicit range, pass the bounds in descending
+order: `range: [max, min]`. Plotly treats the first element as the start
+(left/bottom) of the axis.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y = Enum.map(x, &(&1 * &1))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Reversed Axes with Explicit Range",
+  xaxis: %{range: [10, 1]},
+  yaxis: %{range: [100, 0]}
+)
+|> Plotly.show()
+```

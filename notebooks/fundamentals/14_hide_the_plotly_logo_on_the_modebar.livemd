@@ -1,0 +1,24 @@
+# Hide the Plotly Logo on the Modebar
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.displaylogo: false` removes the Plotly logo from the modebar. Useful for
+white-label dashboards or when branding guidelines prohibit third-party logos.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "No Plotly logo in the modebar"},
+  config: %{displaylogo: false}
+)
+|> Plotly.show()
+```

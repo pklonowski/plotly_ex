@@ -1,0 +1,71 @@
+# Starting Position and Segments
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`starts: %{x:, y:, z:}` seeds streamtubes from specific positions rather than auto-placing
+them. This controls where flow lines begin, making the visualization more targeted.
+`maxdisplayed:` limits the total number of tubes shown (useful for dense fields).
+Here we use Plotly's wind dataset — a real 3D atmospheric wind-field grid.
+
+```elixir
+alias Plotly.{Figure, Streamtube}
+
+csv =
+  Req.get!(
+    "https://raw.githubusercontent.com/plotly/datasets/master/streamtube-wind.csv"
+  ).body
+
+parse_num = fn s ->
+  case Float.parse(String.trim(s)) do
+    {f, _} -> f
+    :error -> 0.0
+  end
+end
+
+[header_row | data_rows] = String.split(csv, "\n", trim: true)
+headers = header_row |> String.split(",") |> Enum.drop(1) |> Enum.map(&String.trim/1)
+
+by_name =
+  data_rows
+  |> Enum.map(fn row -> row |> String.split(",") |> Enum.drop(1) |> Enum.map(parse_num) end)
+  |> Enum.zip()
+  |> Enum.map(&Tuple.to_list/1)
+  |> then(&Enum.zip(headers, &1))
+  |> Map.new()
+
+[xs, ys, zs, us, vs, ws] = Enum.map(~w[x y z u v w], &by_name[&1])
+
+Figure.new()
+|> Figure.add_trace(
+  Streamtube.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    starts: %{
+      x: List.duplicate(80, 16),
+      y: List.flatten(List.duplicate([20, 30, 40, 50], 4)),
+      z: [0, 0, 0, 0, 5, 5, 5, 5, 10, 10, 10, 10, 15, 15, 15, 15]
+    },
+    sizeref: 0.3,
+    colorscale: "Portland",
+    showscale: false,
+    maxdisplayed: 3000
+  )
+)
+|> Figure.update_layout(
+  title: "Streamtube — Custom Starting Positions",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

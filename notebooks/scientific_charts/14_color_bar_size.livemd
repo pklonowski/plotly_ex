@@ -1,0 +1,41 @@
+# Color Bar Size
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`colorbar:` sizing options:
+- `thickness:` — bar width in pixels (default ~30)
+- `len:` — bar length as fraction of plot height (0–1; default 1.0)
+- `x:` — horizontal position (0–1 relative to plot; default just right of plot)
+- `y:` — vertical centre position (0–1)
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Viridis",
+    colorbar: %{
+      thickness: 15,
+      len: 0.5,
+      title: %{text: "Value"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour — Compact Color Bar (thickness: 15, len: 0.5)")
+|> Plotly.show()
+```

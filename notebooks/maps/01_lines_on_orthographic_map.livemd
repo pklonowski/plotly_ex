@@ -1,0 +1,47 @@
+# Lines on an Orthographic Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattergeo` with `mode: "lines"` draws paths on a geographic map.
+`layout.geo.projection.type: "orthographic"` renders a globe view.
+Provide `lat:` and `lon:` lists — each index is one point on the path.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# A path across the Pacific
+lat = [37.7749, 21.3069, -33.8688, 35.6762]
+lon = [-122.4194, -157.8583, 151.2093, 139.6503]
+cities = ["San Francisco", "Honolulu", "Sydney", "Tokyo"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "lines+markers",
+    text: cities,
+    line: %{width: 2, color: "blue"},
+    marker: %{size: 8}
+  )
+)
+|> Figure.update_layout(
+  title: "Lines on an Orthographic Map",
+  geo: %{
+    projection: %{type: "orthographic"},
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```

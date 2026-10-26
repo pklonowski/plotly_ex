@@ -1,0 +1,34 @@
+# Use Base64-Encoded Typed Arrays
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+> **Note:** Base64-encoded typed arrays are a browser/JavaScript performance
+> optimisation. In plotly.js you can pass `{bdata: "<base64>", dtype: "f8"}` as
+> trace data, which allows the browser to deserialise large float arrays more
+> efficiently than JSON number arrays. This feature operates entirely in the JS
+> layer and has no Elixir equivalent — Elixir passes regular lists which are
+> serialised to JSON number arrays before reaching the browser.
+
+In practice, Elixir list → JSON array performance is sufficient for typical
+datasets. For very large datasets (millions of points) consider downsampling
+server-side before sending to the client.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Elixir equivalent: plain lists, serialised to JSON arrays
+x = Enum.map(1..1000, & &1)
+y = Enum.map(x, fn i -> :math.sin(i / 50) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines", name: "1 000 points"))
+|> Figure.update_layout(title: "Elixir: plain lists (equivalent to typed arrays in JS)")
+|> Plotly.show()
+```

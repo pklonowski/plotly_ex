@@ -1,0 +1,24 @@
+# Editable Mode
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.editable: true` lets users double-click the chart title, axis labels, and
+legend entries to rename them directly in the browser — no Elixir round-trip needed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3], y: [4, 1, 6], mode: "markers", name: "Series A")],
+  layout: %{title: "Double-click any label to edit it"},
+  config: %{editable: true}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,51 @@
+# Add Links
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Style links via `link.color` (list of rgba strings) and `link.label` (list of hover labels).
+Use `rgba(r, g, b, a)` with low alpha (e.g. 0.4) for transparent flows.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color: ["black", "blue", "brown", "gold", "gray"],
+      pad: 20,
+      thickness: 30,
+      line: %{color: "black", width: 0.5}
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15],
+      color: [
+        "rgba(0,0,0,0.4)",
+        "rgba(0,0,255,0.4)",
+        "rgba(139,69,19,0.4)",
+        "rgba(0,0,0,0.2)",
+        "rgba(0,0,255,0.2)"
+      ],
+      label: [
+        "Coal → Electricity",
+        "Gas → Electricity",
+        "Oil → Electricity",
+        "Coal → Losses",
+        "Gas → Losses"
+      ]
+    }
+  )
+)
+|> Figure.update_layout(title: "Sankey — Styled Links", width: 800, height: 500)
+|> Plotly.show()
+```

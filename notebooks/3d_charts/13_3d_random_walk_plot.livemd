@@ -1,0 +1,51 @@
+# 3D Random Walk Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A random walk is built by computing the cumulative sum of random step deltas.
+`Enum.scan(deltas, 0, fn d, acc -> acc + d end)` builds the running total in Elixir.
+Three separate `Scatter3d` traces (one per walk) give each a distinct color.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+:rand.seed(:exsplus, {1, 2, 3})
+
+n = 500
+step = fn -> :rand.normal() * 0.1 end
+
+walk = fn ->
+  xs = Enum.scan(1..n, 0.0, fn _, acc -> acc + step.() end)
+  ys = Enum.scan(1..n, 0.0, fn _, acc -> acc + step.() end)
+  zs = Enum.scan(1..n, 0.0, fn _, acc -> acc + step.() end)
+  {xs, ys, zs}
+end
+
+{x1, y1, z1} = walk.()
+{x2, y2, z2} = walk.()
+{x3, y3, z3} = walk.()
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x1, y: y1, z: z1, mode: "lines", name: "Walk 1",
+     line: %{color: "blue", width: 2}))
+|> Figure.add_trace(Scatter3d.new(x: x2, y: y2, z: z2, mode: "lines", name: "Walk 2",
+     line: %{color: "red", width: 2}))
+|> Figure.add_trace(Scatter3d.new(x: x3, y: y3, z: z3, mode: "lines", name: "Walk 3",
+     line: %{color: "green", width: 2}))
+|> Figure.update_layout(
+  title: "3D Random Walk",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,52 @@
+# Binding to Click Events
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Spawn a dedicated listener process and subscribe it so click events stream
+into a `Kino.Frame` in real time — no need to re-evaluate cells.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 4, 1, 5, 3],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    textposition: "top center",
+    marker: %{size: 12}
+  ))
+  |> Figure.update_layout(title: "Click points — output appears below")
+  |> PlotlyLive.new()
+
+# Spawn a persistent listener process and subscribe IT to click events
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:click, event} ->
+          [point | _] = event["data"]["points"] || []
+          text = "**Clicked:** x=#{point["x"]}, y=#{point["y"]}, label=#{point["text"]}"
+          Kino.Frame.render(output, Kino.Markdown.new(text))
+      after
+        60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :click, :click)
+
+Kino.Layout.grid([chart, output])
+```

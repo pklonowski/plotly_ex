@@ -1,0 +1,49 @@
+# Hovertemplate
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`hovertemplate` gives full control over the hover label content. Use `%{x}`,
+`%{y}`, `%{text}`, and D3 format strings like `%{y:.2f}`. End with
+`<extra></extra>` to suppress the default secondary box showing the trace name.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["Jan", "Feb", "Mar", "Apr"],
+    y: [1200, 950, 1400, 1100],
+    mode: "lines+markers",
+    hovertemplate: "Month: %{x}<br>Revenue: $%{y:,.0f}<extra></extra>",
+    name: "Revenue"
+  )
+)
+|> Figure.update_layout(title: "Custom Hovertemplate")
+|> Plotly.show()
+```
+
+Use `%{text}` to reference an extra text array:
+
+```elixir
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3],
+    y: [4, 5, 6],
+    mode: "markers",
+    text: ["Point A", "Point B", "Point C"],
+    hovertemplate: "%{text}<br>(%{x}, %{y})<extra></extra>",
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(title: "Hovertemplate with Extra Text")
+|> Plotly.show()
+```

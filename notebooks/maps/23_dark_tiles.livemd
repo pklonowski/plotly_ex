@@ -1,0 +1,46 @@
+# Dark Tiles
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`style: "carto-darkmatter"` provides a dark background tile map. Use light-colored
+markers and text for visibility. Also available: `"carto-positron"` (light grey),
+`"open-street-map"` (color), `"stamen-terrain"` (topographic).
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+cities = ["Tokyo", "Shanghai", "Beijing", "Mumbai", "São Paulo", "Mexico City", "Cairo", "Lagos"]
+lat = [35.6762, 31.2304, 39.9042, 19.0760, -23.5505, 19.4326, 30.0444, 6.5244]
+lon = [139.6503, 121.4737, 116.4074, 72.8777, -46.6333, -99.1332, 31.2357, 3.3792]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers+text",
+    text: cities,
+    textposition: "top right",
+    marker: %{size: 8, color: "cyan"},
+    textfont: %{color: "white", size: 10}
+  )
+)
+|> Figure.update_layout(
+  title: "Dark Tiles — World Megacities",
+  map: %{
+    style: "carto-darkmatter",
+    center: %{lat: 20.0, lon: 0.0},
+    zoom: 1
+  },
+  paper_bgcolor: "#1a1a1a",
+  font: %{color: "white"}
+)
+|> Plotly.show()
+```

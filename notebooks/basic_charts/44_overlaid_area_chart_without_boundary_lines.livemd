@@ -1,0 +1,43 @@
+# Overlaid Area Chart Without Boundary Lines
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Setting `line: %{color: "transparent"}` removes the boundary line while keeping the fill.
+This produces cleaner overlapping areas.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 1",
+    line: %{color: "transparent"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 2",
+    line: %{color: "transparent"}
+  )
+)
+|> Figure.update_layout(title: "Overlaid Area Chart Without Boundary Lines")
+|> Plotly.show()
+```

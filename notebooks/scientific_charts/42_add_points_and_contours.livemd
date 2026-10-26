@@ -1,0 +1,63 @@
+# Add Points and Contours
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A `Carpet` base trace can be augmented with `Scattercarpet` (points/lines in carpet space)
+and `Contourcarpet` (contour lines mapped to the carpet grid). All three traces share the
+same `carpet: "c1"` ID to link them.
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet, Contourcarpet}
+
+# Shared carpet grid data
+a = [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6]
+b = [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3]
+y = [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10]
+
+# Z values for contours (one per grid point)
+z = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    y: y,
+    aaxis: %{tickprefix: "a = ", ticksuffix: "m", smoothing: 1, minorgridcount: 9},
+    baxis: %{tickprefix: "b = ", ticksuffix: "Pa", smoothing: 1, minorgridcount: 9}
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    a: a,
+    b: b,
+    z: z,
+    autocontour: false,
+    contours: %{start: 1, end: 12, size: 2},
+    colorscale: "Viridis",
+    showscale: false
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    a: [4, 4.5, 5, 6],
+    b: [2, 2, 2, 2],
+    mode: "markers+lines",
+    name: "b = 2",
+    marker: %{size: 10, color: "red"},
+    line: %{shape: "spline", smoothing: 1}
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot with Points and Contours")
+|> Plotly.show()
+```

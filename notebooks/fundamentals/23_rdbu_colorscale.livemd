@@ -1,0 +1,25 @@
+# RdBu Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`"RdBu"` (Red-Blue) is a diverging colorscale — red for high values, blue for
+low, white at the midpoint. Ideal for data that has a meaningful zero (e.g.
+anomalies, differences).
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "RdBu"))
+|> Figure.update_layout(title: "RdBu Colorscale Heatmap")
+|> Plotly.show()
+```

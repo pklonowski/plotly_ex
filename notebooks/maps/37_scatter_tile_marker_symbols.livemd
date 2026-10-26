@@ -1,0 +1,50 @@
+# Scatter Tile Maps — Set Marker Symbols
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`marker.symbol:` accepts Plotly symbol names. Common values: `"circle"`, `"square"`,
+`"diamond"`, `"cross"`, `"x"`, `"triangle-up"`, `"triangle-down"`, `"star"`,
+`"circle-open"`, `"square-open"`. Symbols can also be provided as a list for per-point variation.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+symbols = ["circle", "square", "diamond", "cross", "triangle-up", "star"]
+cities  = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia"]
+lat = [40.7128, 34.0522, 41.8781, 29.7604, 33.4484, 39.9526]
+lon = [-74.0060, -118.2437, -87.6298, -95.3698, -112.0740, -75.1652]
+
+fig = Figure.new()
+
+fig =
+  Enum.zip([cities, lat, lon, symbols])
+  |> Enum.reduce(fig, fn {city, la, lo, sym}, acc ->
+    Figure.add_trace(acc,
+      Scattermap.new(
+        lat: [la],
+        lon: [lo],
+        mode: "markers",
+        name: "#{city} (#{sym})",
+        marker: %{size: 14, symbol: sym}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Scatter Tile Map — Marker Symbols",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 38.0, lon: -97.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

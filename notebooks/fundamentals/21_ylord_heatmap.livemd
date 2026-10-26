@@ -1,0 +1,24 @@
+# YlOrRd Heatmap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The `"YlOrRd"` (Yellow-Orange-Red) colorscale is a sequential scheme well-suited
+for data where low values should appear light and high values dark.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "YlOrRd"))
+|> Figure.update_layout(title: "YlOrRd Heatmap")
+|> Plotly.show()
+```

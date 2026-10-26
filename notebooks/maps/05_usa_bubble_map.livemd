@@ -1,0 +1,59 @@
+# USA Bubble Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`geo.scope: "usa"` constrains the map to the contiguous US (plus Alaska and Hawaii).
+`marker.sizemode: "area"` ensures bubble area (not diameter) is proportional to the value.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
+          "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"]
+lat = [40.7128, 34.0522, 41.8781, 29.7604, 33.4484,
+       39.9526, 29.4241, 32.7157, 32.7767, 37.3382]
+lon = [-74.0060, -118.2437, -87.6298, -95.3698, -112.0740,
+       -75.1652, -98.4936, -117.1611, -96.7970, -121.8863]
+population = [8_336_817, 3_979_576, 2_693_976, 2_320_268, 1_680_992,
+              1_584_064, 1_547_253, 1_423_851, 1_343_573, 1_021_795]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: Enum.map(Enum.zip(cities, population), fn {c, p} ->
+      "#{c}<br>Pop: #{p}"
+    end),
+    hoverinfo: "text",
+    marker: %{
+      size: Enum.map(population, &(&1 / 50_000)),
+      sizemode: "area",
+      sizeref: 2,
+      color: population,
+      colorscale: "Blues",
+      showscale: true,
+      colorbar: %{title: %{text: "Population"}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "USA Bubble Map — Largest Cities by Population",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,29 @@
+# Reversed Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `autorange: "reversed"` to flip an axis direction while still
+auto-scaling to fit the data.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y = Enum.map(x, &(&1 * &1))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Reversed Axes",
+  xaxis: %{autorange: "reversed"},
+  yaxis: %{autorange: "reversed"}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,31 @@
+# Fixed-Ratio Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`scaleanchor` and `scaleratio` lock the aspect ratio between axes so that
+one unit on the y-axis equals `scaleratio` units on the x-axis. Essential
+for displaying shapes (circles, squares) without distortion.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Generate a circle; without fixed ratio it renders as an ellipse
+theta = Enum.map(0..100, fn i -> i * 2 * :math.pi() / 100 end)
+x = Enum.map(theta, &:math.cos/1)
+y = Enum.map(theta, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines", name: "circle"))
+|> Figure.update_layout(
+  title: "Fixed-Ratio Axes (1:1) — circle looks like a circle",
+  yaxis: %{scaleanchor: "x", scaleratio: 1}
+)
+|> Plotly.show()
+```

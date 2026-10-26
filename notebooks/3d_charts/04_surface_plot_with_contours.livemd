@@ -1,0 +1,55 @@
+# Surface Plot with Contours
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`contours:` on a `Surface` trace projects contour lines onto each axis plane.
+Each axis key (`x:`, `y:`, `z:`) accepts `%{show: true, usecolormap: true, highlightcolor:, project: %{x: true}}`.
+`show:` enables the contour lines; `project:` projects them onto the axis wall.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+csv =
+  Req.get!(
+    "https://raw.githubusercontent.com/plotly/datasets/master/api_docs/mt_bruno_elevation.csv"
+  ).body
+
+z =
+  csv
+  |> String.split("\n", trim: true)
+  |> Enum.drop(1)
+  |> Enum.map(fn row ->
+    row |> String.split(",") |> Enum.drop(1) |> Enum.map(&String.to_float/1)
+  end)
+
+Figure.new()
+|> Figure.add_trace(
+  Surface.new(
+    z: z,
+    colorscale: "Viridis",
+    contours: %{
+      x: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{x: true}},
+      y: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{y: true}},
+      z: %{show: true, usecolormap: true, highlightcolor: "#42f462", project: %{z: true}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Surface with Contour Projections",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"},
+    camera: %{eye: %{x: 1.87, y: 0.88, z: 0.64}}
+  }
+)
+|> Plotly.show()
+```

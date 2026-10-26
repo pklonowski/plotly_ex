@@ -1,0 +1,477 @@
+# Chart Events
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Chart Events > Click Event Data
+
+`PlotlyLive.subscribe/2` registers the current process (or a given pid) to receive
+`{tag, event_map}` messages whenever a Plotly event fires in the browser.
+
+Click a data point in the chart below, then evaluate the `receive` cell to see the event payload.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 4, 9, 16, 25],
+    mode: "markers",
+    marker: %{size: 15, color: "steelblue"},
+    text: ["A", "B", "C", "D", "E"]
+  ))
+  |> Figure.update_layout(title: "Click any point — then run the next cell")
+  |> PlotlyLive.new()
+```
+
+```elixir
+PlotlyLive.subscribe(chart, :click_data, :click)
+chart
+```
+
+```elixir
+# Click a point above, then evaluate this cell
+receive do
+  {:click_data, event} ->
+    IO.inspect(event, label: "click event", pretty: true)
+after
+  10_000 -> "No click within 10 s — click a point first, then re-run this cell"
+end
+```
+
+## Chart Events > Binding to Click Events
+
+Spawn a dedicated listener process and subscribe it so click events stream
+into a `Kino.Frame` in real time — no need to re-evaluate cells.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 4, 1, 5, 3],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    textposition: "top center",
+    marker: %{size: 12}
+  ))
+  |> Figure.update_layout(title: "Click points — output appears below")
+  |> PlotlyLive.new()
+
+# Spawn a persistent listener process and subscribe IT to click events
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:click, event} ->
+          [point | _] = event["data"]["points"] || []
+          text = "**Clicked:** x=#{point["x"]}, y=#{point["y"]}, label=#{point["text"]}"
+          Kino.Frame.render(output, Kino.Markdown.new(text))
+      after
+        60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :click, :click)
+
+Kino.Layout.grid([chart, output])
+```
+
+## Chart Events > Create Annotation on Click Event
+
+On each click, add a text annotation at the clicked point by updating the figure
+with a new `layout.annotations` list via `PlotlyLive.push/2`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+# Initial scatter trace
+base_fig =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [5, 2, 8, 1, 6, 3, 9, 4, 7, 2],
+    mode: "markers",
+    marker: %{size: 12, color: "coral"}
+  ))
+  |> Figure.update_layout(title: "Click to annotate points")
+
+chart = PlotlyLive.new(base_fig)
+
+# Listener: accumulates annotations and pushes updated figure
+defmodule AnnotationLoop do
+  def run(chart, base_fig, annotations) do
+    receive do
+      {:annotate, event} ->
+        [point | _] = event["data"]["points"] || []
+        new_ann = %{
+          x: point["x"],
+          y: point["y"],
+          text: "#{point["x"]}, #{point["y"]}",
+          showarrow: true,
+          arrowhead: 4,
+          ax: 30,
+          ay: -30
+        }
+        updated_annotations = [new_ann | annotations]
+        updated_fig = Figure.update_layout(base_fig, annotations: updated_annotations)
+        PlotlyLive.push(chart, updated_fig)
+        run(chart, base_fig, updated_annotations)
+    after
+      60_000 -> :ok
+    end
+  end
+end
+
+listener = spawn(fn -> AnnotationLoop.run(chart, base_fig, []) end)
+
+PlotlyLive.subscribe(chart, listener, :annotate, :click)
+chart
+```
+
+## Chart Events > Hover Event Data
+
+`plotly_hover` fires when the cursor enters a data point's hover region.
+The event payload contains a `"points"` list — same structure as click events.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [10, 15, 13, 17, 12],
+    mode: "lines+markers",
+    marker: %{size: 10}
+  ))
+  |> Figure.update_layout(title: "Hover over points")
+  |> PlotlyLive.new()
+
+PlotlyLive.subscribe(chart, :hover_data, :hover)
+chart
+```
+
+```elixir
+# Hover over the chart above, then run this cell
+receive do
+  {:hover_data, event} ->
+    IO.inspect(event, label: "hover event", pretty: true)
+after
+  10_000 -> "No hover within 10 s"
+end
+```
+
+## Chart Events > Capturing Hover Events: Data
+
+Display x/y values, trace name, and point index from hover events in a live table.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [5, 2, 8, 1, 6, 3, 9, 4, 7, 2],
+    name: "Series A",
+    mode: "lines+markers"
+  ))
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [3, 6, 2, 7, 4, 8, 1, 5, 3, 9],
+    name: "Series B",
+    mode: "lines+markers"
+  ))
+  |> Figure.update_layout(title: "Hover to capture data", hovermode: "closest")
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:hover, event} ->
+          [pt | _] = event["data"]["points"] || []
+          md = """
+          | Field | Value |
+          |-------|-------|
+          | x | #{pt["x"]} |
+          | y | #{pt["y"]} |
+          | trace | #{pt["name"]} |
+          | curveNumber | #{pt["curveNumber"]} |
+          | pointIndex | #{pt["pointIndex"]} |
+          """
+          Kino.Frame.render(output, Kino.Markdown.new(md))
+      after 60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :hover, :hover)
+Kino.Layout.grid([chart, output])
+```
+
+## Chart Events > Capturing Hover Events: Cursor and Point Pixels
+
+Top-level `data["xPixel"]` and `data["yPixel"]` describe the cursor relative to
+the plot. Each point's `xPixel` and `yPixel` describe its centre. The two may
+differ because hover can select a nearby point. `bbox` contains the point's
+bounding box when provided upstream. Missing values are `nil`.
+
+Hover over or near a marker to compare all three measurements below.
+
+````elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5], y: [4, 2, 6, 1, 5],
+    mode: "markers", marker: %{size: 20, color: "steelblue"}
+  ))
+  |> Figure.update_layout(title: "Hover near a marker to compare pixels")
+  |> PlotlyLive.new()
+
+listener = spawn(fn ->
+  for _ <- 1..1000 do
+    receive do
+      {:hover_px, %{"data" => data}} ->
+        point = List.first(data["points"] || []) || %{}
+        details = %{
+          cursor_pixels: {data["xPixel"], data["yPixel"]},
+          point_pixels: {point["xPixel"], point["yPixel"]},
+          bbox: point["bbox"]
+        }
+        Kino.Frame.render(output, Kino.Markdown.new("```elixir\n#{inspect(details, pretty: true)}\n```"))
+    after
+      60_000 -> :timeout
+    end
+  end
+end)
+
+PlotlyLive.subscribe(chart, listener, :hover_px, :hover)
+Kino.Layout.grid([chart, output])
+````
+
+## Chart Events > Triggering Hover Events
+
+> **N/A — JavaScript-only API**
+>
+> The JS example calls `Plotly.Fx.hover(graphDiv, [{curveNumber:0, pointNumber:0}])` to
+> programmatically trigger a hover — a browser DOM API with no Elixir equivalent.
+>
+> For Livebook, hover effects are handled automatically by the browser when the user
+> moves the mouse over data points. No Elixir code required.
+
+## Chart Events > Coupled Hover Events
+
+> **N/A — JavaScript-only linked subplot hover**
+>
+> The JS example synchronises hover across subplots using `Plotly.Fx.hover` called
+> inside a `plotly_hover` callback — requires direct access to multiple graph divs.
+>
+> In Livebook, `layout.hovermode: "x unified"` achieves a similar visual effect
+> natively (all traces at the same x show in one tooltip) without custom JS.
+
+## Chart Events > Combined Click and Hover Events
+
+A single subscriber can differentiate events by checking `event["type"]`.
+This example listens for both `plotly_click` and `plotly_hover` on the same chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 4, 1, 5, 3],
+    mode: "markers",
+    marker: %{size: 14, color: "purple"}
+  ))
+  |> Figure.update_layout(title: "Hover or click the points")
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:chart_event, %{"type" => type} = event} ->
+          [pt | _] = event["data"]["points"] || []
+          label = if type == "plotly_click", do: "click", else: "hover"
+          Kino.Frame.render(
+            output,
+            Kino.Markdown.new("**#{label}** — x: #{pt["x"]}, y: #{pt["y"]}")
+          )
+      after 60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :chart_event)
+Kino.Layout.grid([chart, output])
+```
+
+## Chart Events > Binding to Zoom Events
+
+`plotly_relayout` fires on zoom, pan, and axis range changes.
+The event data is a flat map of the changed layout keys,
+e.g. `%{"xaxis.range[0]" => 1.5, "xaxis.range[1]" => 3.2}`.
+
+Use `layout.yaxis.fixedrange: true` to constrain zooming to one axis.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: Enum.to_list(1..20),
+    y: Enum.map(1..20, fn i -> :math.sin(i / 3.0) end),
+    mode: "lines+markers"
+  ))
+  |> Figure.update_layout(
+    title: "Zoom or pan — relayout events appear below",
+    xaxis: %{title: "x"},
+    yaxis: %{title: "y", fixedrange: true}
+  )
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:relayout, %{"data" => data}} ->
+          changes =
+            data
+            |> Map.drop(["_index"])
+            |> Enum.map(fn {k, v} -> "#{k} = #{inspect(v)}" end)
+            |> Enum.join(", ")
+          Kino.Frame.render(output, Kino.Markdown.new("**relayout:** #{changes}"))
+      after 60_000 -> :timeout
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart, listener, :relayout, :relayout)
+Kino.Layout.grid([chart, output])
+```
+
+## Chart Events > Disabling Zoom Events for X Axis
+
+`xaxis.fixedrange: true` prevents zooming/panning on the X axis.
+The Y axis remains zoomable. No event subscription needed — this is a layout config.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: Enum.to_list(1..20),
+  y: Enum.map(1..20, fn i -> :math.sin(i / 3.0) end),
+  mode: "lines+markers"
+))
+|> Figure.update_layout(
+  title: "X zoom disabled — try to zoom on each axis",
+  xaxis: %{fixedrange: true, title: "X — fixed range"},
+  yaxis: %{title: "Y — zoomable"}
+)
+|> Plotly.show()
+```
+
+## Chart Events > Disabling Zoom Events for X and Y Axis
+
+Set `fixedrange: true` on both axes to disable all zooming and panning.
+The chart becomes a static display — useful for dashboards where chart
+proportions must stay fixed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: Enum.to_list(1..20),
+  y: Enum.map(1..20, fn i -> :math.cos(i / 3.0) end),
+  mode: "lines+markers"
+))
+|> Figure.update_layout(
+  title: "All zoom disabled — drag or scroll has no effect",
+  xaxis: %{fixedrange: true},
+  yaxis: %{fixedrange: true}
+)
+|> Plotly.show()
+```
+
+## Chart Events > Hover and Click Anywhere
+
+Set `layout.hoveranywhere` and `layout.clickanywhere` to receive events even
+when no point is hit. These remain `plotly_hover` and `plotly_click` events:
+`points` is empty between points, while `xvals`/`yvals` contain axis values and
+top-level `xPixel`/`yPixel` contain cursor pixels. Point pixel fields describe
+point centres when a point is present. `plotly_unhover` is forwarded too.
+
+Move between markers, click empty plot space, then leave a marker or the plot.
+The output shows the latest event without assuming a nonempty points list.
+
+````elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+output = Kino.Frame.new()
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(x: [1, 3, 5], y: [1, 4, 2], mode: "markers"))
+  |> Figure.update_layout(
+    title: "Hover or click anywhere in the axes",
+    hoveranywhere: true, clickanywhere: true,
+    xaxis: %{range: [0, 6]}, yaxis: %{range: [0, 5]}
+  )
+  |> PlotlyLive.new()
+
+listener = spawn(fn ->
+  for _ <- 1..1000 do
+    receive do
+      {:anywhere_event, %{"type" => type, "data" => data}} ->
+        details = Map.take(data, ["points", "xvals", "yvals", "xPixel", "yPixel"])
+        text = "**#{type}**\n\n```elixir\n#{inspect(details, pretty: true)}\n```"
+        Kino.Frame.render(output, Kino.Markdown.new(text))
+    after
+      60_000 -> :timeout
+    end
+  end
+end)
+
+for filter <- [:hover, :click, :unhover] do
+  PlotlyLive.subscribe(chart, listener, :anywhere_event, filter)
+end
+
+Kino.Layout.grid([chart, output])
+````

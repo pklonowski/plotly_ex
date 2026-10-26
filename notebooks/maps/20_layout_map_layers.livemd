@@ -1,0 +1,46 @@
+# Using 'layout.map.layers' to Specify a Base Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.map.layers` adds custom tile overlays on top of the base style.
+Each layer is a map with `sourcetype: "raster"`, `source:` (list of tile URLs),
+`below: "traces"` to render under data points, and `opacity:`.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [37.7749],
+    lon: [-122.4194],
+    mode: "markers",
+    text: ["San Francisco"],
+    marker: %{size: 12, color: "blue"}
+  )
+)
+|> Figure.update_layout(
+  title: "Custom Tile Layer via layout.map.layers",
+  map: %{
+    style: "white-bg",
+    center: %{lat: 37.7749, lon: -122.4194},
+    zoom: 8,
+    layers: [
+      %{
+        below: "traces",
+        sourcetype: "raster",
+        source: ["https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"],
+        opacity: 0.9
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```

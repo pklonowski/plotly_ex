@@ -1,0 +1,42 @@
+# Table From a CSV
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+In Elixir, CSV data can be read with `File.stream!/1` + `String.split/2`.
+The `Table` trace expects `cells.values` as a list of columns.
+Here we use inline data and show how to transpose rows→columns with `Enum.zip_with`.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+# Simulated CSV rows (header + data)
+headers = ["Country", "Population (M)", "GDP (T$)", "Life Expectancy"]
+
+rows = [
+  ["United States", 331, 23.0, 78.5],
+  ["China",         1440, 17.7, 77.3],
+  ["Germany",       83,   4.2, 81.2],
+  ["Brazil",        213,  1.6, 75.9],
+  ["Japan",         126,  5.1, 84.3]
+]
+
+# Transpose: list of rows → list of columns
+columns = Enum.zip_with(rows, &Function.identity/1)
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{values: headers, fill: %{color: "lightgrey"}, align: "center"},
+    cells: %{values: columns, align: "left"}
+  )
+)
+|> Figure.update_layout(title: "Table from CSV-like Data")
+|> Plotly.show()
+```

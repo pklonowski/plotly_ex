@@ -1,0 +1,43 @@
+# Bar Chart with Line Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combine `Bar` and `Scatter` traces on the same figure. Use a secondary y-axis (`yaxis: "y2"`) when the scales differ.
+Set `yaxis2: %{overlaying: "y", side: "right"}` in layout to overlay the second axis.
+
+```elixir
+alias Plotly.{Figure, Bar, Scatter}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: x,
+    y: [20, 14, 23, 18, 30, 25],
+    name: "Bar Data"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [19, 16, 21, 20, 28, 24],
+    mode: "lines+markers",
+    name: "Line Data",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Bar Chart with Line Plot",
+  yaxis: %{title: "Bar Values"},
+  yaxis2: %{overlaying: "y", side: "right", title: "Line Values"}
+)
+|> Plotly.show()
+```

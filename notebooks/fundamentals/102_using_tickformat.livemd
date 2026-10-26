@@ -1,0 +1,31 @@
+# Using Tickformat
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`tickformat` uses D3 number or time format strings. Use `"%"` to display
+values as percentages (a value of 0.5 renders as "50%").
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..10),
+    y: [0.1, 0.24, 0.18, 0.35, 0.29, 0.41, 0.38, 0.52, 0.47, 0.6],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Y-Axis as Percentage",
+  yaxis: %{tickformat: "%"}
+)
+|> Plotly.show()
+```

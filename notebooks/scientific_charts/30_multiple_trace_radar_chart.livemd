@@ -1,0 +1,45 @@
+# Multiple Trace Radar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Scatterpolar` traces on the same polar axis compare profiles side by side.
+`opacity:` on the trace (or `fillcolor:` with rgba) helps distinguish overlapping fills.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+categories = ["Speed", "Strength", "Stamina", "Agility", "Flexibility", "Speed"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [80, 60, 70, 90, 55, 80],
+    theta: categories,
+    fill: "toself",
+    name: "Athlete A",
+    line: %{color: "rgb(0, 114, 189)"}
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: [50, 90, 60, 65, 85, 50],
+    theta: categories,
+    fill: "toself",
+    name: "Athlete B",
+    line: %{color: "rgb(217, 83, 25)"}
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Trace Radar Chart",
+  polar: %{radialaxis: %{visible: true, range: [0, 100]}},
+  showlegend: true
+)
+|> Plotly.show()
+```

@@ -1,0 +1,36 @@
+# Create Sankey Canvas
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Before styling individual elements, set the overall canvas size and font via `layout`.
+`layout.font` sets the default text size for all node labels.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"]},
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Energy Flow",
+  width: 800,
+  height: 500,
+  font: %{size: 12}
+)
+|> Plotly.show()
+```

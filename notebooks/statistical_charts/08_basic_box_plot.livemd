@@ -1,0 +1,23 @@
+# Basic Box Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Box.new(y: [...])` creates a vertical box plot from raw data.
+Plotly automatically computes the quartiles, median, whiskers, and outliers.
+Use `name:` for the legend label.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(Box.new(y: [0, 1, 1, 2, 3, 5, 8, 13, 21], name: "Fibonacci"))
+|> Figure.update_layout(title: "Basic Box Plot")
+|> Plotly.show()
+```

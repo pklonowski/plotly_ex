@@ -1,0 +1,26 @@
+# Line Chart and a Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Bar` and `Scatter` (line mode) share the same x-axis naturally. No special config needed when the y ranges are similar.
+
+```elixir
+alias Plotly.{Figure, Bar, Scatter}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+bar_y = [20, 14, 25, 16, 18, 22, 19, 15, 12, 16, 14, 17]
+line_y = [19, 15, 22, 20, 18, 23, 21, 18, 14, 18, 16, 20]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: bar_y, name: "Bar Data"))
+|> Figure.add_trace(Scatter.new(x: x, y: line_y, mode: "lines+markers", name: "Line Data"))
+|> Figure.update_layout(title: "Line Chart and a Bar Chart")
+|> Plotly.show()
+```

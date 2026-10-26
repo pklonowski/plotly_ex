@@ -1,0 +1,49 @@
+# Supported US State Codes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Reference notebook: all 50 US state 2-letter codes, grouped by region with different colors.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+regions = [
+  {~w(ME VT NH MA RI CT NY NJ PA), "Northeast", "blue"},
+  {~w(OH MI IN IL WI MN IA MO ND SD NE KS), "Midwest", "green"},
+  {~w(DE MD VA WV NC SC GA FL KY TN AL MS AR LA), "South", "red"},
+  {~w(MT ID WY CO NM AZ UT NV CA OR WA AK HI), "West", "purple"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(regions, fig, fn {states, name, color}, acc ->
+    Figure.add_trace(acc,
+      Scattergeo.new(
+        locations: states,
+        locationmode: "USA-states",
+        mode: "markers",
+        name: name,
+        marker: %{size: 8, color: color}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "US State Codes by Region",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE"
+  }
+)
+|> Plotly.show()
+```

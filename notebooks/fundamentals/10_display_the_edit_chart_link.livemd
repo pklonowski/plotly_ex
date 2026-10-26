@@ -1,0 +1,19 @@
+# Chart Studio Edit Links Were Removed
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Migrate an old configuration
+
+Plotly.js v4 removed the Chart Studio edit link and the configuration fields
+`showLink`, `linkText`, `sendData`, `showEditInChartStudio`, and `showSources`.
+Remove these options rather than renaming them. The old `mapboxAccessToken`
+configuration is also removed; use the map trace examples with token-free tiles.
+
+`showSendToCloud` still exists, but plotly_ex hides Upload to Cloud by default.
+Notebook 12 shows explicit opt-in. For a local copy of figure data, use the
+`downloadJson` example instead.

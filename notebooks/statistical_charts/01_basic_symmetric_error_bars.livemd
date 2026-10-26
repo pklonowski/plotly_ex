@@ -1,0 +1,29 @@
+# Basic Symmetric Error Bars
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`error_y` (or `error_x`) is a plain map on any `Scatter` or `Bar` trace.
+Key fields: `type:`, `array:`, `visible: true`.
+`type: "data"` means the error values are explicit per-point values in `array:`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2],
+    y: [6, 10, 2],
+    error_y: %{type: "data", array: [1, 2, 3], visible: true}
+  )
+)
+|> Figure.update_layout(title: "Basic Symmetric Error Bars")
+|> Plotly.show()
+```

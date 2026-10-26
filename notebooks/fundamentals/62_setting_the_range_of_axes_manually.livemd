@@ -1,0 +1,29 @@
+# Setting the Range of Axes Manually
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `xaxis.range` and `yaxis.range` to `[min, max]` lists to fix the visible
+window of the plot, overriding plotly's auto-scale.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.map(0..100, fn i -> i / 10 end)
+y = Enum.map(x, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines", name: "sin(x)"))
+|> Figure.update_layout(
+  title: "Setting the Range of Axes Manually",
+  xaxis: %{range: [0, 5]},
+  yaxis: %{range: [-1.5, 1.5]}
+)
+|> Plotly.show()
+```

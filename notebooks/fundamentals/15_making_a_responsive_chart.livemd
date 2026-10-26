@@ -1,0 +1,28 @@
+# Making a Responsive Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.responsive: true` makes the chart fill its container and automatically
+resize when the window or panel changes size. Without it, the chart renders at a
+fixed pixel size.
+
+In Livebook, notebook panels resize frequently — `responsive: true` is generally
+recommended for all charts.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Resize the panel — chart follows"},
+  config: %{responsive: true}
+)
+|> Plotly.show()
+```

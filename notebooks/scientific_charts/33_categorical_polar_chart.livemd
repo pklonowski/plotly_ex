@@ -1,0 +1,48 @@
+# Categorical Polar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When `theta:` is a list of strings, set `layout.polar.angularaxis.type: "category"`.
+Plotly places the categories at equal angular spacing around the circle.
+`layout.polar.angularaxis.categoryarray:` overrides the display order.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"]
+rain   = [50, 40, 45, 60, 80, 90, 100, 95, 75, 55, 50, 45, 50]
+temp   = [5,  7,  12, 17, 21, 25,  27,  26, 22, 16, 10,  6,  5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: rain,
+    theta: months,
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Rainfall (mm)"
+  )
+)
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: temp,
+    theta: months,
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Temperature (°C)"
+  )
+)
+|> Figure.update_layout(
+  title: "Categorical Polar Chart — Monthly Climate",
+  polar: %{angularaxis: %{type: "category"}}
+)
+|> Plotly.show()
+```

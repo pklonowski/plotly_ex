@@ -1,0 +1,31 @@
+# Bar Chart with Relative Barmode
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`barmode: "relative"` stacks positive values above the baseline and
+negative values below it. This is useful for showing both gains and
+losses in the same chart.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: [10, 15, 12, 18, 14, 20], name: "Inflow"))
+|> Figure.add_trace(Bar.new(x: x, y: [-5, -8, -6, -10, -7, -12], name: "Outflow"))
+|> Figure.add_trace(Bar.new(x: x, y: [3, -2, 5, -3, 4, -1], name: "Adjustments"))
+|> Figure.update_layout(
+  title: "Bar Chart with Relative Barmode",
+  barmode: "relative",
+  yaxis: %{title: "Value"}
+)
+|> Plotly.show()
+```

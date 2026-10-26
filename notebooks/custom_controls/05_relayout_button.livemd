@@ -1,0 +1,56 @@
+# Relayout Button
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`method: "relayout"` updates layout properties (title, axis ranges, background,
+annotations, etc.) without touching trace data. **Light** restores the light
+appearance while keeping the current zoom; **Reset** restores both the light
+appearance and automatic axis ranges.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..20)
+ys = Enum.map(xs, fn x -> :math.sin(x / 3.0) * x / 10 end)
+
+light = %{plot_bgcolor: "white", paper_bgcolor: "white", font: %{color: "#444"}}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys, mode: "lines+markers"))
+|> Figure.update_layout(light)
+|> Figure.update_layout(
+  title: %{text: "Relayout Button Examples"},
+  xaxis: %{title: %{text: "x"}},
+  yaxis: %{title: %{text: "y"}},
+  updatemenus: [%{
+    type: "buttons",
+    direction: "right",
+    x: 0.5,
+    xanchor: "center",
+    y: 1.12,
+    buttons: [
+      %{label: "Light",
+        method: "relayout",
+        args: [light]},
+      %{label: "Dark",
+        method: "relayout",
+        args: [%{plot_bgcolor: "#1a1a2e", paper_bgcolor: "#16213e",
+                 font: %{color: "white"}}]},
+      %{label: "Zoom In",
+        method: "relayout",
+        args: [%{"xaxis.range": [5, 15], "yaxis.range": [-1, 1]}]},
+      %{label: "Reset",
+        method: "relayout",
+        args: [Map.merge(light, %{"xaxis.autorange": true, "yaxis.autorange": true})]}
+    ]
+  }]
+)
+|> Plotly.show()
+```

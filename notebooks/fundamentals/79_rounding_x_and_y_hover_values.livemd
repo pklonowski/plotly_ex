@@ -1,0 +1,33 @@
+# Rounding X and Y Hover Values
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `xaxis: %{hoverformat: ".2f"}` and `yaxis: %{hoverformat: ".2f"}` in the
+layout to control the number of decimal places shown when hovering. The format
+string uses D3 number formatting syntax (same as `tickformat`).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1.12345, 2.98765, 3.14159],
+    y: [10.9999, 20.0001, 15.5555],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Rounded Hover Values",
+  xaxis: %{hoverformat: ".2f"},
+  yaxis: %{hoverformat: ".2f"}
+)
+|> Plotly.show()
+```

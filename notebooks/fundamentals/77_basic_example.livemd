@@ -1,0 +1,42 @@
+# Basic Example — Horizontal Legend
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `legend.orientation: "h"` to display the legend horizontally below (or
+above) the plot instead of vertically on the right. Use `legend.x` and
+`legend.y` to reposition it. Values are in paper coordinates (0–1).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..5)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [1, 2, 3, 4, 5], name: "Series A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [2, 4, 1, 3, 5], name: "Series B", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [5, 1, 4, 2, 3], name: "Series C", mode: "lines"))
+|> Figure.update_layout(
+  title: "Horizontal Legend",
+  legend: %{orientation: "h"}
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [1, 2, 3, 4, 5], name: "Series A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [2, 4, 1, 3, 5], name: "Series B", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: x, y: [5, 1, 4, 2, 3], name: "Series C", mode: "lines"))
+|> Figure.update_layout(
+  title: "Horizontal Legend Positioned Above Plot",
+  legend: %{orientation: "h", x: 0.5, xanchor: "center", y: 1.1, yanchor: "bottom"}
+)
+|> Plotly.show()
+```

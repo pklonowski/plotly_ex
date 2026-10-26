@@ -1,0 +1,47 @@
+# 3D Mesh Plot with Alphahull
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`alphahull:` controls how tightly the mesh wraps around the point cloud. `alphahull: 0` = convex hull
+(loosest possible mesh). Larger values = tighter wrapping that can capture concave features.
+Here we show the same point cloud with two different alphahull values side by side using subplots.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Same random sphere points for both
+n = 80
+:rand.seed(:exsplus, {1, 2, 3})
+
+{xs, ys, zs} =
+  Enum.reduce(1..n, {[], [], []}, fn _, {xs, ys, zs} ->
+    theta = :rand.uniform() * 2 * :math.pi()
+    phi = :rand.uniform() * :math.pi()
+    {[:math.sin(phi) * :math.cos(theta) | xs],
+     [:math.sin(phi) * :math.sin(theta) | ys],
+     [:math.cos(phi) | zs]}
+  end)
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(x: xs, y: ys, z: zs, alphahull: 0, color: "cyan", opacity: 0.5,
+             name: "alphahull=0 (convex)", scene: "scene")
+)
+|> Figure.add_trace(
+  Mesh3d.new(x: xs, y: ys, z: zs, alphahull: 7, color: "magenta", opacity: 0.5,
+             name: "alphahull=7 (tight)", scene: "scene2")
+)
+|> Figure.update_layout(
+  title: "Alphahull Comparison",
+  scene: %{domain: %{x: [0, 0.5]}, xaxis: %{title: "X"}, yaxis: %{title: "Y"}, zaxis: %{title: "Z"}},
+  scene2: %{domain: %{x: [0.5, 1]}, xaxis: %{title: "X"}, yaxis: %{title: "Y"}, zaxis: %{title: "Z"}}
+)
+|> Plotly.show()
+```

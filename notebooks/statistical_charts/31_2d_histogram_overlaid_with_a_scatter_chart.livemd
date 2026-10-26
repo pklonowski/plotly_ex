@@ -1,0 +1,48 @@
+# 2D Histogram Overlaid with a Scatter Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combining a `Histogram2d` with a `Scatter` trace on the same axes lets you see
+both the density distribution and the individual data points at once.
+Set `opacity` on the histogram to let the scatter points show through.
+
+```elixir
+alias Plotly.{Figure, Histogram2d, Scatter}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 200
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2d.new(
+    x: x, y: y,
+    colorscale: "YlOrRd",
+    opacity: 0.7
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y,
+    mode: "markers",
+    marker: %{color: "white", size: 4, opacity: 0.5}
+  )
+)
+|> Figure.update_layout(title: "2D Histogram Overlaid with Scatter")
+|> Plotly.show()
+```

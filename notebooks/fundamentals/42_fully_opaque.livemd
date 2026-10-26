@@ -1,0 +1,40 @@
+# Fully Opaque
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+By default, Plotly markers are fully opaque (`opacity: 1.0`). This notebook
+shows the distinction between a fully opaque trace and a semi-transparent one
+side by side, to illustrate the baseline.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = [1, 2, 3, 4, 5]
+ys_a = [3, 5, 2, 6, 4]
+ys_b = [2, 4, 3, 5, 3]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: xs, y: ys_a,
+  mode: "markers",
+  name: "Fully opaque (opacity: 1.0)",
+  opacity: 1.0,
+  marker: %{size: 20, color: "steelblue"}
+))
+|> Figure.add_trace(Scatter.new(
+  x: xs, y: ys_b,
+  mode: "markers",
+  name: "Semi-transparent (opacity: 0.3)",
+  opacity: 0.3,
+  marker: %{size: 20, color: "tomato"}
+))
+|> Figure.update_layout(title: "Fully Opaque vs Semi-Transparent Trace")
+|> Plotly.show()
+```

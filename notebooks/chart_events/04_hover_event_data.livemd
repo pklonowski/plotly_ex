@@ -1,0 +1,42 @@
+# Hover Event Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`plotly_hover` fires when the cursor enters a data point's hover region.
+The event payload contains a `"points"` list — same structure as click events.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [10, 15, 13, 17, 12],
+    mode: "lines+markers",
+    marker: %{size: 10}
+  ))
+  |> Figure.update_layout(title: "Hover over points")
+  |> PlotlyLive.new()
+
+PlotlyLive.subscribe(chart, :hover_data, :hover)
+chart
+```
+
+```elixir
+# Hover over the chart above, then run this cell
+receive do
+  {:hover_data, event} ->
+    IO.inspect(event, label: "hover event", pretty: true)
+after
+  10_000 -> "No hover within 10 s"
+end
+```

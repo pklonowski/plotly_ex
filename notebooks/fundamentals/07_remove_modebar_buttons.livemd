@@ -1,0 +1,46 @@
+# Remove ModeBar Buttons
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.modeBarButtonsToRemove` takes a list of button names to hide. Common
+names: `"toImage"`, `"zoom2d"`, `"pan2d"`, `"zoomIn2d"`, `"zoomOut2d"`,
+`"autoScale2d"`, `"resetScale2d"`, `"hoverClosestCartesian"`,
+`"hoverCompareCartesian"`, `"toggleSpikelines"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [5, 3, 7, 2, 8], mode: "lines+markers")],
+  layout: %{title: "Modebar without the download button"},
+  config: %{modeBarButtonsToRemove: ["toImage"]}
+)
+|> Plotly.show()
+```
+
+Remove multiple buttons:
+
+```elixir
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [5, 3, 7, 2, 8], mode: "lines+markers")],
+  layout: %{title: "Zoom buttons removed"},
+  config: %{
+    modeBarButtonsToRemove: [
+      "zoom2d",
+      "pan2d",
+      "zoomIn2d",
+      "zoomOut2d",
+      "autoScale2d",
+      "resetScale2d"
+    ]
+  }
+)
+|> Plotly.show()
+```

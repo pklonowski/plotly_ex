@@ -1,0 +1,37 @@
+# Ambient Lighting
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`lighting.ambient` controls the base illumination on a 3D surface — the amount
+of light that reaches the surface regardless of angle or light position. Range
+is `0.0` (dark) to `1.0` (fully lit). Default is `0.8`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Blues", lighting: %{ambient: 0.2}))
+|> Figure.update_layout(title: "Ambient Lighting: 0.2 (low)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Blues", lighting: %{ambient: 1.0}))
+|> Figure.update_layout(title: "Ambient Lighting: 1.0 (maximum)")
+|> Plotly.show()
+```

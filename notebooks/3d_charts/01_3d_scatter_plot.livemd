@@ -1,0 +1,51 @@
+# 3D Scatter Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scatter3d.new(x:, y:, z:)` places points in 3D space. The `marker` map supports `size:`,
+`color:` (as a list for per-point coloring), `colorscale:`, `opacity:`, and `showscale:`.
+`layout.scene` configures the 3D axes and camera.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+# Generate synthetic helix data
+n = 50
+t = Enum.map(0..(n - 1), &(&1 / n * 4 * :math.pi()))
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = Enum.map(0..(n - 1), &(&1 / n))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: x,
+    y: y,
+    z: z,
+    mode: "markers",
+    marker: %{
+      size: 8,
+      color: z,
+      colorscale: "Viridis",
+      opacity: 0.8,
+      showscale: true
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "3D Scatter — Helix",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

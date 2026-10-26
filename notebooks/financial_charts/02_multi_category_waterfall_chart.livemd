@@ -1,0 +1,57 @@
+# Multi Category Waterfall Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Hierarchical `x:` uses a list of two lists — outer and inner category labels — creating
+a multi-level x-axis. `base: 1000` shifts the starting value of all bars. `nil` (nil in
+Elixir) as a `y` value for `"total"` bars lets Plotly compute the running total automatically.
+`layout.waterfallgroupgap:` controls spacing between groups.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+outer = ["2016", "2017", "2017", "2017", "2017", "2018", "2018", "2018", "2018"]
+inner = ["initial", "q1", "q2", "q3", "total", "q1", "q2", "q3", "total"]
+
+measure = [
+  "absolute",
+  "relative",
+  "relative",
+  "relative",
+  "total",
+  "relative",
+  "relative",
+  "relative",
+  "total"
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    x: [outer, inner],
+    measure: measure,
+    y: [1, 2, 3, -1, nil, 1, 2, -4, nil],
+    base: 1000
+  )
+)
+|> Figure.add_trace(
+  Waterfall.new(
+    x: [outer, inner],
+    measure: measure,
+    y: [1.1, 2.2, 3.3, -1.1, nil, 1.1, 2.2, -4.4, nil],
+    base: 1000
+  )
+)
+|> Figure.update_layout(
+  waterfallgroupgap: 0.5,
+  xaxis: %{title: %{text: "MULTI-CATEGORY"}, tickfont: %{size: 16}, ticks: "outside"}
+)
+|> Plotly.show()
+```

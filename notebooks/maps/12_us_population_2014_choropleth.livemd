@@ -1,0 +1,57 @@
+# Choropleth Map of 2014 US Population by State
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+US population data by state, with `colorscale: "YlOrRd"` for population intensity.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2014_usa_states.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.reject(&(&1["Postal"] == "" or is_nil(&1["Postal"])))
+
+states = Enum.map(data, & &1["Postal"])
+pop = Enum.map(data, &round(elem(Float.parse(&1["Population"]), 0)))
+text = Enum.map(data, fn r -> "#{r["State"]}: #{r["Population"]}" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: states,
+    z: pop,
+    text: text,
+    locationmode: "USA-states",
+    colorscale: "YlOrRd",
+    colorbar: %{title: %{text: "Population"}},
+    hoverinfo: "text"
+  )
+)
+|> Figure.update_layout(
+  title: "2014 US Population by State",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE"
+  }
+)
+|> Plotly.show()
+```

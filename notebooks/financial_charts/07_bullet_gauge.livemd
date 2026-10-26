@@ -1,0 +1,32 @@
+# Bullet Gauge
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A bullet gauge uses `gauge: %{shape: "bullet"}` — it renders as a horizontal bar rather than
+an angular arc. `mode: "number+gauge+delta"` shows the numeric value, bullet bar, and delta
+from the reference all in one compact widget.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Profit"},
+    delta: %{reference: 300},
+    gauge: %{shape: "bullet"},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 250)
+|> Plotly.show()
+```

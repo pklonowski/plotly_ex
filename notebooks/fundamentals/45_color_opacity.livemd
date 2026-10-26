@@ -1,0 +1,40 @@
+# Color Opacity
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Setting `marker.color` to an `"rgba(r, g, b, a)"` string applies opacity at the
+**colour level** — each marker's fill colour has its own alpha. This allows
+per-point transparency when using a list of colours, and is independent of both
+trace `opacity` and `marker.opacity`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [3, 5, 2, 6, 4],
+  mode: "markers",
+  name: "rgba colors",
+  marker: %{
+    size: 24,
+    color: [
+      "rgba(255,   0,   0, 1.0)",
+      "rgba(255, 128,   0, 0.8)",
+      "rgba(  0, 200,   0, 0.6)",
+      "rgba(  0,   0, 255, 0.4)",
+      "rgba(128,   0, 128, 0.2)"
+    ],
+    line: %{color: "black", width: 1}
+  }
+))
+|> Figure.update_layout(title: "Color Opacity via rgba() — each marker has its own alpha")
+|> Plotly.show()
+```

@@ -1,0 +1,32 @@
+# Setting X and Y Coordinates in a Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`x:` and `y:` can be any numeric lists — they do not need to be uniformly spaced.
+Non-uniform coordinates distort the contour shape to reflect real data spacing.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+# Non-uniform x and y coordinates
+x = [0, 1, 2, 3, 5, 8, 13]
+y = [0, 1, 3, 6, 10]
+
+z = for yi <- 0..4 do
+  for xi <- 0..6 do
+    :math.sin(xi / 3.0) * :math.cos(yi / 2.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Contour.new(x: x, y: y, z: z))
+|> Figure.update_layout(title: "Contour Plot with Non-Uniform X and Y Coordinates")
+|> Plotly.show()
+```

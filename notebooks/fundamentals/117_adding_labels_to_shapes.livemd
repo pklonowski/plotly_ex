@@ -1,0 +1,58 @@
+# Adding Labels to Shapes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Add a `label` map to any shape to annotate it directly. Key fields:
+`text`, `font` (map with `size`, `color`), `textposition` (e.g.
+`"middle center"`, `"top left"`). The label moves with the shape.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 3, 5, 4], mode: "lines"))
+|> Figure.update_layout(
+  title: "Shapes with Labels",
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x",
+      yref: "y",
+      x0: 1.5,
+      y0: 2.5,
+      x1: 2.5,
+      y1: 4.5,
+      fillcolor: "rgba(255, 165, 0, 0.3)",
+      line: %{color: "orange"},
+      label: %{
+        text: "Region A",
+        font: %{size: 14, color: "darkorange"},
+        textposition: "middle center"
+      }
+    },
+    %{
+      type: "line",
+      xref: "x",
+      yref: "y",
+      x0: 3.5,
+      y0: 2,
+      x1: 3.5,
+      y1: 5,
+      line: %{color: "royalblue", width: 2, dash: "dot"},
+      label: %{
+        text: "Threshold",
+        font: %{size: 12, color: "royalblue"},
+        textposition: "end"
+      }
+    }
+  ]
+)
+|> Plotly.show()
+```

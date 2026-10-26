@@ -1,0 +1,41 @@
+# Connect the Gaps Between Null Values in the Z Matrix
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`nil` values in the z matrix represent missing data. By default these create holes
+(disconnected contour regions). `connectgaps: true` fills them by interpolating
+across the missing cells.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+# 5×5 z matrix with a nil hole in the centre
+z_with_gaps = [
+  [1,   2,    3,    4,    5],
+  [2,   nil,  nil,  nil,  4],
+  [3,   nil,  9,    nil,  3],
+  [4,   nil,  nil,  nil,  2],
+  [5,   4,    3,    2,    1]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(z: z_with_gaps, name: "With Gaps", showscale: false)
+)
+|> Figure.update_layout(title: "Contour with Gaps (connectgaps: false — default)")
+|> Plotly.show()
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(z: z_with_gaps, connectgaps: true, name: "Gaps Connected")
+)
+|> Figure.update_layout(title: "Contour with Gaps Connected (connectgaps: true)")
+|> Plotly.show()
+```

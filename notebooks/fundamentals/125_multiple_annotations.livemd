@@ -1,0 +1,65 @@
+# Multiple Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass a list of annotation maps to `layout.annotations`. Each map is
+independent and can have different positions, styles, and arrow settings.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: ["2015-02-01", "2015-04-01", "2015-06-01", "2015-08-01",
+        "2015-10-01", "2015-12-01"],
+    y: [32, 55, 43, 91, 81, 53],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Annotations on a Time Series",
+  annotations: [
+    %{
+      x: "2015-04-01",
+      y: 55,
+      xref: "x",
+      yref: "y",
+      text: "Local max",
+      showarrow: true,
+      arrowhead: 3,
+      ax: 0,
+      ay: -40
+    },
+    %{
+      x: "2015-08-01",
+      y: 91,
+      xref: "x",
+      yref: "y",
+      text: "Global max",
+      showarrow: true,
+      arrowhead: 3,
+      ax: 0,
+      ay: -40,
+      font: %{color: "red", size: 14}
+    },
+    %{
+      x: "2015-02-01",
+      y: 32,
+      xref: "x",
+      yref: "y",
+      text: "Start",
+      showarrow: false,
+      xanchor: "left"
+    }
+  ]
+)
+|> Plotly.show()
+```

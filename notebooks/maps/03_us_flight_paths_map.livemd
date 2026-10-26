@@ -1,0 +1,59 @@
+# US Flight Paths Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Scattergeo` line traces represent different flight routes.
+`layout.geo.scope: "north america"` zooms the map to the region.
+Each trace is one route; `showlegend: false` declutters the legend.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+routes = [
+  {[40.7128, 34.0522], [-74.0060, -118.2437], "NYC → LA"},
+  {[41.8781, 29.7604], [-87.6298, -95.3698], "Chicago → Houston"},
+  {[47.6062, 25.7617], [-122.3321, -80.1918], "Seattle → Miami"},
+  {[33.4484, 39.9526], [-112.0740, -75.1652], "Phoenix → Philadelphia"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(routes, fig, fn {lats, lons, name}, acc ->
+    Figure.add_trace(
+      acc,
+      Scattergeo.new(
+        lat: lats,
+        lon: lons,
+        mode: "lines",
+        name: name,
+        line: %{width: 1, color: "red"},
+        opacity: 0.5
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "US Flight Paths",
+  showlegend: false,
+  geo: %{
+    scope: "north america",
+    projection: %{type: "azimuthal equal area"},
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    countrycolor: "#d1d1d1",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```

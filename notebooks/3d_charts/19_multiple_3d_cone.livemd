@@ -1,0 +1,56 @@
+# Multiple 3D Cone
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Cone` traces can be combined on the same scene — useful for comparing two
+vector fields or showing field lines at different scales. Each trace has its own
+`colorscale:` and `sizeref:`. Setting `showscale: false` on all but one avoids
+cluttering the color bar.
+
+```elixir
+alias Plotly.{Figure, Cone}
+
+# Field 1: rotation around z-axis (z=0 plane)
+pos1 = for x <- [-1, 0, 1], y <- [-1, 0, 1], do: {x, y, 0}
+x1 = Enum.map(pos1, &elem(&1, 0))
+y1 = Enum.map(pos1, &elem(&1, 1))
+z1 = List.duplicate(0, length(pos1))
+u1 = Enum.map(y1, &(-&1))
+v1 = Enum.map(x1, & &1)
+w1 = List.duplicate(0, length(pos1))
+
+# Field 2: diverging field (radially outward) at z=2
+pos2 = for x <- [-1, 0, 1], y <- [-1, 0, 1], do: {x, y, 2}
+x2 = Enum.map(pos2, &elem(&1, 0))
+y2 = Enum.map(pos2, &elem(&1, 1))
+z2 = List.duplicate(2, length(pos2))
+u2 = x2
+v2 = y2
+w2 = List.duplicate(0, length(pos2))
+
+Figure.new()
+|> Figure.add_trace(
+  Cone.new(x: x1, y: y1, z: z1, u: u1, v: v1, w: w1,
+           colorscale: "Blues", sizeref: 0.4, showscale: true, name: "Rotational")
+)
+|> Figure.add_trace(
+  Cone.new(x: x2, y: y2, z: z2, u: u2, v: v2, w: w2,
+           colorscale: "Reds", sizeref: 0.4, showscale: false, name: "Diverging")
+)
+|> Figure.update_layout(
+  title: "Multiple 3D Cone Traces",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

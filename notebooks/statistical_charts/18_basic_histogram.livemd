@@ -1,0 +1,29 @@
+# Basic Histogram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Histogram.new(x: [...])` automatically bins the data and counts occurrences per bin.
+Plotly chooses the number of bins automatically; use `nbinsx:` to override.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+# Central Limit Theorem approximation: sum of 12 uniform(0,1) - 6 ≈ N(0,1)
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x))
+|> Figure.update_layout(title: "Basic Histogram")
+|> Plotly.show()
+```

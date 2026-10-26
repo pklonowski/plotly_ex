@@ -1,0 +1,38 @@
+# Annotated Heatmap
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`texttemplate: "%{z}"` prints the z value inside each heatmap cell.
+`textfont: %{color: "...", size: N}` styles the annotation text.
+Use a D3 format string to control decimal places: `texttemplate: "%{z:.2f}"`.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = [
+  [1,  20, 30],
+  [20, 1,  60],
+  [30, 60, 1 ]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Heatmap.new(
+    z: z,
+    x: ["Col A", "Col B", "Col C"],
+    y: ["Row 1", "Row 2", "Row 3"],
+    texttemplate: "%{z}",
+    textfont: %{color: "white", size: 14},
+    colorscale: "Blues"
+  )
+)
+|> Figure.update_layout(title: "Annotated Heatmap")
+|> Plotly.show()
+```

@@ -1,0 +1,30 @@
+# Set Axis Title Position
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`standoff` (inside `title`) controls the distance in pixels between the axis
+title and the tick labels. Increase it when long tick labels would otherwise
+overlap the title.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3]
+y = [1_000_000, 2_000_000, 3_000_000]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Axis Title Position — standoff",
+  xaxis: %{title: %{text: "x axis", standoff: 20}},
+  yaxis: %{title: %{text: "y axis (large numbers)", standoff: 40}}
+)
+|> Plotly.show()
+```

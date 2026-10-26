@@ -1,0 +1,31 @@
+# Disabling Zoom Events for X and Y Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `fixedrange: true` on both axes to disable all zooming and panning.
+The chart becomes a static display — useful for dashboards where chart
+proportions must stay fixed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: Enum.to_list(1..20),
+  y: Enum.map(1..20, fn i -> :math.cos(i / 3.0) end),
+  mode: "lines+markers"
+))
+|> Figure.update_layout(
+  title: "All zoom disabled — drag or scroll has no effect",
+  xaxis: %{fixedrange: true},
+  yaxis: %{fixedrange: true}
+)
+|> Plotly.show()
+```

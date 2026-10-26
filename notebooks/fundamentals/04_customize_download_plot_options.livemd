@@ -1,0 +1,33 @@
+# Customize Download Plot Options
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.toImageButtonOptions` controls what the camera-icon modebar button
+downloads: format (`"png"`, `"svg"`, `"jpeg"`, `"webp"`), filename, pixel dimensions,
+and scale factor.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 6, 3, 8, 5], mode: "lines+markers")],
+  layout: %{title: "Click the camera icon to download"},
+  config: %{
+    toImageButtonOptions: %{
+      format: "svg",
+      filename: "my_plot",
+      height: 500,
+      width: 700,
+      scale: 1
+    }
+  }
+)
+|> Plotly.show()
+```

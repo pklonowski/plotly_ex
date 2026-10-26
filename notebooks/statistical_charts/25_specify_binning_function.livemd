@@ -1,0 +1,43 @@
+# Specify Binning Function
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`histfunc` changes what is computed per bin (default `"count"`):
+- `"count"` — number of data points in the bin
+- `"sum"` — sum of all `y:` values for points in the bin (requires `x:` for bins + `y:` for values)
+- `"avg"` — average of `y:` values per bin
+- `"min"` / `"max"` — min or max of `y:` values per bin
+
+`nbinsx` overrides the automatic bin count.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+# x = categories, y = values to aggregate
+x = for _ <- 1..200, do: :rand.uniform() * 10
+y = for _ <- 1..200, do: :rand.uniform() * 100
+
+for func <- ["count", "sum", "avg", "min", "max"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Histogram.new(
+      x: x,
+      y: (if func == "count", do: nil, else: y),
+      histfunc: func,
+      nbinsx: 10
+    )
+  )
+  |> Figure.update_layout(title: "histfunc: \"#{func}\"", xaxis: %{title: "x"}, yaxis: %{title: func})
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 3)
+```

@@ -1,0 +1,26 @@
+# Box Plot Styling Mean and Standard Deviation
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`boxmean: true` draws a dashed line at the mean.
+`boxmean: "sd"` draws the mean line and shades ±1 standard deviation.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+data = [2.37, 2.16, 4.82, 1.73, 1.04, 0.23, 1.32, 2.91, 0.11, 4.51,
+        0.51, 3.75, 1.35, 2.98, 4.50, 0.18, 4.66, 1.30, 2.06, 1.19]
+
+Figure.new()
+|> Figure.add_trace(Box.new(y: data, name: "Mean line only", boxmean: true))
+|> Figure.add_trace(Box.new(y: data, name: "Mean + SD",      boxmean: "sd"))
+|> Figure.update_layout(title: "Box Plot — Mean and Standard Deviation")
+|> Plotly.show()
+```

@@ -1,0 +1,43 @@
+# Rainbow Box Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Seven Box traces with rainbow colours demonstrate the full colour spectrum.
+Each trace's `y` data is offset slightly to space the boxes apart visually.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+:rand.seed(:exsss, {42, 42, 42})
+
+colors = ["red", "orangered", "orange", "gold", "green", "steelblue", "mediumpurple"]
+names  = ["Red", "Orange-Red", "Orange", "Yellow", "Green", "Blue", "Violet"]
+
+fig =
+  Enum.zip(colors, names)
+  |> Enum.with_index()
+  |> Enum.reduce(Figure.new(), fn {{color, name}, i}, fig ->
+    y = for _ <- 1..30 do
+      (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0) |> Kernel.+(i * 0.5)
+    end
+
+    Figure.add_trace(fig, Box.new(
+      y: y,
+      name: name,
+      fillcolor: color,
+      line: %{color: color},
+      marker: %{color: color}
+    ))
+  end)
+
+fig
+|> Figure.update_layout(title: "Rainbow Box Plot", showlegend: true)
+|> Plotly.show()
+```

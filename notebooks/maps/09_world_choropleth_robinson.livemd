@@ -1,0 +1,55 @@
+# World Choropleth Map (Robinson Projection)
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Choropleth` fills countries with colors based on a numeric `z:` value.
+`locations:` must be ISO-3 country codes (3-letter, e.g. `"USA"`, `"GBR"`).
+`locationmode: "ISO-3"` tells Plotly how to match codes to the built-in GeoJSON.
+`geo.projection.type: "robinson"` is commonly used for world maps.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+# World happiness index sample data (illustrative)
+data = [
+  {"FIN", 7.8}, {"DNK", 7.7}, {"CHE", 7.6}, {"ISL", 7.6}, {"NLD", 7.5},
+  {"NOR", 7.5}, {"SWE", 7.4}, {"LUX", 7.4}, {"NZL", 7.3}, {"AUT", 7.3},
+  {"AUS", 7.2}, {"CAN", 7.2}, {"GBR", 7.1}, {"DEU", 7.0}, {"USA", 6.9},
+  {"FRA", 6.7}, {"JPN", 6.1}, {"CHN", 5.6}, {"BRA", 6.3}, {"MEX", 6.5},
+  {"RUS", 5.5}, {"IND", 3.8}, {"ZAF", 4.9}, {"EGY", 4.2}, {"ETH", 4.2}
+]
+
+locations = Enum.map(data, &elem(&1, 0))
+z = Enum.map(data, &elem(&1, 1))
+text = Enum.map(data, fn {c, v} -> "#{c}: #{v}" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: locations,
+    z: z,
+    text: text,
+    locationmode: "ISO-3",
+    colorscale: "Viridis",
+    colorbar: %{title: %{text: "Happiness"}},
+    zmin: 3,
+    zmax: 8
+  )
+)
+|> Figure.update_layout(
+  title: "World Happiness Index (Illustrative)",
+  geo: %{
+    projection: %{type: "robinson"},
+    showframe: false,
+    showcoastlines: true
+  }
+)
+|> Plotly.show()
+```

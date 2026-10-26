@@ -1,0 +1,42 @@
+# Changing Size of Rows and Columns
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`columnwidth` sets the relative width of each column (a list of numbers — ratios, not pixels).
+`cells.height` and `header.height` set the row height in pixels.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    columnwidth: [3, 1, 2],
+    header: %{
+      values: ["Description", "Count", "Category"],
+      height: 40,
+      fill: %{color: "#3F51B5"},
+      font: %{color: "white", size: 13},
+      align: "center"
+    },
+    cells: %{
+      values: [
+        ["Long description text here", "Short", "Another long item"],
+        [42, 7, 128],
+        ["Alpha", "Beta", "Gamma"]
+      ],
+      height: 30,
+      align: "left"
+    }
+  )
+)
+|> Figure.update_layout(title: "Changing Size of Rows and Columns")
+|> Plotly.show()
+```

@@ -1,0 +1,50 @@
+# Style A and B Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`aaxis.minorgridcolor:`, `gridcolor:`, and `color:` style the parametric axis lines and labels.
+`layout.plot_bgcolor:` and `paper_bgcolor:` set the chart background — here a dark theme.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6],
+    b: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3],
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{
+      tickprefix: "a = ",
+      ticksuffix: "m",
+      smoothing: 1,
+      minorgridcount: 9,
+      minorgridcolor: "white",
+      gridcolor: "white",
+      color: "white"
+    },
+    baxis: %{
+      tickprefix: "b = ",
+      ticksuffix: "Pa",
+      smoothing: 1,
+      minorgridcount: 9,
+      minorgridcolor: "white",
+      gridcolor: "white",
+      color: "white"
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Carpet Plot — Styled Axes (Dark Theme)",
+  plot_bgcolor: "black",
+  paper_bgcolor: "black"
+)
+|> Plotly.show()
+```

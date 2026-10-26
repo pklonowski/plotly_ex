@@ -1,0 +1,31 @@
+# Add Text Template in Pie Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`texttemplate` controls the text shown inside or outside each slice of a Pie
+chart. Available tokens: `%{label}`, `%{value}`, `%{percent}` (formatted as
+a percentage string, e.g. "25%"). Combine with `textposition: "inside"` to
+display the labels within each slice.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Apples", "Bananas", "Cherries", "Dates"],
+    values: [40, 25, 20, 15],
+    texttemplate: "%{label}: %{value} (%{percent})",
+    textposition: "inside"
+  )
+)
+|> Figure.update_layout(title: "Pie Chart with Text Template")
+|> Plotly.show()
+```

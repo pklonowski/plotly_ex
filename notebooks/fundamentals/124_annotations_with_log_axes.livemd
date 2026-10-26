@@ -1,0 +1,58 @@
+# Annotations with Log Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When an axis uses `type: "log"`, annotation coordinates must be specified
+in log₁₀ space. For a data value `v`, set the annotation coordinate to
+`:math.log10(v)`. For example, to annotate the point at y = 1000, set
+`y: :math.log10(1000)` which equals `3.0`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 10, 100, 1_000, 10_000],
+    y: [1, 10, 100, 1_000, 10_000],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Annotations on Log Axes",
+  xaxis: %{type: "log"},
+  yaxis: %{type: "log"},
+  annotations: [
+    %{
+      x: :math.log10(100),
+      y: :math.log10(100),
+      xref: "x",
+      yref: "y",
+      text: "y = 100",
+      showarrow: true,
+      arrowhead: 2,
+      ax: 40,
+      ay: -40
+    },
+    %{
+      x: :math.log10(10_000),
+      y: :math.log10(10_000),
+      xref: "x",
+      yref: "y",
+      text: "y = 10,000",
+      showarrow: true,
+      arrowhead: 2,
+      ax: -60,
+      ay: 30
+    }
+  ]
+)
+|> Plotly.show()
+```

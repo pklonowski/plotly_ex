@@ -1,0 +1,62 @@
+# Multiple Trace Filled-Area Animation
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Animate multiple filled area traces simultaneously. Each frame's `data` list
+has one entry per trace (index-matched). Using `stackgroup: "g1"` stacks the areas.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..30)
+n_frames = 30
+
+frames =
+  for i <- 1..n_frames do
+    phase = i * 0.25
+    y1 = Enum.map(x, fn xi -> abs(:math.sin(xi * 0.4 + phase)) * 3 + 1 end)
+    y2 = Enum.map(x, fn xi -> abs(:math.cos(xi * 0.3 + phase)) * 2 + 1 end)
+    y3 = Enum.map(x, fn xi -> abs(:math.sin(xi * 0.5 + phase * 1.5)) * 1.5 + 0.5 end)
+    %{name: "f#{i}", data: [%{y: y1}, %{y: y2}, %{y: y3}]}
+  end
+
+mk_trace = fn init_y, name, color ->
+  Scatter.new(
+    x: x, y: init_y, mode: "lines", name: name,
+    fill: "tonexty", fillcolor: "rgba(#{color}, 0.4)",
+    line: %{color: "rgba(#{color}, 0.9)"},
+    stackgroup: "g1"
+  )
+end
+
+Figure.new(
+  data: [
+    mk_trace.(Enum.map(x, fn xi -> abs(:math.sin(xi * 0.4)) * 3 + 1 end), "Series A", "100, 149, 237"),
+    mk_trace.(Enum.map(x, fn xi -> abs(:math.cos(xi * 0.3)) * 2 + 1 end), "Series B", "255, 127, 80"),
+    mk_trace.(Enum.map(x, fn xi -> abs(:math.sin(xi * 0.5)) * 1.5 + 0.5 end), "Series C", "60, 179, 113")
+  ],
+  layout: %{
+    title: "Multiple Trace Stacked Filled-Area Animation",
+    xaxis: %{range: [0, 30], autorange: false},
+    yaxis: %{autorange: false, range: [0, 15]},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 80, redraw: false}, transition: %{duration: 40}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

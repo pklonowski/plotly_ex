@@ -1,0 +1,66 @@
+# Update Button
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`method: "update"` is a combined `restyle` + `relayout` in one call.
+`args` is `[trace_update_map, layout_update_map]`. Use it when a single
+button should change both trace properties and layout simultaneously.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+xs = Enum.to_list(1..30)
+ys_sin  = Enum.map(xs, fn x -> :math.sin(x / 5.0) end)
+ys_cos  = Enum.map(xs, fn x -> :math.cos(x / 5.0) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_sin, name: "sin", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: xs, y: ys_cos, name: "cos", mode: "lines", visible: false))
+|> Figure.update_layout(
+  title: "Update Button — Sin View",
+  xaxis: %{title: "x"},
+  yaxis: %{range: [-1.2, 1.2], title: "sin(x/5)"},
+  updatemenus: [%{
+    type: "buttons",
+    direction: "right",
+    x: 0.5,
+    xanchor: "center",
+    y: 1.12,
+    showactive: true,
+    buttons: [
+      %{
+        label: "Sin",
+        method: "update",
+        args: [
+          %{visible: [true, false]},
+          %{title: "Update Button — Sin View", "yaxis.title.text": "sin(x/5)"}
+        ]
+      },
+      %{
+        label: "Cos",
+        method: "update",
+        args: [
+          %{visible: [false, true]},
+          %{title: "Update Button — Cos View", "yaxis.title.text": "cos(x/5)"}
+        ]
+      },
+      %{
+        label: "Both",
+        method: "update",
+        args: [
+          %{visible: [true, true]},
+          %{title: "Update Button — Both Traces", "yaxis.title.text": "value"}
+        ]
+      }
+    ]
+  }]
+)
+|> Plotly.show()
+```

@@ -1,0 +1,72 @@
+# Multi Bullet
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple bullet indicators are placed by assigning each trace a `domain: %{x: [0,1], y: [lo, hi]}`
+to split the vertical space. Alternatively use `domain: %{row:, column:}` with `layout.grid`.
+Here we use explicit `y` domains to stack three bullets vertically.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 180,
+    title: %{text: "Revenue"},
+    delta: %{reference: 200},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 300]},
+      steps: [%{range: [0, 150], color: "lightgray"}, %{range: [150, 250], color: "gray"}],
+      threshold: %{line: %{color: "red", width: 2}, thickness: 0.75, value: 280}
+    },
+    domain: %{x: [0.25, 1], y: [0.67, 1]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 35,
+    title: %{text: "Profit"},
+    delta: %{reference: 30},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 50]},
+      steps: [%{range: [0, 25], color: "lightgray"}, %{range: [25, 40], color: "gray"}],
+      threshold: %{line: %{color: "red", width: 2}, thickness: 0.75, value: 45}
+    },
+    domain: %{x: [0.25, 1], y: [0.33, 0.66]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 78,
+    title: %{text: "Satisfaction"},
+    delta: %{reference: 80},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 100]},
+      steps: [%{range: [0, 50], color: "lightgray"}, %{range: [50, 75], color: "gray"}],
+      threshold: %{line: %{color: "red", width: 2}, thickness: 0.75, value: 90}
+    },
+    domain: %{x: [0.25, 1], y: [0, 0.32]}
+  )
+)
+|> Figure.update_layout(
+  title: "KPI Dashboard",
+  width: 700,
+  height: 500,
+  margin: %{l: 120}
+)
+|> Plotly.show()
+```

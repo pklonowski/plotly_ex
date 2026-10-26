@@ -1,0 +1,36 @@
+# Contour Lines
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`contours: %{coloring: "lines"}` renders only the contour lines, colour-coded
+by value using the chosen `colorscale:`. The fill is transparent.
+Combine with `line: %{width: 2}` to make the lines more visible.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Jet",
+    contours: %{coloring: "lines"},
+    line: %{width: 2}
+  )
+)
+|> Figure.update_layout(title: "Contour Lines Only (coloring: \"lines\")")
+|> Plotly.show()
+```

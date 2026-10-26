@@ -1,0 +1,56 @@
+# Asymmetric Filled Error Bands
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Asymmetric filled error bands work the same as symmetric bands but with
+different upper and lower offsets from the mean. Two `fill: "tonexty"` traces
+sandwich the upper and lower bounds respectively.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y_mean  = [2, 3, 4, 5, 4, 3, 2, 3, 4, 5]
+# Upper offset is larger than lower — asymmetric band
+y_upper = Enum.zip_with(y_mean, [1.5,1.5,2.0,2.0,1.5,1.0,1.0,1.5,2.0,2.0], &(&1 + &2))
+y_lower = Enum.zip_with(y_mean, [0.5,0.5,0.5,1.0,0.5,0.5,0.5,0.5,0.5,0.5], &(&1 - &2))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y_upper,
+    mode: "lines",
+    line: %{color: "transparent"},
+    name: "Upper bound",
+    showlegend: false
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y_lower,
+    mode: "lines",
+    fill: "tonexty",
+    fillcolor: "rgba(200, 50, 50, 0.2)",
+    line: %{color: "transparent"},
+    name: "Asymmetric band",
+    showlegend: true
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y_mean,
+    mode: "lines",
+    line: %{color: "rgb(200, 50, 50)"},
+    name: "Mean"
+  )
+)
+|> Figure.update_layout(title: "Asymmetric Filled Error Bands")
+|> Plotly.show()
+```

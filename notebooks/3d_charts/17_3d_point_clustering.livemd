@@ -1,0 +1,49 @@
+# 3D Point Clustering
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+To visualize clustered 3D data, use one `Scatter3d` trace per cluster — each gets its own
+`name:` (legend entry) and `marker.color:`. This is preferable to a single trace with
+per-point colors because each cluster can be toggled via the legend independently.
+`:rand.normal()` generates standard-normal samples; multiply by σ and add μ for any Gaussian.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+:rand.seed(:exsplus, {42, 0, 0})
+
+gen_cluster = fn n, cx, cy, cz, sigma ->
+  xs = for(_ <- 1..n, do: cx + :rand.normal() * sigma)
+  ys = for(_ <- 1..n, do: cy + :rand.normal() * sigma)
+  zs = for(_ <- 1..n, do: cz + :rand.normal() * sigma)
+  {xs, ys, zs}
+end
+
+{x1, y1, z1} = gen_cluster.(100, 0, 0, 0, 0.5)
+{x2, y2, z2} = gen_cluster.(100, 3, 3, 3, 0.5)
+{x3, y3, z3} = gen_cluster.(100, 0, 3, 6, 0.5)
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x1, y: y1, z: z1, mode: "markers", name: "Cluster A",
+     marker: %{size: 4, color: "blue", opacity: 0.7}))
+|> Figure.add_trace(Scatter3d.new(x: x2, y: y2, z: z2, mode: "markers", name: "Cluster B",
+     marker: %{size: 4, color: "red", opacity: 0.7}))
+|> Figure.add_trace(Scatter3d.new(x: x3, y: y3, z: z3, mode: "markers", name: "Cluster C",
+     marker: %{size: 4, color: "green", opacity: 0.7}))
+|> Figure.update_layout(
+  title: "3D Point Clustering",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

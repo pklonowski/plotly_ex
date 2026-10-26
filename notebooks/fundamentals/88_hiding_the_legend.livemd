@@ -1,0 +1,23 @@
+# Hiding the Legend
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `layout.showlegend: false` to hide the legend entirely, regardless of
+how many traces are in the figure.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], name: "Series A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 4], name: "Series B", mode: "lines"))
+|> Figure.update_layout(title: "No Legend", showlegend: false)
+|> Plotly.show()
+```

@@ -1,0 +1,49 @@
+# Customise OHLC Chart Colors
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`increasing: %{line: %{color:}}` and `decreasing: %{line: %{color:}}` set the colors for
+up and down bars. OHLC uses lines only (no filled bodies), so only `line.color` applies —
+unlike Candlestick which also supports `fillcolor`.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Ohlc.new(
+    x: dates,
+    open: open, high: high, low: low, close: close,
+    increasing: %{line: %{color: "#17BECF"}},
+    decreasing: %{line: %{color: "#7F7F7F"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Apple OHLC — Custom Colors",
+  xaxis: %{rangeslider: %{visible: false}}
+)
+|> Plotly.show()
+```

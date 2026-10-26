@@ -1,0 +1,42 @@
+# Manually Set Range
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`xaxis.range: [date_string, date_string]` restricts the visible time window even when the
+full dataset is loaded. `xaxis.type: "date"` must be set explicitly when providing a range —
+Plotly needs to know the axis type before the data is inspected.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(mode: "lines", x: dates, y: high, line: %{color: "#17BECF"}))
+|> Figure.add_trace(Scatter.new(mode: "lines", x: dates, y: low,  line: %{color: "#7F7F7F"}))
+|> Figure.update_layout(
+  title: "AAPL — Custom Range (H2 2016)",
+  xaxis: %{
+    type: "date",
+    range: ["2016-07-01", "2016-12-31"]
+  },
+  yaxis: %{autorange: true}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,35 @@
+# Adding Hover Text to Data in Line and Scatter Plots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use the `text` property on a Scatter trace to supply custom labels that appear
+in the hover tooltip. By default Plotly shows the x/y values; `text` adds or
+replaces those labels.
+
+Set `mode: "markers"` (or `"lines+markers"`) to show markers. Set
+`hoverinfo: "text"` to show only the custom text in the tooltip.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2],
+    y: [1, 3, 2],
+    mode: "markers",
+    text: ["Alpha", "Beta", "Gamma"],
+    hoverinfo: "text",
+    marker: %{size: 14}
+  )
+)
+|> Figure.update_layout(title: "Hover Text on Scatter Points")
+|> Plotly.show()
+```

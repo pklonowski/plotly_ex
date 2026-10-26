@@ -1,0 +1,78 @@
+# Donut Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `hole: 0.4` (or any 0–1 value) to cut a hole in the centre of the
+pie, creating a donut chart. Use a paper-referenced annotation to add text
+in the centre.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Residential", "Non-Residential", "Utility"],
+    values: [19, 26, 55],
+    hole: 0.4,
+    name: "GHG Emissions"
+  )
+)
+|> Figure.update_layout(
+  title: "Donut Chart",
+  height: 450,
+  width: 500,
+  annotations: [
+    %{
+      text: "GHG",
+      x: 0.5,
+      y: 0.5,
+      font: %{size: 20},
+      showarrow: false
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+Side-by-side donut charts with `domain`:
+
+```elixir
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    values: [16, 15, 12, 6, 5, 4, 42],
+    labels: ["US", "China", "EU", "Russia", "Brazil", "India", "Rest"],
+    domain: %{x: [0, 0.45]},
+    name: "CO2",
+    hoverinfo: "label+percent+name",
+    hole: 0.4
+  )
+)
+|> Figure.add_trace(
+  Pie.new(
+    values: [27, 11, 25, 8, 1, 3, 25],
+    labels: ["US", "China", "EU", "Russia", "Brazil", "India", "Rest"],
+    domain: %{x: [0.55, 1]},
+    name: "GHG",
+    hoverinfo: "label+percent+name",
+    hole: 0.4
+  )
+)
+|> Figure.update_layout(
+  title: "CO2 vs GHG Emissions",
+  height: 400,
+  annotations: [
+    %{text: "CO2", x: 0.18, y: 0.5, showarrow: false, font: %{size: 16}},
+    %{text: "GHG", x: 0.82, y: 0.5, showarrow: false, font: %{size: 16}}
+  ]
+)
+|> Plotly.show()
+```

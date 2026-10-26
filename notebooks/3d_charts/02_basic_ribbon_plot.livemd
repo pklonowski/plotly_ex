@@ -1,0 +1,54 @@
+# Basic Ribbon Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A ribbon plot is created from multiple `Scatter3d` traces with `mode: "lines"` and
+`surfaceaxis: 1`. `surfaceaxis` fills the area below the line onto the specified axis plane
+(0 = x, 1 = y, 2 = z). Each trace becomes one ribbon. `surfacecolor:` sets the fill color.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+x_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+ribbons = [
+  {0, [1, 3, 2, 4, 5, 3, 4, 2, 3], "blue"},
+  {1, [2, 4, 3, 1, 4, 2, 3, 5, 2], "green"},
+  {2, [3, 2, 4, 5, 3, 2, 1, 3, 4], "red"}
+]
+
+fig =
+  Enum.reduce(ribbons, Figure.new(), fn {y_pos, z_vals, color}, fig ->
+    Figure.add_trace(
+      fig,
+      Scatter3d.new(
+        x: x_vals,
+        y: List.duplicate(y_pos, length(x_vals)),
+        z: z_vals,
+        mode: "lines",
+        surfaceaxis: 1,
+        surfacecolor: color,
+        line: %{color: "black", width: 4}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Ribbon Plot",
+  showlegend: false,
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Category"},
+    zaxis: %{title: "Value"}
+  }
+)
+|> Plotly.show()
+```

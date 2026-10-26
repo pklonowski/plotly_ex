@@ -1,0 +1,44 @@
+# Topographical 3D Surface Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`Surface.new(z:)` renders a 3D surface from a z matrix (list of rows). Optional `x:` and `y:`
+arrays set axis coordinates. `colorscale:` accepts any named colorscale string. Here we fetch
+the Mt Bruno topography dataset — a 25×25 elevation grid — from plotly's dataset repository.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+csv =
+  Req.get!(
+    "https://raw.githubusercontent.com/plotly/datasets/master/api_docs/mt_bruno_elevation.csv"
+  ).body
+
+z =
+  csv
+  |> String.split("\n", trim: true)
+  |> Enum.drop(1)
+  |> Enum.map(fn row ->
+    row |> String.split(",") |> Enum.drop(1) |> Enum.map(&String.to_float/1)
+  end)
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis"))
+|> Figure.update_layout(
+  title: "Mt Bruno Elevation",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Elevation (m)"}
+  }
+)
+|> Plotly.show()
+```

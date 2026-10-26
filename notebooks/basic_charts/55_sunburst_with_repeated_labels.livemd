@@ -1,0 +1,46 @@
+# Sunburst with Repeated Labels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+If the same label string appears under multiple parents (e.g. "Petroleum" under both "North America" and "Europe"),
+Plotly cannot distinguish them by label alone. Use `ids:` to assign a unique ID per node.
+`labels:` can then repeat freely — they are display names only.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    ids: [
+      "North America", "Europe", "Australia",
+      "North America - Petroleum", "North America - Coal",
+      "Europe - Petroleum", "Europe - Coal",
+      "Australia - Petroleum", "Australia - Coal"
+    ],
+    labels: [
+      "North America", "Europe", "Australia",
+      "Petroleum", "Coal",
+      "Petroleum", "Coal",
+      "Petroleum", "Coal"
+    ],
+    parents: [
+      "", "", "",
+      "North America", "North America",
+      "Europe", "Europe",
+      "Australia", "Australia"
+    ],
+    values: [0, 0, 0, 50, 25, 40, 30, 20, 10],
+    branchvalues: "remainder"
+  )
+)
+|> Figure.update_layout(title: "Sunburst with Repeated Labels")
+|> Plotly.show()
+```

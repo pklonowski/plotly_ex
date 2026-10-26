@@ -1,0 +1,62 @@
+# 3D Cone Lighting
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Cone` supports the same `lighting:` properties as `Surface` and `Mesh3d`:
+`ambient`, `diffuse`, `specular`, `roughness`, `fresnel`. `lightposition: %{x:, y:, z:}`
+sets the light source in scene coordinates. High `specular` + low `roughness` = glossy;
+high `roughness` = matte.
+
+```elixir
+alias Plotly.{Figure, Cone}
+
+# Dense grid for impressive lighting demo
+positions = for x <- [-1, -0.5, 0, 0.5, 1],
+                y <- [-1, -0.5, 0, 0.5, 1],
+                z <- [-1, -0.5, 0, 0.5, 1], do: {x, y, z}
+
+xs = Enum.map(positions, &elem(&1, 0))
+ys = Enum.map(positions, &elem(&1, 1))
+zs = Enum.map(positions, &elem(&1, 2))
+
+# Radially outward field
+us = xs
+vs = ys
+ws = zs
+
+Figure.new()
+|> Figure.add_trace(
+  Cone.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    colorscale: "Viridis",
+    sizemode: "absolute",
+    sizeref: 0.3,
+    lighting: %{
+      ambient: 0.3,
+      diffuse: 0.8,
+      specular: 2.0,
+      roughness: 0.3,
+      fresnel: 1.0
+    },
+    lightposition: %{x: 1000, y: 1000, z: 1000},
+    showscale: false
+  )
+)
+|> Figure.update_layout(
+  title: "3D Cone Lighting",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

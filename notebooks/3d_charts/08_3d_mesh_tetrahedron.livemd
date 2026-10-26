@@ -1,0 +1,45 @@
+# 3D Mesh Tetrahedron
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When `i:`, `j:`, `k:` are provided, `Mesh3d` uses explicit triangle face connectivity instead
+of computing faces from the point cloud. Each element of `i`/`j`/`k` is a 0-based vertex index;
+the three together define one triangular face. A tetrahedron has 4 vertices and 4 faces.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    # 4 vertices of a tetrahedron
+    x: [0, 1, 2, 0],
+    y: [0, 0, 1, 2],
+    z: [0, 2, 0, 1],
+    # 4 triangular faces (indices into x/y/z)
+    i: [0, 0, 0, 1],
+    j: [1, 2, 3, 2],
+    k: [2, 3, 1, 3],
+    # per-face or per-vertex intensity for coloring
+    intensity: [0, 0.33, 0.66, 1.0],
+    colorscale: "Viridis",
+    opacity: 0.7
+  )
+)
+|> Figure.update_layout(
+  title: "Tetrahedron — Explicit Face Connectivity",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

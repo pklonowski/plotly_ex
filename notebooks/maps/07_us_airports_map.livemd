@@ -1,0 +1,63 @@
+# US Airports Map
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+Airport data is fetched from a public CSV via `Req.get!`.
+Parse by splitting on newlines and commas, then plot with `Scattergeo`.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# Fetch US airport data
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+text = Enum.map(airports, fn a -> "#{a["airport"]}, #{a["state"]}: #{a["cnt"]} flights" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: text,
+    hoverinfo: "text",
+    marker: %{size: 3, color: "blue", opacity: 0.5}
+  )
+)
+|> Figure.update_layout(
+  title: "US Airports — February 2011 Traffic",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```

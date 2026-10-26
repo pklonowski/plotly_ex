@@ -1,0 +1,43 @@
+# Add Carpet Scatter Trace
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattercarpet` overlays points or lines on a `Carpet` trace. The `carpet: "c1"` field links it
+to the base carpet. `a:` and `b:` are in carpet parameter space (not data space).
+`line: %{shape: "spline", smoothing: 1}` produces a smooth curve between the points.
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet}
+
+a_grid = Enum.map([4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6], &(&1 * 1.0e-6))
+b_grid = Enum.map([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3], &(&1 * 1.0e6))
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: a_grid,
+    b: b_grid,
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{tickprefix: "a = ", ticksuffix: "m", smoothing: 1, minorgridcount: 9},
+    baxis: %{tickprefix: "b = ", ticksuffix: "Pa", smoothing: 1, minorgridcount: 9}
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    a: Enum.map([4, 4.5, 5, 6], &(&1 * 1.0e-6)),
+    b: Enum.map([1.5, 2.5, 1.5, 2.5], &(&1 * 1.0e6)),
+    line: %{shape: "spline", smoothing: 1}
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot with Scatter Trace")
+|> Plotly.show()
+```

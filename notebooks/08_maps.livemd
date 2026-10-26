@@ -1,0 +1,1891 @@
+# Maps
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Maps > Lines on an Orthographic Map
+
+`Scattergeo` with `mode: "lines"` draws paths on a geographic map.
+`layout.geo.projection.type: "orthographic"` renders a globe view.
+Provide `lat:` and `lon:` lists — each index is one point on the path.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# A path across the Pacific
+lat = [37.7749, 21.3069, -33.8688, 35.6762]
+lon = [-122.4194, -157.8583, 151.2093, 139.6503]
+cities = ["San Francisco", "Honolulu", "Sydney", "Tokyo"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "lines+markers",
+    text: cities,
+    line: %{width: 2, color: "blue"},
+    marker: %{size: 8}
+  )
+)
+|> Figure.update_layout(
+  title: "Lines on an Orthographic Map",
+  geo: %{
+    projection: %{type: "orthographic"},
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > London to NYC Great Circle
+
+A great circle is the shortest path between two points on a sphere.
+Plotly automatically interpolates great circle arcs when `lat:`/`lon:` endpoints are given.
+Use `layout.geo.projection.type: "natural earth"` for a standard world map view.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: [51.5074, 40.7128],
+    lon: [-0.1278, -74.0060],
+    mode: "lines+markers",
+    text: ["London", "New York"],
+    line: %{width: 3, color: "red"},
+    marker: %{size: 10}
+  )
+)
+|> Figure.update_layout(
+  title: "London to NYC Great Circle",
+  geo: %{
+    projection: %{type: "natural earth"},
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    showframe: false
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > US Flight Paths Map
+
+Multiple `Scattergeo` line traces represent different flight routes.
+`layout.geo.scope: "north america"` zooms the map to the region.
+Each trace is one route; `showlegend: false` declutters the legend.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+routes = [
+  {[40.7128, 34.0522], [-74.0060, -118.2437], "NYC → LA"},
+  {[41.8781, 29.7604], [-87.6298, -95.3698], "Chicago → Houston"},
+  {[47.6062, 25.7617], [-122.3321, -80.1918], "Seattle → Miami"},
+  {[33.4484, 39.9526], [-112.0740, -75.1652], "Phoenix → Philadelphia"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(routes, fig, fn {lats, lons, name}, acc ->
+    Figure.add_trace(
+      acc,
+      Scattergeo.new(
+        lat: lats,
+        lon: lons,
+        mode: "lines",
+        name: name,
+        line: %{width: 1, color: "red"},
+        opacity: 0.5
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "US Flight Paths",
+  showlegend: false,
+  geo: %{
+    scope: "north america",
+    projection: %{type: "azimuthal equal area"},
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    countrycolor: "#d1d1d1",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Europe Bubble Map
+
+Bubble maps use `Scattergeo` with `marker.size:` as a list — each value scales
+the corresponding point's circle. `geo.scope: "europe"` zooms to Europe.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+cities = ["London", "Paris", "Berlin", "Madrid", "Rome", "Amsterdam", "Vienna", "Warsaw"]
+lat = [51.5074, 48.8566, 52.5200, 40.4168, 41.9028, 52.3676, 48.2082, 52.2297]
+lon = [-0.1278, 2.3522, 13.4050, -3.7038, 12.4964, 4.9041, 16.3738, 21.0122]
+population = [9_648_110, 2_148_271, 3_669_491, 3_305_408, 2_872_800, 921_402, 1_930_527, 1_790_658]
+
+# Scale population to reasonable bubble sizes
+max_pop = Enum.max(population)
+sizes = Enum.map(population, &(round(&1 / max_pop * 50) + 5))
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: Enum.map(Enum.zip(cities, population), fn {c, p} -> "#{c}: #{p}" end),
+    marker: %{
+      size: sizes,
+      color: sizes,
+      colorscale: "Viridis",
+      showscale: true,
+      colorbar: %{title: %{text: "Relative Size"}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Europe Bubble Map — City Populations",
+  geo: %{
+    scope: "europe",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    countrycolor: "#d1d1d1"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > USA Bubble Map
+
+`geo.scope: "usa"` constrains the map to the contiguous US (plus Alaska and Hawaii).
+`marker.sizemode: "area"` ensures bubble area (not diameter) is proportional to the value.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
+          "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"]
+lat = [40.7128, 34.0522, 41.8781, 29.7604, 33.4484,
+       39.9526, 29.4241, 32.7157, 32.7767, 37.3382]
+lon = [-74.0060, -118.2437, -87.6298, -95.3698, -112.0740,
+       -75.1652, -98.4936, -117.1611, -96.7970, -121.8863]
+population = [8_336_817, 3_979_576, 2_693_976, 2_320_268, 1_680_992,
+              1_584_064, 1_547_253, 1_423_851, 1_343_573, 1_021_795]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: Enum.map(Enum.zip(cities, population), fn {c, p} ->
+      "#{c}<br>Pop: #{p}"
+    end),
+    hoverinfo: "text",
+    marker: %{
+      size: Enum.map(population, &(&1 / 50_000)),
+      sizemode: "area",
+      sizeref: 2,
+      color: population,
+      colorscale: "Blues",
+      showscale: true,
+      colorbar: %{title: %{text: "Population"}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "USA Bubble Map — Largest Cities by Population",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Canadian Cities Map
+
+`Scattergeo` with `mode: "markers+text"` shows both dots and city name labels.
+`textposition:` controls where the label appears relative to the marker.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+cities = ["Toronto", "Montreal", "Vancouver", "Calgary", "Edmonton",
+          "Ottawa", "Winnipeg", "Quebec City", "Hamilton", "Halifax"]
+lat = [43.6532, 45.5017, 49.2827, 51.0447, 53.5461,
+       45.4215, 49.8951, 46.8139, 43.2557, 44.6488]
+lon = [-79.3832, -73.5673, -123.1207, -114.0719, -113.4938,
+       -75.6972, -97.1384, -71.2080, -79.8711, -63.5752]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers+text",
+    text: cities,
+    textposition: "top right",
+    marker: %{size: 8, color: "red", symbol: "circle"}
+  )
+)
+|> Figure.update_layout(
+  title: "Canadian Cities Map",
+  geo: %{
+    scope: "north america",
+    resolution: 50,
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    countrycolor: "#d1d1d1",
+    lataxis: %{range: [41, 65]},
+    lonaxis: %{range: [-140, -55]}
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > US Airports Map
+
+Airport data is fetched from a public CSV via `Req.get!`.
+Parse by splitting on newlines and commas, then plot with `Scattergeo`.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# Fetch US airport data
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+text = Enum.map(airports, fn a -> "#{a["airport"]}, #{a["state"]}: #{a["cnt"]} flights" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: text,
+    hoverinfo: "text",
+    marker: %{size: 3, color: "blue", opacity: 0.5}
+  )
+)
+|> Figure.update_layout(
+  title: "US Airports — February 2011 Traffic",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > North America Precipitation Map
+
+`marker.color:` as a numeric list combined with `colorscale:` maps the precipitation
+value to a color. `showscale: true` adds a color bar legend.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2015_06_30_precipitation.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r ->
+    match?({_, _}, Float.parse(r["Lat"] || "")) and
+    match?({_, _}, Float.parse(r["Lon"] || "")) and
+    match?({_, _}, Float.parse(r["Globvalue"] || ""))
+  end)
+
+lat = Enum.map(data, &(elem(Float.parse(&1["Lat"]), 0)))
+lon = Enum.map(data, &(elem(Float.parse(&1["Lon"]), 0)))
+precip = Enum.map(data, &(elem(Float.parse(&1["Globvalue"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    marker: %{
+      size: 5,
+      color: precip,
+      colorscale: "Portland",
+      reversescale: false,
+      cmin: 0,
+      cmax: Enum.max(precip),
+      showscale: true,
+      colorbar: %{title: %{text: "Precipitation (in)"}}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "North America Precipitation — June 30, 2015",
+  geo: %{
+    scope: "north america",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showlakes: true,
+    lakecolor: "#BDDDE4",
+    lataxis: %{range: [15, 75]},
+    lonaxis: %{range: [-180, -50]}
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > World Choropleth Map (Robinson Projection)
+
+`Choropleth` fills countries with colors based on a numeric `z:` value.
+`locations:` must be ISO-3 country codes (3-letter, e.g. `"USA"`, `"GBR"`).
+`locationmode: "ISO-3"` tells Plotly how to match codes to the built-in GeoJSON.
+`geo.projection.type: "robinson"` is commonly used for world maps.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+# World happiness index sample data (illustrative)
+data = [
+  {"FIN", 7.8}, {"DNK", 7.7}, {"CHE", 7.6}, {"ISL", 7.6}, {"NLD", 7.5},
+  {"NOR", 7.5}, {"SWE", 7.4}, {"LUX", 7.4}, {"NZL", 7.3}, {"AUT", 7.3},
+  {"AUS", 7.2}, {"CAN", 7.2}, {"GBR", 7.1}, {"DEU", 7.0}, {"USA", 6.9},
+  {"FRA", 6.7}, {"JPN", 6.1}, {"CHN", 5.6}, {"BRA", 6.3}, {"MEX", 6.5},
+  {"RUS", 5.5}, {"IND", 3.8}, {"ZAF", 4.9}, {"EGY", 4.2}, {"ETH", 4.2}
+]
+
+locations = Enum.map(data, &elem(&1, 0))
+z = Enum.map(data, &elem(&1, 1))
+text = Enum.map(data, fn {c, v} -> "#{c}: #{v}" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: locations,
+    z: z,
+    text: text,
+    locationmode: "ISO-3",
+    colorscale: "Viridis",
+    colorbar: %{title: %{text: "Happiness"}},
+    zmin: 3,
+    zmax: 8
+  )
+)
+|> Figure.update_layout(
+  title: "World Happiness Index (Illustrative)",
+  geo: %{
+    projection: %{type: "robinson"},
+    showframe: false,
+    showcoastlines: true
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > USA Choropleth Map
+
+For US state choropleth, use `locationmode: "USA-states"` with 2-letter state codes.
+`geo.scope: "usa"` zooms to the US. Fetch real state data from Plotly's dataset repo.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+
+states = Enum.map(data, & &1["code"])
+values = Enum.map(data, &(elem(Float.parse(&1["total exports"]), 0)))
+text = Enum.map(data, fn r -> "#{r["state"]}<br>Exports: $#{r["total exports"]}M" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: states,
+    z: values,
+    text: text,
+    locationmode: "USA-states",
+    colorscale: "Greens",
+    colorbar: %{title: %{text: "$ Millions"}},
+    marker: %{line: %{color: "white", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "USA Agricultural Exports — 2011",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Country GDP Choropleth Map
+
+World GDP data fetched from Plotly's datasets. `colorscale: "Plasma"` works well
+for economic data spanning several orders of magnitude. `reversescale: true` makes
+higher values darker.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r -> match?({_, _}, Float.parse(r["GDP (BILLIONS)"] || "")) end)
+
+locations = Enum.map(data, & &1["CODE"])
+gdp = Enum.map(data, &(elem(Float.parse(&1["GDP (BILLIONS)"]), 0)))
+text = Enum.map(data, fn r -> "#{r["COUNTRY"]}: $#{r["GDP (BILLIONS)"]}B" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: locations,
+    z: gdp,
+    text: text,
+    locationmode: "ISO-3",
+    colorscale: "Plasma",
+    reversescale: true,
+    colorbar: %{title: %{text: "GDP (Billions USD)"}},
+    hoverinfo: "text"
+  )
+)
+|> Figure.update_layout(
+  title: "World GDP — 2014",
+  geo: %{
+    showframe: false,
+    showcoastlines: false,
+    projection: %{type: "natural earth"}
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Choropleth Map of 2014 US Population by State
+
+US population data by state, with `colorscale: "YlOrRd"` for population intensity.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2014_usa_states.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.reject(&(&1["Postal"] == "" or is_nil(&1["Postal"])))
+
+states = Enum.map(data, & &1["Postal"])
+pop = Enum.map(data, &round(elem(Float.parse(&1["Population"]), 0)))
+text = Enum.map(data, fn r -> "#{r["State"]}: #{r["Population"]}" end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    locations: states,
+    z: pop,
+    text: text,
+    locationmode: "USA-states",
+    colorscale: "YlOrRd",
+    colorbar: %{title: %{text: "Population"}},
+    hoverinfo: "text"
+  )
+)
+|> Figure.update_layout(
+  title: "2014 US Population by State",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Choropleth Map of Florida Counties by Political Party
+
+In Plotly.js v4, `geo.fitbounds` defaults to `"locations"`. This example sets
+it explicitly to document that the projection fits the supplied counties.
+
+County-level choropleth uses a custom GeoJSON file to define boundaries.
+`geojson:` accepts the decoded JSON map. `featureidkey: "properties.FIPS"` links
+GeoJSON features to `locations:` values by FIPS code. `locations:` must match
+the `featureidkey` property values in the GeoJSON.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+# County-level GeoJSON for Florida
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+# Filter to Florida (FIPS codes starting with "12")
+fl_geojson = Map.update!(geojson, "features", fn features ->
+  Enum.filter(features, fn f ->
+    String.starts_with?(f["id"], "12")
+  end)
+end)
+
+# Sample party affiliation data (illustrative)
+# FIPS codes for Florida counties and party value: 1=Republican, 0=Democrat
+party_data = [
+  {"12001", 1}, {"12003", 1}, {"12005", 1}, {"12007", 1}, {"12009", 0},
+  {"12011", 1}, {"12013", 1}, {"12015", 1}, {"12017", 0}, {"12019", 1},
+  {"12021", 0}, {"12023", 1}, {"12027", 1}, {"12029", 1}, {"12031", 1},
+  {"12033", 1}, {"12035", 0}, {"12037", 1}, {"12039", 1}, {"12041", 1},
+  {"12043", 0}, {"12045", 1}, {"12047", 1}, {"12049", 0}, {"12051", 0},
+  {"12053", 0}, {"12055", 1}, {"12057", 0}, {"12059", 1}, {"12061", 1},
+  {"12063", 1}, {"12065", 1}, {"12067", 1}, {"12069", 0}, {"12071", 0},
+  {"12073", 1}, {"12075", 1}, {"12077", 1}, {"12079", 1}, {"12081", 0},
+  {"12083", 1}, {"12085", 1}, {"12086", 0}, {"12087", 0}, {"12089", 1},
+  {"12091", 0}, {"12093", 1}, {"12095", 0}, {"12097", 0}, {"12099", 1},
+  {"12101", 1}, {"12103", 1}, {"12105", 0}, {"12107", 1}, {"12109", 1},
+  {"12111", 1}, {"12113", 1}, {"12115", 0}, {"12117", 1}, {"12119", 1},
+  {"12121", 0}, {"12123", 1}, {"12125", 1}, {"12127", 0}, {"12129", 1},
+  {"12131", 1}, {"12133", 1}
+]
+
+fips = Enum.map(party_data, &elem(&1, 0))
+values = Enum.map(party_data, &elem(&1, 1))
+
+Figure.new()
+|> Figure.add_trace(
+  Choropleth.new(
+    geojson: fl_geojson,
+    locations: fips,
+    z: values,
+    featureidkey: "id",
+    colorscale: [[0, "blue"], [1, "red"]],
+    zmin: 0,
+    zmax: 1,
+    showscale: false,
+    hoverinfo: "location"
+  )
+)
+|> Figure.update_layout(
+  title: "Florida Counties — Political Party (Illustrative)",
+  geo: %{
+    scope: "usa",
+    fitbounds: "locations",
+    visible: false
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > locationmode: 'ISO-3'
+
+`locationmode: "ISO-3"` uses 3-letter ISO 3166-1 alpha-3 country codes.
+Plotly maps each code to its built-in country GeoJSON polygon.
+Provide `locations:` instead of `lat:`/`lon:` — no coordinate data needed.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# Sample G20 countries
+locations = ["ARG", "AUS", "BRA", "CAN", "CHN", "FRA", "DEU", "IND",
+             "IDN", "ITA", "JPN", "MEX", "RUS", "SAU", "ZAF",
+             "KOR", "TUR", "GBR", "USA", "EUN"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    locations: locations,
+    locationmode: "ISO-3",
+    mode: "markers",
+    text: locations,
+    marker: %{size: 8, color: "blue", symbol: "circle"}
+  )
+)
+|> Figure.update_layout(
+  title: "locationmode: 'ISO-3' — G20 Countries",
+  geo: %{
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Supported ISO Codes
+
+All UN member states and territories have ISO 3166-1 alpha-3 codes supported by Plotly.
+This reference notebook plots a broad sample coloured by continent.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# Sample by continent
+europe = ["GBR", "FRA", "DEU", "ITA", "ESP", "PRT", "NLD", "BEL", "SWE", "NOR", "FIN", "DNK", "POL", "AUT", "CHE"]
+americas = ["USA", "CAN", "MEX", "BRA", "ARG", "CHL", "COL", "PER", "VEN", "ECU"]
+asia = ["CHN", "JPN", "KOR", "IND", "IDN", "THA", "VNM", "PHL", "MYS", "SGP"]
+africa = ["ZAF", "NGA", "EGY", "ETH", "KEN", "TZA", "GHA", "MAR", "TUN", "SDN"]
+oceania = ["AUS", "NZL", "PNG", "FJI"]
+
+traces = [
+  {europe, "Europe", "blue"},
+  {americas, "Americas", "red"},
+  {asia, "Asia", "green"},
+  {africa, "Africa", "orange"},
+  {oceania, "Oceania", "purple"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(traces, fig, fn {locs, name, color}, acc ->
+    Figure.add_trace(acc,
+      Scattergeo.new(
+        locations: locs,
+        locationmode: "ISO-3",
+        mode: "markers",
+        name: name,
+        marker: %{size: 6, color: color}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Supported ISO-3 Codes — Sample by Continent",
+  geo: %{
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > locationmode: 'USA-states'
+
+`locationmode: "USA-states"` maps 2-letter postal abbreviations (e.g. `"CA"`, `"TX"`)
+to US state boundaries. Works with both `Scattergeo` (markers) and `Choropleth` (fills).
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# All 50 US state abbreviations
+states = ~w(AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD
+            MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC
+            SD TN TX UT VT VA WA WV WI WY)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    locations: states,
+    locationmode: "USA-states",
+    mode: "markers+text",
+    text: states,
+    textposition: "middle center",
+    marker: %{size: 6, color: "darkblue", symbol: "circle"}
+  )
+)
+|> Figure.update_layout(
+  title: "locationmode: 'USA-states' — All 50 State Codes",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE",
+    showlakes: true,
+    lakecolor: "#BDDDE4"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Supported US State Codes
+
+Reference notebook: all 50 US state 2-letter codes, grouped by region with different colors.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+regions = [
+  {~w(ME VT NH MA RI CT NY NJ PA), "Northeast", "blue"},
+  {~w(OH MI IN IL WI MN IA MO ND SD NE KS), "Midwest", "green"},
+  {~w(DE MD VA WV NC SC GA FL KY TN AL MS AR LA), "South", "red"},
+  {~w(MT ID WY CO NM AZ UT NV CA OR WA AK HI), "West", "purple"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(regions, fig, fn {states, name, color}, acc ->
+    Figure.add_trace(acc,
+      Scattergeo.new(
+        locations: states,
+        locationmode: "USA-states",
+        mode: "markers",
+        name: name,
+        marker: %{size: 8, color: color}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "US State Codes by Region",
+  geo: %{
+    scope: "usa",
+    showland: true,
+    landcolor: "#EAEAAE"
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > locationmode: 'country names'
+
+`locationmode: "country names"` accepts full English country names as in
+[ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) — e.g. `"United States"`, `"United Kingdom"`.
+Useful when data already contains country names instead of codes.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+country_names = [
+  "United States", "United Kingdom", "France", "Germany", "Italy",
+  "Spain", "Canada", "Australia", "Japan", "South Korea",
+  "Brazil", "India", "China", "Mexico", "South Africa"
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    locations: country_names,
+    locationmode: "country names",
+    mode: "markers",
+    text: country_names,
+    hoverinfo: "text",
+    marker: %{size: 8, color: "darkred", symbol: "circle-open"}
+  )
+)
+|> Figure.update_layout(
+  title: "locationmode: 'country names'",
+  geo: %{
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    projection: %{type: "natural earth"}
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > OpenStreetMap Tiles
+
+Tile maps use `layout.map` (not `layout.geo`). The default free tile provider is
+`style: "open-street-map"`. Set `center:` and `zoom:` to control the initial view.
+`Scattermap` is the tile-map equivalent of `Scattergeo`.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [48.8566, 51.5074, 52.5200, 40.4168, 41.9028],
+    lon: [2.3522, -0.1278, 13.4050, -3.7038, 12.4964],
+    mode: "markers",
+    text: ["Paris", "London", "Berlin", "Madrid", "Rome"],
+    hoverinfo: "text",
+    marker: %{size: 10, color: "red"}
+  )
+)
+|> Figure.update_layout(
+  title: "OpenStreetMap Tiles",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 48.0, lon: 8.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Using 'layout.map.layers' to Specify a Base Map
+
+`layout.map.layers` adds custom tile overlays on top of the base style.
+Each layer is a map with `sourcetype: "raster"`, `source:` (list of tile URLs),
+`below: "traces"` to render under data points, and `opacity:`.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [37.7749],
+    lon: [-122.4194],
+    mode: "markers",
+    text: ["San Francisco"],
+    marker: %{size: 12, color: "blue"}
+  )
+)
+|> Figure.update_layout(
+  title: "Custom Tile Layer via layout.map.layers",
+  map: %{
+    style: "white-bg",
+    center: %{lat: 37.7749, lon: -122.4194},
+    zoom: 8,
+    layers: [
+      %{
+        below: "traces",
+        sourcetype: "raster",
+        source: ["https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"],
+        opacity: 0.9
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Base Tiles from the USGS
+
+`style: "white-bg"` provides a blank canvas. Add the USGS National Map as a
+raster layer via `layout.map.layers`. The tile URL uses `{z}/{y}/{x}` template
+placeholders that Plotly.js substitutes at render time.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [39.7392, 40.7128, 34.0522],
+    lon: [-104.9903, -74.0060, -118.2437],
+    mode: "markers+text",
+    text: ["Denver", "New York", "Los Angeles"],
+    textposition: "top right",
+    marker: %{size: 10, color: "darkred"}
+  )
+)
+|> Figure.update_layout(
+  title: "Base Tiles from the USGS National Map",
+  map: %{
+    style: "white-bg",
+    center: %{lat: 39.5, lon: -98.35},
+    zoom: 3,
+    layers: [
+      %{
+        below: "traces",
+        sourcetype: "raster",
+        source: ["https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"],
+        opacity: 1.0
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Base Tiles from the USGS, Radar Overlay from Environment Canada
+
+Multiple entries in `layout.map.layers` stack in order — first entry is bottom-most.
+Here the USGS topo map is the base, and the Environment Canada radar is the overlay.
+Note: the radar layer is a live WMS service and may not always be available.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [45.4215],
+    lon: [-75.6972],
+    mode: "markers",
+    text: ["Ottawa"],
+    marker: %{size: 12, color: "yellow"}
+  )
+)
+|> Figure.update_layout(
+  title: "USGS Base + Environment Canada Radar Overlay",
+  map: %{
+    style: "white-bg",
+    center: %{lat: 47.0, lon: -85.0},
+    zoom: 4,
+    layers: [
+      %{
+        below: "traces",
+        sourcetype: "raster",
+        source: ["https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"],
+        opacity: 0.9
+      },
+      %{
+        below: "traces",
+        sourcetype: "raster",
+        source: ["https://geo.weather.gc.ca/geomet?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=1000&HEIGHT=1000&LAYERS=RADAR_1KM_RDBR&TILED=true&FORMAT=image/png"],
+        opacity: 0.7
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Dark Tiles
+
+`style: "carto-darkmatter"` provides a dark background tile map. Use light-colored
+markers and text for visibility. Also available: `"carto-positron"` (light grey),
+`"open-street-map"` (color), `"stamen-terrain"` (topographic).
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+cities = ["Tokyo", "Shanghai", "Beijing", "Mumbai", "São Paulo", "Mexico City", "Cairo", "Lagos"]
+lat = [35.6762, 31.2304, 39.9042, 19.0760, -23.5505, 19.4326, 30.0444, 6.5244]
+lon = [139.6503, 121.4737, 116.4074, 72.8777, -46.6333, -99.1332, 31.2357, 3.3792]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers+text",
+    text: cities,
+    textposition: "top right",
+    marker: %{size: 8, color: "cyan"},
+    textfont: %{color: "white", size: 10}
+  )
+)
+|> Figure.update_layout(
+  title: "Dark Tiles — World Megacities",
+  map: %{
+    style: "carto-darkmatter",
+    center: %{lat: 20.0, lon: 0.0},
+    zoom: 1
+  },
+  paper_bgcolor: "#1a1a1a",
+  font: %{color: "white"}
+)
+|> Plotly.show()
+```
+
+## Maps > Map Styles Without Tokens
+
+Plotly.js v4 uses MapLibre-backed `Scattermap`, `Densitymap`, and
+`Choroplethmap` traces with `layout.map`. These tile styles need no access token:
+`open-street-map`, `carto-positron`, and `carto-darkmatter`. Tile providers still
+require network access. `white-bg` uses no external tiles.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+for style <- ["open-street-map", "carto-positron", "carto-darkmatter", "white-bg"] do
+  Figure.new()
+  |> Figure.add_trace(Scattermap.new(
+    lat: [40.7128, 40.7306], lon: [-74.0060, -73.9352],
+    text: ["Lower Manhattan", "Queens"], mode: "markers", marker: %{size: 14}
+  ))
+  |> Figure.update_layout(
+    title: "Map style: #{style}", height: 360,
+    map: %{style: style, center: %{lat: 40.72, lon: -73.97}, zoom: 10}
+  )
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```
+
+## Maps > Tile Density Heatmap — Light Tile
+
+`Densitymap` creates a kernel density heatmap on a tile map. `lat:`/`lon:` give
+point positions; `z:` provides optional per-point weights (defaults to 1); `radius:`
+controls the pixel spread of each point's influence.
+`style: "carto-positron"` provides a neutral light background.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+z = Enum.map(airports, fn a ->
+  case Integer.parse(a["cnt"]) do
+    {n, _} -> n
+    :error -> 1
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Densitymap.new(
+    lat: lat,
+    lon: lon,
+    z: z,
+    radius: 10,
+    colorscale: "Hot",
+    showscale: true,
+    colorbar: %{title: %{text: "Flights"}}
+  )
+)
+|> Figure.update_layout(
+  title: "US Airport Traffic Density — Light Tile",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 37.8, lon: -96.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Tile Density Heatmap — Outdoors Tile
+
+Same `Densitymap` data as the light tile example, but with `style: "open-street-map"`.
+The street context helps interpret cluster locations geographically.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Densitymap.new(
+    lat: lat,
+    lon: lon,
+    radius: 15,
+    colorscale: "Viridis",
+    opacity: 0.6,
+    showscale: true
+  )
+)
+|> Figure.update_layout(
+  title: "US Airport Traffic Density — OpenStreetMap",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 37.8, lon: -96.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Tile Density Heatmap — Stamen Terrain Tile
+
+`style: "open-street-map"` provides a freely available tile background.
+Density overlays on street tiles are useful for geographic/environmental data.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+# Earthquake data — natural fit for terrain background
+url = "https://raw.githubusercontent.com/plotly/datasets/master/earthquakes-23k.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+quakes =
+  rows
+  |> Enum.take(2000)
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn q ->
+    match?({_, _}, Float.parse(q["Latitude"] || "")) and
+    match?({_, _}, Float.parse(q["Longitude"] || ""))
+  end)
+
+lat = Enum.map(quakes, fn q -> elem(Float.parse(q["Latitude"]), 0) end)
+lon = Enum.map(quakes, fn q -> elem(Float.parse(q["Longitude"]), 0) end)
+mag = Enum.map(quakes, fn q ->
+  case Float.parse(q["Magnitude"]) do
+    {f, _} -> f
+    :error -> 1.0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Densitymap.new(
+    lat: lat,
+    lon: lon,
+    z: mag,
+    radius: 8,
+    colorscale: "Reds",
+    showscale: true,
+    colorbar: %{title: %{text: "Magnitude"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Earthquake Density — OpenStreetMap",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 0.0, lon: 0.0},
+    zoom: 1
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Tile Density Heatmap — MapLibre
+
+`Densitymap` replaces the removed Mapbox density trace. The coordinates and
+weights below are embedded, so only the background tiles require a network.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+Figure.new()
+|> Figure.add_trace(Densitymap.new(
+  lat: [40.70, 40.71, 40.72, 40.73, 40.74, 40.75],
+  lon: [-74.02, -74.01, -74.00, -73.99, -73.98, -73.97],
+  z: [1, 3, 8, 6, 3, 1], radius: 25, colorscale: "Viridis"
+))
+|> Figure.update_layout(
+  title: "Weighted observations in Manhattan",
+  map: %{style: "carto-positron", center: %{lat: 40.725, lon: -73.995}, zoom: 11}
+)
+|> Plotly.show()
+```
+
+## Maps > Tile County Choropleth — Basic Tile
+
+`Choroplethmap` is the tile-map equivalent of `Choropleth`. It requires a `geojson:` map
+with feature boundaries and `featureidkey:` to match GeoJSON features to `locations:` values.
+Unlike `Choropleth`, it renders on a tile base map (`layout.map`) instead of a geo projection.
+
+```elixir
+alias Plotly.{Figure, Choroplethmap}
+
+# Fetch US county GeoJSON (filter to one state for performance)
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+# Filter to California (FIPS codes starting with "06")
+ca_geojson = Map.update!(geojson, "features", fn features ->
+  Enum.filter(features, fn f -> String.starts_with?(f["id"], "06") end)
+end)
+
+# Fetch unemployment data
+data_url = "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
+body = Req.get!(data_url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r ->
+    r["fips"] != nil and r["fips"] != "" and String.starts_with?(String.pad_leading(r["fips"], 5, "0"), "06")
+  end)
+
+fips = Enum.map(data, fn r -> String.pad_leading(r["fips"], 5, "0") end)
+unemp = Enum.map(data, fn r ->
+  case Float.parse(r["unemp"]) do
+    {f, _} -> f
+    :error -> 0.0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choroplethmap.new(
+    geojson: ca_geojson,
+    locations: fips,
+    z: unemp,
+    featureidkey: "id",
+    colorscale: "Viridis",
+    zmin: 0,
+    zmax: 12,
+    colorbar: %{title: %{text: "Unemployment %"}}
+  )
+)
+|> Figure.update_layout(
+  title: "California County Unemployment — Basic Tile",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 37.5, lon: -120.0},
+    zoom: 5
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Tile County Choropleth — Streets Tile
+
+Same data as the basic tile example, but with `style: "open-street-map"`.
+Street context helps identify urban/rural patterns in the data.
+
+```elixir
+alias Plotly.{Figure, Choroplethmap}
+
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+ca_geojson = Map.update!(geojson, "features", fn features ->
+  Enum.filter(features, fn f -> String.starts_with?(f["id"], "06") end)
+end)
+
+data_url = "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
+body = Req.get!(data_url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r ->
+    r["fips"] != nil and r["fips"] != "" and String.starts_with?(String.pad_leading(r["fips"], 5, "0"), "06")
+  end)
+
+fips = Enum.map(data, fn r -> String.pad_leading(r["fips"], 5, "0") end)
+unemp = Enum.map(data, fn r ->
+  case Float.parse(r["unemp"]) do
+    {f, _} -> f
+    :error -> 0.0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choroplethmap.new(
+    geojson: ca_geojson,
+    locations: fips,
+    z: unemp,
+    featureidkey: "id",
+    colorscale: "YlOrRd",
+    zmin: 0,
+    zmax: 12,
+    colorbar: %{title: %{text: "Unemployment %"}},
+    marker: %{opacity: 0.7}
+  )
+)
+|> Figure.update_layout(
+  title: "California County Unemployment — Streets Tile",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 37.5, lon: -120.0},
+    zoom: 5
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Tile County Choropleth — Dark Tile
+
+`style: "carto-darkmatter"` with a bright colorscale creates a striking visualization.
+`marker: %{opacity: 0.8}` lets some tile detail show through the choropleth fill.
+
+```elixir
+alias Plotly.{Figure, Choroplethmap}
+
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+ca_geojson = Map.update!(geojson, "features", fn features ->
+  Enum.filter(features, fn f -> String.starts_with?(f["id"], "06") end)
+end)
+
+data_url = "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
+body = Req.get!(data_url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+data =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn r ->
+    r["fips"] != nil and r["fips"] != "" and String.starts_with?(String.pad_leading(r["fips"], 5, "0"), "06")
+  end)
+
+fips = Enum.map(data, fn r -> String.pad_leading(r["fips"], 5, "0") end)
+unemp = Enum.map(data, fn r ->
+  case Float.parse(r["unemp"]) do
+    {f, _} -> f
+    :error -> 0.0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Choroplethmap.new(
+    geojson: ca_geojson,
+    locations: fips,
+    z: unemp,
+    featureidkey: "id",
+    colorscale: "Plasma",
+    zmin: 0,
+    zmax: 12,
+    colorbar: %{title: %{text: "Unemployment %"}},
+    marker: %{opacity: 0.8}
+  )
+)
+|> Figure.update_layout(
+  title: "California County Unemployment — Dark Tile",
+  map: %{
+    style: "carto-darkmatter",
+    center: %{lat: 37.5, lon: -120.0},
+    zoom: 5
+  },
+  paper_bgcolor: "#1a1a1a",
+  font: %{color: "white"}
+)
+|> Plotly.show()
+```
+
+## Maps > Tile Choropleth — MapLibre
+
+`Choroplethmap` uses `layout.map` and token-free tiles. This small synthetic
+GeoJSON avoids downloading a county dataset; production county boundaries use
+the same `featureidkey` and `locations` mapping. Transparency belongs inside
+`marker`, not at the trace's top level.
+
+```elixir
+alias Plotly.{Figure, Choroplethmap}
+
+geojson = %{
+  type: "FeatureCollection",
+  features: [
+    %{type: "Feature", id: "west", properties: %{}, geometry: %{
+      type: "Polygon", coordinates: [[[-74.04, 40.70], [-74.00, 40.70],
+        [-74.00, 40.75], [-74.04, 40.75], [-74.04, 40.70]]]
+    }},
+    %{type: "Feature", id: "east", properties: %{}, geometry: %{
+      type: "Polygon", coordinates: [[[-74.00, 40.70], [-73.96, 40.70],
+        [-73.96, 40.75], [-74.00, 40.75], [-74.00, 40.70]]]
+    }}
+  ]
+}
+
+Figure.new()
+|> Figure.add_trace(Choroplethmap.new(
+  geojson: geojson, locations: ["west", "east"], z: [12, 28],
+  featureidkey: "id", colorscale: "YlOrRd", marker: %{opacity: 0.65}
+))
+|> Figure.update_layout(
+  title: "Two example regions",
+  map: %{style: "carto-positron", center: %{lat: 40.725, lon: -74.0}, zoom: 11}
+)
+|> Plotly.show()
+```
+
+## Maps > Scatter Tile Maps — Basic Example
+
+`Scattermap` is the tile-map counterpart to `Scattergeo`. It uses `lat:`/`lon:`
+coordinates and renders on a tile base map configured by `layout.map`.
+This is the minimal working example.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [45.5051, 47.6062, 37.7749, 34.0522, 41.8781],
+    lon: [-122.6750, -122.3321, -122.4194, -118.2437, -87.6298],
+    mode: "markers",
+    text: ["Portland", "Seattle", "San Francisco", "Los Angeles", "Chicago"],
+    hoverinfo: "text",
+    marker: %{size: 14, color: "blue"}
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Scatter Tile Map",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 40.0, lon: -100.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Scatter Tile Maps — Multiple Markers
+
+Multiple `Scattermap` traces appear in the legend separately. Each trace can have
+its own `marker.color`, `marker.size`, and `name`. Useful for categorical data.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [40.7128, 41.8781, 42.3601],
+    lon: [-74.0060, -87.6298, -71.0589],
+    mode: "markers",
+    name: "Northeast",
+    marker: %{size: 12, color: "blue"}
+  )
+)
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [29.7604, 30.2672, 32.7767],
+    lon: [-95.3698, -97.7431, -96.7970],
+    mode: "markers",
+    name: "South",
+    marker: %{size: 12, color: "red"}
+  )
+)
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [37.7749, 34.0522, 47.6062],
+    lon: [-122.4194, -118.2437, -122.3321],
+    mode: "markers",
+    name: "West",
+    marker: %{size: 12, color: "green"}
+  )
+)
+|> Figure.update_layout(
+  title: "Multiple Marker Groups on Tile Map",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 38.0, lon: -97.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Scatter Tile Maps — Adding Colorscale
+
+`marker.color:` as a numeric list combined with `colorscale:` encodes a third
+variable visually. `showscale: true` adds the color bar legend.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+cnt = Enum.map(airports, fn a ->
+  case Integer.parse(a["cnt"]) do
+    {n, _} -> n
+    :error -> 0
+  end
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: lat,
+    lon: lon,
+    mode: "markers",
+    text: Enum.map(airports, fn a -> "#{a["airport"]}: #{a["cnt"]} flights" end),
+    hoverinfo: "text",
+    marker: %{
+      size: 6,
+      color: cnt,
+      colorscale: "Viridis",
+      showscale: true,
+      colorbar: %{title: %{text: "Flights"}},
+      opacity: 0.8
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "US Airports — February 2011 Traffic",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 37.8, lon: -96.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Scatter Tile Maps — Adding Lines
+
+`mode: "lines"` connects lat/lon points in sequence — useful for routes, tracks,
+or boundaries. Separate traces create separate line segments.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# US cross-country routes
+routes = [
+  {[40.7128, 39.7392, 34.0522], [-74.0060, -104.9903, -118.2437], "NYC → Denver → LA", "blue"},
+  {[41.8781, 35.2271, 29.7604], [-87.6298, -80.8431, -95.3698], "Chicago → Charlotte → Houston", "red"},
+  {[47.6062, 45.5051, 37.7749], [-122.3321, -122.6750, -122.4194], "Seattle → Portland → SF", "green"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(routes, fig, fn {lats, lons, name, color}, acc ->
+    Figure.add_trace(acc,
+      Scattermap.new(
+        lat: lats,
+        lon: lons,
+        mode: "lines+markers",
+        name: name,
+        line: %{width: 2, color: color},
+        marker: %{size: 8}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "US Routes on Tile Map",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 39.0, lon: -98.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Scatter Tile Maps — Set Marker Symbols
+
+`marker.symbol:` accepts Plotly symbol names. Common values: `"circle"`, `"square"`,
+`"diamond"`, `"cross"`, `"x"`, `"triangle-up"`, `"triangle-down"`, `"star"`,
+`"circle-open"`, `"square-open"`. Symbols can also be provided as a list for per-point variation.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+symbols = ["circle", "square", "diamond", "cross", "triangle-up", "star"]
+cities  = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia"]
+lat = [40.7128, 34.0522, 41.8781, 29.7604, 33.4484, 39.9526]
+lon = [-74.0060, -118.2437, -87.6298, -95.3698, -112.0740, -75.1652]
+
+fig = Figure.new()
+
+fig =
+  Enum.zip([cities, lat, lon, symbols])
+  |> Enum.reduce(fig, fn {city, la, lo, sym}, acc ->
+    Figure.add_trace(acc,
+      Scattermap.new(
+        lat: [la],
+        lon: [lo],
+        mode: "markers",
+        name: "#{city} (#{sym})",
+        marker: %{size: 14, symbol: sym}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Scatter Tile Map — Marker Symbols",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 38.0, lon: -97.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Scatter Tile Map — MapLibre
+
+Use `Scattermap` with `layout.map`. The MapLibre implementation replaces the
+removed Mapbox trace; no access token is needed for `open-street-map` tiles.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(Scattermap.new(
+  lat: [40.705, 40.730, 40.758], lon: [-74.013, -73.995, -73.985],
+  text: ["Battery Park", "Washington Square", "Times Square"],
+  mode: "markers+lines", marker: %{size: 12}, line: %{width: 3}
+))
+|> Figure.update_layout(
+  title: "A route through Manhattan",
+  map: %{style: "open-street-map", center: %{lat: 40.73, lon: -74.0}, zoom: 11}
+)
+|> Plotly.show()
+```
+
+## Maps > Filled Scattermap Trace
+
+`Scattermap` with `fill: "toself"` closes the lat/lon path and fills the enclosed area.
+`fillcolor:` with rgba allows transparency so the tile map shows through.
+Close the polygon by repeating the first point at the end.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# Approximate boundary of the state of Colorado (rectangular)
+lat = [41.0, 41.0, 37.0, 37.0, 41.0]
+lon = [-109.05, -102.05, -102.05, -109.05, -109.05]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: lat,
+    lon: lon,
+    mode: "lines",
+    fill: "toself",
+    fillcolor: "rgba(0, 0, 255, 0.2)",
+    line: %{color: "blue", width: 2},
+    name: "Colorado"
+  )
+)
+|> Figure.update_layout(
+  title: "Filled Scattermap — Colorado Boundary",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 39.0, lon: -105.5},
+    zoom: 5
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > Multiple Filled Areas with a Scattermap Trace
+
+Each polygon is a separate `Scattermap` trace with its own `fill: "toself"` and `fillcolor:`.
+This gives each area an independent legend entry and color.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# Approximate bounding boxes for western US states
+states = [
+  {"California", [42.0, 42.0, 32.5, 32.5, 42.0], [-124.4, -114.1, -114.1, -124.4, -124.4], "rgba(255,0,0,0.2)", "red"},
+  {"Nevada", [42.0, 42.0, 35.0, 35.0, 42.0], [-120.0, -114.0, -114.0, -120.0, -120.0], "rgba(0,255,0,0.2)", "green"},
+  {"Arizona", [37.0, 37.0, 31.3, 31.3, 37.0], [-114.8, -109.0, -109.0, -114.8, -114.8], "rgba(0,0,255,0.2)", "blue"},
+  {"Utah", [42.0, 42.0, 37.0, 37.0, 42.0], [-114.1, -109.0, -109.0, -114.1, -114.1], "rgba(255,165,0,0.2)", "orange"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(states, fig, fn {name, lats, lons, fill, line_color}, acc ->
+    Figure.add_trace(acc,
+      Scattermap.new(
+        lat: lats,
+        lon: lons,
+        mode: "lines",
+        fill: "toself",
+        fillcolor: fill,
+        line: %{color: line_color, width: 2},
+        name: name
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Multiple Filled Areas — Western US States",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 38.5, lon: -115.0},
+    zoom: 4
+  }
+)
+|> Plotly.show()
+```
+
+## Maps > GeoJSON Layers
+
+`layout.map.layers` with `sourcetype: "geojson"` renders GeoJSON shapes as a map layer
+(not a trace). This is different from `Choroplethmap` — it paints uniform color fills
+with no data encoding, useful for geographic context (park boundaries, administrative zones, etc.).
+`type: "fill"` for polygons, `"line"` for linestrings.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# Fetch a small GeoJSON — US states outline
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+# Filter to a small subset (first 10 California counties)
+ca_counties = Map.update!(geojson, "features", fn features ->
+  features
+  |> Enum.filter(fn f -> String.starts_with?(f["id"], "06") end)
+  |> Enum.take(10)
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [37.5],
+    lon: [-120.0],
+    mode: "markers",
+    marker: %{size: 1, opacity: 0},
+    showlegend: false
+  )
+)
+|> Figure.update_layout(
+  title: "GeoJSON Layer — California Counties (first 10)",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 37.5, lon: -121.0},
+    zoom: 6,
+    layers: [
+      %{
+        sourcetype: "geojson",
+        source: ca_counties,
+        type: "fill",
+        color: "rgba(0, 100, 200, 0.3)"
+      },
+      %{
+        sourcetype: "geojson",
+        source: ca_counties,
+        type: "line",
+        color: "rgba(0, 100, 200, 0.8)"
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```

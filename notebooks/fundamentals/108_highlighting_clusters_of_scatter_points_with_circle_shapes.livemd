@@ -1,0 +1,55 @@
+# Highlighting Clusters of Scatter Points with Circle Shapes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `type: "circle"` shapes with `xref: "x"` and `yref: "y"` to draw
+circles anchored to data coordinates, overlaying scatter point clusters.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0.5, 1.0, 1.5, 2.0, 2.5, 3.5, 4.0, 4.5],
+    y: [0.75, 0.5, 1.0, 0.75, 0.9, 3.5, 4.0, 3.75],
+    mode: "markers",
+    marker: %{size: 10}
+  )
+)
+|> Figure.update_layout(
+  title: "Circle Shapes Highlighting Clusters",
+  shapes: [
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 0.25,
+      y0: 0.25,
+      x1: 2.75,
+      y1: 1.25,
+      fillcolor: "rgba(50, 171, 96, 0.2)",
+      line: %{color: "rgba(50, 171, 96, 0.8)"}
+    },
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 3.25,
+      y0: 3.25,
+      x1: 4.75,
+      y1: 4.25,
+      fillcolor: "rgba(214, 39, 40, 0.2)",
+      line: %{color: "rgba(214, 39, 40, 0.8)"}
+    }
+  ]
+)
+|> Plotly.show()
+```

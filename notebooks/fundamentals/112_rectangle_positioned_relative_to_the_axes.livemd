@@ -1,0 +1,40 @@
+# Rectangle Positioned Relative to the Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Both `xref: "x"` and `yref: "y"` anchor the rectangle to data coordinates.
+The rectangle resizes with zoom.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1.5, 2.5], y: [1.5, 2.5], mode: "markers", marker: %{size: 10}))
+|> Figure.update_layout(
+  title: "Rectangle Relative to Axes",
+  xaxis: %{range: [0, 4]},
+  yaxis: %{range: [0, 4]},
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x",
+      yref: "y",
+      x0: 1,
+      y0: 1,
+      x1: 3,
+      y1: 3,
+      fillcolor: "LightGreen",
+      opacity: 0.4,
+      line: %{color: "DarkGreen", width: 2}
+    }
+  ]
+)
+|> Plotly.show()
+```

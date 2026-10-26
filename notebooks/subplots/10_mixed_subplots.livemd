@@ -1,0 +1,44 @@
+# Mixed Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Different trace types can share a grid. `Scatter` and `Bar` use the `xaxis`/`yaxis` system.
+`Pie` uses `domain: %{row:, column:}` to position itself in the grid (0-indexed).
+
+```elixir
+alias Plotly.{Figure, Scatter, Bar, Pie}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 3, 2], name: "Scatter"))
+|> Figure.add_trace(Bar.new(x: ["A", "B", "C"], y: [3, 1, 4], xaxis: "x2", yaxis: "y2", name: "Bar"))
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["X", "Y", "Z"],
+    values: [40, 35, 25],
+    domain: %{row: 1, column: 0},
+    name: "Pie"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3],
+    y: [10, 11, 12],
+    mode: "markers",
+    xaxis: "x4",
+    yaxis: "y4",
+    name: "Scatter 2"
+  )
+)
+|> Figure.update_layout(
+  title: "Mixed Subplots",
+  grid: %{rows: 2, columns: 2, pattern: "independent"}
+)
+|> Plotly.show()
+```

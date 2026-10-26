@@ -1,0 +1,74 @@
+# Data Cards / Big Numbers
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`number: %{prefix: "$"}` adds a currency prefix. `delta: %{position: "top"}` places the change
+indicator above the main value. `delta: %{relative: true}` shows percentage change. Multiple
+indicators tiled via `domain: %{x:, y:}` create a KPI dashboard layout. HTML in `title.text`
+allows multi-line subtitles with inline styles.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+# Single big number card
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 400,
+    number: %{prefix: "$"},
+    delta: %{position: "top", reference: 320},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  paper_bgcolor: "lightgray",
+  width: 600,
+  height: 200,
+  margin: %{t: 0, b: 0, l: 0, r: 0}
+)
+|> Plotly.show()
+```
+
+```elixir
+# Multiple KPI cards in a grid
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 200,
+    delta: %{reference: 400, relative: true, position: "top"},
+    domain: %{x: [0, 0.5], y: [0, 0.5]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 350,
+    delta: %{reference: 400, relative: true},
+    domain: %{x: [0, 0.5], y: [0.5, 1]}
+  )
+)
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+delta",
+    value: 450,
+    title: %{text: "Accounts<br><span style='font-size:0.8em;color:gray'>Subtitle</span>"},
+    delta: %{reference: 400, relative: true},
+    domain: %{x: [0.6, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(
+  width: 600,
+  height: 400,
+  margin: %{t: 25, r: 25, l: 25, b: 25}
+)
+|> Plotly.show()
+```

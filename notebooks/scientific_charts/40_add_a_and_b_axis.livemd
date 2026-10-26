@@ -1,0 +1,41 @@
+# Add A and B Axis
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`aaxis:` and `baxis:` maps on the `Carpet` trace configure the parametric axis labels.
+`tickprefix:`/`ticksuffix:` annotate tick values. `smoothing: 1` curves the grid lines.
+`minorgridcount: 9` adds 9 minor grid subdivisions between each major tick.
+
+```elixir
+alias Plotly.{Figure, Carpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5, 6, 6, 6],
+    b: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3],
+    y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5, 8, 8.5, 10],
+    aaxis: %{
+      tickprefix: "a = ",
+      ticksuffix: "m",
+      smoothing: 1,
+      minorgridcount: 9
+    },
+    baxis: %{
+      tickprefix: "b = ",
+      ticksuffix: "Pa",
+      smoothing: 1,
+      minorgridcount: 9
+    }
+  )
+)
+|> Figure.update_layout(title: "Carpet Plot — A and B Axes")
+|> Plotly.show()
+```

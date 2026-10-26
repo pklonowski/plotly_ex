@@ -1,0 +1,40 @@
+# Advanced Parallel Coordinates Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`range:` on a dimension sets the visible axis range (not a filter — just the display bounds).
+`tickvals:` + `ticktext:` replace numeric tick labels with custom strings on a given axis.
+Useful when one dimension encodes categories as integers.
+
+```elixir
+alias Plotly.{Figure, Parcoords}
+
+# Encode species as 0/1/2; use ticktext to show names
+species = [0, 0, 0, 1, 1, 1, 2, 2]
+
+Figure.new()
+|> Figure.add_trace(
+  Parcoords.new(
+    dimensions: [
+      %{label: "Sepal Length", values: [5.1, 4.9, 5.0, 6.3, 5.8, 5.7, 7.1, 6.3],
+        range: [4.0, 8.0]},
+      %{label: "Petal Length", values: [1.4, 1.4, 1.4, 4.7, 5.1, 4.5, 5.9, 4.7],
+        range: [0.0, 7.0]},
+      %{label: "Species", values: species,
+        range: [-0.5, 2.5],
+        tickvals: [0, 1, 2],
+        ticktext: ["Setosa", "Versicolor", "Virginica"]}
+    ],
+    line: %{color: species, colorscale: "Portland", showscale: false}
+  )
+)
+|> Figure.update_layout(title: "Advanced Parallel Coordinates — Custom Ticks and Range")
+|> Plotly.show()
+```

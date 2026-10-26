@@ -1,0 +1,29 @@
+# Tile Density Heatmap — MapLibre
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Density over token-free tiles
+
+`Densitymap` replaces the removed Mapbox density trace. The coordinates and
+weights below are embedded, so only the background tiles require a network.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+Figure.new()
+|> Figure.add_trace(Densitymap.new(
+  lat: [40.70, 40.71, 40.72, 40.73, 40.74, 40.75],
+  lon: [-74.02, -74.01, -74.00, -73.99, -73.98, -73.97],
+  z: [1, 3, 8, 6, 3, 1], radius: 25, colorscale: "Viridis"
+))
+|> Figure.update_layout(
+  title: "Weighted observations in Manhattan",
+  map: %{style: "carto-positron", center: %{lat: 40.725, lon: -73.995}, zoom: 11}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,34 @@
+# Basic Parallel Categories Diagram
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Parcats.new(dimensions: [...])` renders a parallel categories (alluvial / Sankey-for-categories) diagram.
+Each dimension is a map with `values:` (one entry per observation) and `label:` (column header).
+The flows represent how observations move between categories across dimensions.
+
+```elixir
+alias Plotly.{Figure, Parcats}
+
+Figure.new()
+|> Figure.add_trace(
+  Parcats.new(
+    dimensions: [
+      %{values: ["Cat A", "Cat A", "Cat B", "Cat B", "Cat A", "Cat B", "Cat A"],
+        label: "Dimension 1"},
+      %{values: ["High",  "High",  "Low",   "High",  "Low",   "Low",   "High"],
+        label: "Dimension 2"},
+      %{values: ["X",     "Y",     "X",     "Y",     "Y",     "X",     "X"],
+        label: "Dimension 3"}
+    ]
+  )
+)
+|> Figure.update_layout(title: "Basic Parallel Categories Diagram")
+|> Plotly.show()
+```

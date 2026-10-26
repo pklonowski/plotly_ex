@@ -1,0 +1,60 @@
+# Venn Diagram with Circle Shapes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Overlapping circle shapes with transparency create a Venn diagram effect.
+Use `fillcolor` with `rgba` for transparency and position circles using
+paper coordinates.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 1.5],
+    y: [1, 1, 1.75],
+    mode: "text",
+    text: ["A", "B", "A∩B"],
+    textfont: %{size: 18, color: "white"}
+  )
+)
+|> Figure.update_layout(
+  title: "Venn Diagram",
+  xaxis: %{range: [0, 3], showgrid: false, zeroline: false, showticklabels: false},
+  yaxis: %{range: [0, 3], showgrid: false, zeroline: false, showticklabels: false},
+  plot_bgcolor: "white",
+  shapes: [
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 0.2,
+      y0: 0.2,
+      x1: 2.2,
+      y1: 2.2,
+      fillcolor: "rgba(55, 128, 191, 0.6)",
+      line: %{color: "rgba(55, 128, 191, 1)"}
+    },
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 0.8,
+      y0: 0.2,
+      x1: 2.8,
+      y1: 2.2,
+      fillcolor: "rgba(255, 127, 14, 0.6)",
+      line: %{color: "rgba(255, 127, 14, 1)"}
+    }
+  ]
+)
+|> Plotly.show()
+```

@@ -1,0 +1,68 @@
+# Labelling Lines with Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Instead of a legend, place text annotations at the end of each line using
+`layout.annotations`. Set `xref: "paper"` with `x: 1` to anchor to the
+right edge, and `yref: "y"` to match the line's y value. Set
+`showarrow: false` and use `xanchor: "left"` to avoid overlapping the line.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+years = Enum.to_list(2001..2013)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: [74, 82, 80, 74, 73, 72, 74, 70, 70, 66, 66, 69, 67],
+    mode: "lines",
+    name: "Rest of world",
+    showlegend: false
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: [45, 42, 45, 45, 44, 42, 45, 40, 40, 37, 37, 38, 38],
+    mode: "lines",
+    name: "China",
+    showlegend: false
+  )
+)
+|> Figure.update_layout(
+  title: "Labelling Lines with Annotations",
+  showlegend: false,
+  annotations: [
+    %{
+      xref: "paper",
+      x: 1.0,
+      y: 67,
+      xanchor: "left",
+      yanchor: "middle",
+      text: "Rest of world",
+      font: %{size: 14},
+      showarrow: false
+    },
+    %{
+      xref: "paper",
+      x: 1.0,
+      y: 38,
+      xanchor: "left",
+      yanchor: "middle",
+      text: "China",
+      font: %{size: 14},
+      showarrow: false
+    }
+  ]
+)
+|> Plotly.show()
+```

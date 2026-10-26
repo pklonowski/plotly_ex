@@ -1,0 +1,41 @@
+# nonnegative, tozero, and normal Rangemode
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`rangemode` controls how the axis auto-scales relative to zero:
+- `"normal"` (default): fits the data range
+- `"tozero"`: extends the range to include zero
+- `"nonnegative"`: forces the axis to start at zero or above
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+y = [-5, -2, 1, 4, 7]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "data"))
+|> Figure.update_layout(title: "Rangemode: normal (default)", yaxis: %{rangemode: "normal"})
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "data"))
+|> Figure.update_layout(title: "Rangemode: tozero", yaxis: %{rangemode: "tozero"})
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "data"))
+|> Figure.update_layout(title: "Rangemode: nonnegative", yaxis: %{rangemode: "nonnegative"})
+|> Plotly.show()
+```

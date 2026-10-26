@@ -1,0 +1,33 @@
+# Marker Size, Color, and Symbol as an Array
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`marker.symbol` can be a list to assign a different symbol to each point.
+Common symbols: `"circle"`, `"square"`, `"diamond"`, `"cross"`, `"x"`, `"triangle-up"`, `"star"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 4, 9, 16, 25],
+    mode: "markers",
+    marker: %{
+      size: [20, 30, 40, 50, 60],
+      color: ["blue", "red", "green", "orange", "purple"],
+      symbol: ["circle", "square", "diamond", "cross", "x"]
+    }
+  )
+)
+|> Figure.update_layout(title: "Marker Size, Color, and Symbol as an Array")
+|> Plotly.show()
+```

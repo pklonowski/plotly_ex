@@ -1,0 +1,43 @@
+# Add Steps and Threshold
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`gauge.steps:` and `gauge.threshold:` work on bullet charts exactly as on angular gauges.
+Steps add colored bands along the bullet bar; the threshold marker shows a target value.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "number+gauge+delta",
+    value: 220,
+    title: %{text: "Profit"},
+    delta: %{reference: 200},
+    gauge: %{
+      shape: "bullet",
+      axis: %{range: [nil, 300]},
+      steps: [
+        %{range: [0, 150], color: "lightgray"},
+        %{range: [150, 250], color: "gray"}
+      ],
+      threshold: %{
+        line: %{color: "red", width: 2},
+        thickness: 0.75,
+        value: 280
+      }
+    },
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 250)
+|> Plotly.show()
+```

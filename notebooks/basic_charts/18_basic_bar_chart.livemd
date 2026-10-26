@@ -1,0 +1,26 @@
+# Basic Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Create a bar chart with `Bar.new(x:, y:)`. The `x` list contains category
+labels; `y` contains the bar heights.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["giraffes", "orangutans", "monkeys"],
+    y: [20, 14, 23]
+  )
+)
+|> Plotly.show()
+```

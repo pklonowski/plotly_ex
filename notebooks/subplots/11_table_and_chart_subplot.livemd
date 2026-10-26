@@ -1,0 +1,48 @@
+# Table and Chart Subplot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Table` is positioned using `domain: %{row:, column:}` (0-indexed row/column in the grid).
+Chart traces use `xaxis2`/`yaxis2` referencing the second grid cell.
+
+```elixir
+alias Plotly.{Figure, Table, Scatter}
+
+headers = ["Month", "Sales", "Returns"]
+months = ["Jan", "Feb", "Mar", "Apr", "May"]
+sales = [120, 150, 130, 170, 160]
+returns = [10, 12, 8, 15, 11]
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{values: headers},
+    cells: %{values: [months, sales, returns]},
+    domain: %{row: 0, column: 0}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: months,
+    y: sales,
+    mode: "lines+markers",
+    name: "Sales",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Table and Chart Subplot",
+  grid: %{rows: 2, columns: 1},
+  yaxis2: %{domain: [0.0, 0.45]},
+  xaxis2: %{domain: [0.0, 1.0], anchor: "y2"}
+)
+|> Plotly.show()
+```

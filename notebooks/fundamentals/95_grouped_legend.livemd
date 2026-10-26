@@ -1,0 +1,58 @@
+# Grouped Legend
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Assign the same `legendgroup` string to multiple traces to group them in the
+legend. Clicking the group entry toggles all traces in the group at once.
+Use `legendgrouptitle: %{text: "..."}` to add a title above the group.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [2, 4, 3],
+    name: "Line A",
+    mode: "lines",
+    legendgroup: "group1",
+    legendgrouptitle: %{text: "Group 1"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [2.2, 3.8, 3.2],
+    name: "Line A (variant)",
+    mode: "lines",
+    line: %{dash: "dot"},
+    legendgroup: "group1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [4, 2, 5],
+    name: "Line B",
+    mode: "lines",
+    legendgroup: "group2",
+    legendgrouptitle: %{text: "Group 2"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [3.8, 2.2, 4.8],
+    name: "Line B (variant)",
+    mode: "lines",
+    line: %{dash: "dot"},
+    legendgroup: "group2"
+  )
+)
+|> Figure.update_layout(title: "Grouped Legend")
+|> Plotly.show()
+```

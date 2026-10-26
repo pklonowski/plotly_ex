@@ -1,0 +1,28 @@
+# Changing the Orientation of Legend
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `legend.orientation: "h"` to display legend items horizontally. This is
+the same property shown in the Horizontal Legend subsection but presented here
+in the general Legend context.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 3, 2], name: "A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "B", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "C", mode: "lines"))
+|> Figure.update_layout(
+  title: "Horizontal Legend",
+  legend: %{orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "right", x: 1}
+)
+|> Plotly.show()
+```

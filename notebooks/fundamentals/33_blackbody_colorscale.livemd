@@ -1,0 +1,24 @@
+# Blackbody Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`"Blackbody"` simulates the colour of a heated blackbody radiator: black → red →
+orange → yellow → white. Effective for temperature, emission, or energy data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Blackbody"))
+|> Figure.update_layout(title: "Blackbody Colorscale Heatmap")
+|> Plotly.show()
+```

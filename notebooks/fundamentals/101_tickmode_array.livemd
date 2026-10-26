@@ -1,0 +1,29 @@
+# Tickmode - Array
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `tickmode: "array"` and provide explicit tick positions via `tickvals`
+and labels via `ticktext`. Only the specified ticks are shown.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(y: [1, 2, 3, 4, 5], mode: "markers"))
+|> Figure.update_layout(
+  title: "Array Tickmode",
+  xaxis: %{
+    tickmode: "array",
+    tickvals: [0, 1, 2, 3, 4],
+    ticktext: ["Apples", "Bananas", "Coconuts", "Dates", "Elderberries"]
+  }
+)
+|> Plotly.show()
+```

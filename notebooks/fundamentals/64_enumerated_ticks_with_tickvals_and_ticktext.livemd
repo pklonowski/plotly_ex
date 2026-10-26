@@ -1,0 +1,33 @@
+# Enumerated Ticks with Tickvals and Ticktext
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `tickmode: "array"` and supply explicit `tickvals` (positions) and
+`ticktext` (labels) to display exactly the ticks you want.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+pi = :math.pi()
+x = Enum.map(0..100, fn i -> i * 3 * pi / 100 end)
+y = Enum.map(x, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines"))
+|> Figure.update_layout(
+  title: "Enumerated Ticks with Tickvals and Ticktext",
+  xaxis: %{
+    tickmode: "array",
+    tickvals: [0, pi, 2 * pi, 3 * pi],
+    ticktext: ["0", "π", "2π", "3π"]
+  }
+)
+|> Plotly.show()
+```

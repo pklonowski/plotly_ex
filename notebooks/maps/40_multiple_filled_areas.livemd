@@ -1,0 +1,53 @@
+# Multiple Filled Areas with a Scattermap Trace
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Each polygon is a separate `Scattermap` trace with its own `fill: "toself"` and `fillcolor:`.
+This gives each area an independent legend entry and color.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# Approximate bounding boxes for western US states
+states = [
+  {"California", [42.0, 42.0, 32.5, 32.5, 42.0], [-124.4, -114.1, -114.1, -124.4, -124.4], "rgba(255,0,0,0.2)", "red"},
+  {"Nevada", [42.0, 42.0, 35.0, 35.0, 42.0], [-120.0, -114.0, -114.0, -120.0, -120.0], "rgba(0,255,0,0.2)", "green"},
+  {"Arizona", [37.0, 37.0, 31.3, 31.3, 37.0], [-114.8, -109.0, -109.0, -114.8, -114.8], "rgba(0,0,255,0.2)", "blue"},
+  {"Utah", [42.0, 42.0, 37.0, 37.0, 42.0], [-114.1, -109.0, -109.0, -114.1, -114.1], "rgba(255,165,0,0.2)", "orange"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(states, fig, fn {name, lats, lons, fill, line_color}, acc ->
+    Figure.add_trace(acc,
+      Scattermap.new(
+        lat: lats,
+        lon: lons,
+        mode: "lines",
+        fill: "toself",
+        fillcolor: fill,
+        line: %{color: line_color, width: 2},
+        name: name
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Multiple Filled Areas — Western US States",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 38.5, lon: -115.0},
+    zoom: 4
+  }
+)
+|> Plotly.show()
+```

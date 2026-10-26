@@ -1,0 +1,39 @@
+# OpenStreetMap Tiles
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Tile maps use `layout.map` (not `layout.geo`). The default free tile provider is
+`style: "open-street-map"`. Set `center:` and `zoom:` to control the initial view.
+`Scattermap` is the tile-map equivalent of `Scattergeo`.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [48.8566, 51.5074, 52.5200, 40.4168, 41.9028],
+    lon: [2.3522, -0.1278, 13.4050, -3.7038, 12.4964],
+    mode: "markers",
+    text: ["Paris", "London", "Berlin", "Madrid", "Rome"],
+    hoverinfo: "text",
+    marker: %{size: 10, color: "red"}
+  )
+)
+|> Figure.update_layout(
+  title: "OpenStreetMap Tiles",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 48.0, lon: 8.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

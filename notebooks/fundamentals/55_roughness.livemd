@@ -1,0 +1,36 @@
+# Roughness
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`lighting.roughness` controls how rough (matte) or smooth (glossy) the surface
+appears. Range is `0.0` (mirror-smooth) to `1.0` (completely matte). Default is `0.5`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..24 do
+  for j <- 0..24 do
+    r = :math.sqrt((i - 12) * (i - 12) + (j - 12) * (j - 12))
+    if r < 12, do: :math.sqrt(max(0, 144 - r * r)), else: 0
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Hot", lighting: %{roughness: 0.1}))
+|> Figure.update_layout(title: "Roughness: 0.1 (smooth/glossy)")
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Hot", lighting: %{roughness: 1.0}))
+|> Figure.update_layout(title: "Roughness: 1.0 (fully matte)")
+|> Plotly.show()
+```

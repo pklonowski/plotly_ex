@@ -1,0 +1,37 @@
+# Simple Inset Graph
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+An inset is a small subplot overlaid on top of the main plot. Achieved by giving `xaxis2`
+and `yaxis2` fractional domains in the upper-right corner of the figure space (e.g. 0.6–1.0).
+Both axes occupy the same figure area — the inset "floats" over the main chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.map(0..49, & &1 / 10)
+y = Enum.map(x, &:math.sin/1)
+
+# Zoomed region for inset
+x_inset = Enum.map(0..9, & &1 / 10)
+y_inset = Enum.map(x_inset, &:math.sin/1)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, name: "sin(x)"))
+|> Figure.add_trace(
+  Scatter.new(x: x_inset, y: y_inset, xaxis: "x2", yaxis: "y2", name: "Zoom")
+)
+|> Figure.update_layout(
+  title: "Simple Inset Graph",
+  xaxis2: %{domain: [0.6, 1.0], anchor: "y2"},
+  yaxis2: %{domain: [0.6, 1.0], anchor: "x2"}
+)
+|> Plotly.show()
+```

@@ -1,0 +1,53 @@
+# Basic 3D Cone
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Cone.new(x:, y:, z:, u:, v:, w:)` visualizes a vector field. Each `(x,y,z)` is a cone
+position; `(u,v,w)` is the vector direction and magnitude. `sizemode: "absolute"` makes
+cone size proportional to vector magnitude. `colorscale:` maps magnitude to color.
+`anchor: "tail"` positions the cone's base at the given point.
+
+```elixir
+alias Plotly.{Figure, Cone}
+
+# 3×3×3 grid with a simple rotational vector field: u=-y, v=x, w=0
+positions = for x <- [-1, 0, 1], y <- [-1, 0, 1], z <- [-1, 0, 1], do: {x, y, z}
+
+xs = Enum.map(positions, &elem(&1, 0))
+ys = Enum.map(positions, &elem(&1, 1))
+zs = Enum.map(positions, &elem(&1, 2))
+
+# Rotational field: vectors circle around the z-axis
+us = Enum.map(ys, &(-&1))
+vs = Enum.map(xs, & &1)
+ws = List.duplicate(0, length(xs))
+
+Figure.new()
+|> Figure.add_trace(
+  Cone.new(
+    x: xs, y: ys, z: zs,
+    u: us, v: vs, w: ws,
+    colorscale: "Blues",
+    sizemode: "absolute",
+    sizeref: 0.5,
+    anchor: "tail",
+    showscale: true
+  )
+)
+|> Figure.update_layout(
+  title: "Basic 3D Cone — Rotational Field",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

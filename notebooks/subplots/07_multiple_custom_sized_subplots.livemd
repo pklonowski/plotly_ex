@@ -1,0 +1,33 @@
+# Multiple Custom Sized Subplots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Manual `xaxis.domain`/`yaxis.domain` gives full control over each subplot's position.
+Each domain is `[x_start, x_end]` / `[y_start, y_end]` as fractions of the figure (0.0–1.0).
+Leave a gap between domains for spacing (e.g. 0.0–0.45, 0.55–1.0).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 2, 3], name: "Large"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 1, 2], xaxis: "x2", yaxis: "y2", name: "Small Top"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 3, 1], xaxis: "x3", yaxis: "y3", name: "Small Bottom"))
+|> Figure.update_layout(
+  title: "Multiple Custom Sized Subplots",
+  xaxis:  %{domain: [0.0, 0.55]},
+  yaxis:  %{domain: [0.0, 1.0]},
+  xaxis2: %{domain: [0.65, 1.0]},
+  yaxis2: %{domain: [0.55, 1.0]},
+  xaxis3: %{domain: [0.65, 1.0]},
+  yaxis3: %{domain: [0.0, 0.45]}
+)
+|> Plotly.show()
+```

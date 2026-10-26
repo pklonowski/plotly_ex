@@ -1,0 +1,33 @@
+# Map Styles Without Tokens
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Choose a base map
+
+Plotly.js v4 uses MapLibre-backed `Scattermap`, `Densitymap`, and
+`Choroplethmap` traces with `layout.map`. These tile styles need no access token:
+`open-street-map`, `carto-positron`, and `carto-darkmatter`. Tile providers still
+require network access. `white-bg` uses no external tiles.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+for style <- ["open-street-map", "carto-positron", "carto-darkmatter", "white-bg"] do
+  Figure.new()
+  |> Figure.add_trace(Scattermap.new(
+    lat: [40.7128, 40.7306], lon: [-74.0060, -73.9352],
+    text: ["Lower Manhattan", "Queens"], mode: "markers", marker: %{size: 14}
+  ))
+  |> Figure.update_layout(
+    title: "Map style: #{style}", height: 360,
+    map: %{style: style, center: %{lat: 40.72, lon: -73.97}, zoom: 10}
+  )
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

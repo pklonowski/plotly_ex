@@ -1,0 +1,31 @@
+# Basic Gauge
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A basic gauge uses `Indicator.new(mode: "gauge+number", ...)`. The `gauge.axis.range` sets
+the scale — `[nil, max]` lets Plotly auto-determine the lower bound (equivalent to JS `null`).
+This is the same as notebook 06 (single angular gauge) but without a delta.
+
+```elixir
+alias Plotly.{Figure, Indicator}
+
+Figure.new()
+|> Figure.add_trace(
+  Indicator.new(
+    mode: "gauge+number",
+    value: 270,
+    title: %{text: "Speed"},
+    gauge: %{axis: %{range: [nil, 500]}},
+    domain: %{x: [0, 1], y: [0, 1]}
+  )
+)
+|> Figure.update_layout(width: 600, height: 400)
+|> Plotly.show()
+```

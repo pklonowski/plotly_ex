@@ -1,0 +1,31 @@
+# Basic Pie Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Create a pie chart with `Pie.new(labels:, values:)`. Plotly automatically
+calculates the percentage for each slice.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Residential", "Non-Residential", "Utility"],
+    values: [19, 26, 55]
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Pie Chart",
+  height: 400,
+  width: 500
+)
+|> Plotly.show()
+```

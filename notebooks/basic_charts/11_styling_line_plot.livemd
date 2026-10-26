@@ -1,0 +1,43 @@
+# Styling Line Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `line: %{color:, width:}` on a trace to set the line colour and
+thickness. Control figure dimensions with `layout.width` and `layout.height`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+trace1 = Scatter.new(
+  x: [1, 2, 3, 4],
+  y: [10, 15, 13, 17],
+  mode: "lines",
+  name: "Red Thin",
+  line: %{color: "firebrick", width: 2}
+)
+
+trace2 = Scatter.new(
+  x: [1, 2, 3, 4],
+  y: [16, 5, 11, 9],
+  mode: "lines",
+  name: "Blue Thick",
+  line: %{color: "royalblue", width: 4}
+)
+
+Figure.new()
+|> Figure.add_trace(trace1)
+|> Figure.add_trace(trace2)
+|> Figure.update_layout(
+  title: "Styling Line Plots",
+  width: 500,
+  height: 400
+)
+|> Plotly.show()
+```

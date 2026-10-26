@@ -1,0 +1,63 @@
+# Filled Lines (Continuous Error Band)
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A continuous error band (shaded confidence interval) uses three `Scatter` traces:
+1. **Upper bound** — `fill: nil`, `mode: "lines"`, thin line or invisible
+2. **Lower bound** — `fill: "tonexty"`, which fills the area *between* this trace and the one drawn above it
+3. **Mean line** — drawn on top
+
+The key is that Plotly fills between consecutive traces in the order they are added.
+Use `fillcolor` on the lower-bound trace to set the band colour.
+Use `line: %{color: "transparent"}` to hide a bound line while keeping the fill anchor.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y_mean  = [2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
+y_upper = [3, 4, 5, 6, 7, 6, 5, 4, 3, 2]
+y_lower = [1, 2, 3, 4, 5, 4, 3, 2, 1, 0]
+
+Figure.new()
+|> Figure.add_trace(
+  # Upper bound — acts as the fill anchor for the next trace
+  Scatter.new(
+    x: x, y: y_upper,
+    mode: "lines",
+    line: %{color: "transparent"},
+    name: "Upper bound",
+    showlegend: false
+  )
+)
+|> Figure.add_trace(
+  # Lower bound — fill: "tonexty" fills between this and the upper bound above
+  Scatter.new(
+    x: x, y: y_lower,
+    mode: "lines",
+    fill: "tonexty",
+    fillcolor: "rgba(0, 100, 255, 0.2)",
+    line: %{color: "transparent"},
+    name: "Confidence band",
+    showlegend: true
+  )
+)
+|> Figure.add_trace(
+  # Mean line drawn on top
+  Scatter.new(
+    x: x, y: y_mean,
+    mode: "lines",
+    line: %{color: "rgb(0, 100, 255)"},
+    name: "Mean"
+  )
+)
+|> Figure.update_layout(title: "Continuous Error Band (Filled Lines)")
+|> Plotly.show()
+```

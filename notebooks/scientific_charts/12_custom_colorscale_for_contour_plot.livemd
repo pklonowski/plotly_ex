@@ -1,0 +1,43 @@
+# Custom Colorscale for Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A custom colour scale is a list of `[stop, color]` pairs where `stop` is a float 0–1
+and `color` is a CSS string. Stops must be in ascending order starting at 0 and ending at 1.
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+custom_scale = [
+  [0.0, "rgb(166,206,227)"],
+  [0.25, "rgb(31,120,180)"],
+  [0.45, "rgb(178,223,138)"],
+  [0.65, "rgb(51,160,44)"],
+  [0.85, "rgb(251,154,153)"],
+  [1.0, "rgb(227,26,28)"]
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: custom_scale,
+    contours: %{showlabels: true, labelfont: %{color: "black", size: 10}}
+  )
+)
+|> Figure.update_layout(title: "Contour with Custom Colourscale")
+|> Plotly.show()
+```

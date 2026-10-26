@@ -1,0 +1,24 @@
+# Grouped Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Add multiple `Bar` traces with the same x categories and set
+`layout.barmode: "group"` to display them side by side. Use `name:` on
+each trace for legend labels.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [20, 14, 23], name: "SF Zoo"))
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [12, 18, 29], name: "LA Zoo"))
+|> Figure.update_layout(barmode: "group")
+|> Plotly.show()
+```

@@ -1,0 +1,35 @@
+# Basic 2D Histogram Contour
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Histogram2dcontour.new(x: [...], y: [...])` creates a 2D kernel density contour plot.
+Like `Histogram2d` but draws contour lines instead of filled squares.
+Both x and y must have the same length (one point per observation).
+
+```elixir
+alias Plotly.{Figure, Histogram2dcontour}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 300
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(Histogram2dcontour.new(x: x, y: y))
+|> Figure.update_layout(title: "Basic 2D Histogram Contour")
+|> Plotly.show()
+```

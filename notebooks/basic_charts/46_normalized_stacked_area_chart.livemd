@@ -1,0 +1,54 @@
+# Normalized Stacked Area Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`stackgroup` groups traces into a stack. `groupnorm: "percent"` normalises all stacks to 100%
+so each x position sums to 100. Combine with `yaxis.ticksuffix: "%"` for labelling.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    mode: "lines",
+    stackgroup: "one",
+    groupnorm: "percent",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    mode: "lines",
+    stackgroup: "one",
+    name: "Trace 2"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [1, 3, 2, 4, 2],
+    mode: "lines",
+    stackgroup: "one",
+    name: "Trace 3"
+  )
+)
+|> Figure.update_layout(
+  title: "Normalized Stacked Area Chart",
+  yaxis: %{ticksuffix: "%"}
+)
+|> Plotly.show()
+```

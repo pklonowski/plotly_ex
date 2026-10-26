@@ -1,0 +1,26 @@
+# Positioning the Legend Inside the Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `layout.legend` with `x`, `y`, `xanchor`, and `yanchor` (paper coords,
+0–1) to place the legend inside the plot area.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 1, 3], name: "A", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 2, 1], name: "B", mode: "lines"))
+|> Figure.update_layout(
+  title: "Legend Inside the Plot (top-right)",
+  legend: %{x: 1, xanchor: "right", y: 1}
+)
+|> Plotly.show()
+```

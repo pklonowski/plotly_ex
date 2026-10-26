@@ -1,0 +1,141 @@
+# Plotly for Elixir: Fluent Builder
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The **fluent builder** gives you precise control over every plotly.js property.
+Instead of the Express shorthand, you construct trace structs directly and chain
+`Figure` operations with `|>`.
+
+```elixir
+# Aliases used throughout this notebook
+alias Plotly.{Figure, Scatter, Bar}
+```
+
+## 1. Minimal figure
+
+The three-layer model: build a `Figure`, add a trace struct, render with
+`Plotly.show/1`.
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 1, 4, 3, 5]))
+|> Plotly.show()
+```
+
+## 2. Layout customisation
+
+`Figure.update_layout/2` shallow-merges a keyword list (or map) into the
+figure's layout. **Shallow** means if you supply a nested map key like `xaxis:`,
+it replaces the entire previous `xaxis` map rather than deep-merging into it.
+This is intentional — it matches how plotly.js consumes the layout object.
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5],
+  y: [2, 1, 4, 3, 5],
+  name: "Series A",
+  mode: "markers"
+))
+|> Figure.update_layout(
+  title: "Customised Layout",
+  xaxis: %{title: "X axis label"},
+  yaxis: %{title: "Y axis label"},
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## 3. Multi-trace
+
+Call `add_trace/2` multiple times. Each call appends to `fig.data`. The `name:`
+field on each trace becomes its legend entry.
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5], y: [2, 1, 4, 3, 5], name: "Series A"
+))
+|> Figure.add_trace(Scatter.new(
+  x: [1, 2, 3, 4, 5], y: [1, 3, 2, 5, 4], name: "Series B"
+))
+|> Figure.update_layout(title: "Two Traces")
+|> Plotly.show()
+```
+
+## 4. Mixed trace types
+
+`add_trace/2` accepts any trace struct — mix types freely. Here a `Bar` trace
+(monthly revenue) is combined with a `Scatter` trend line on the same axes.
+`mode: "lines"` on the Scatter hides the point markers.
+
+```elixir
+months  = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+revenue = [42, 55, 61, 48, 73, 80]
+trend   = [44, 49, 55, 59, 64, 70]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: months, y: revenue, name: "Revenue"))
+|> Figure.add_trace(Scatter.new(x: months, y: trend, name: "Trend", mode: "lines"))
+|> Figure.update_layout(title: "Revenue with Trend Line")
+|> Plotly.show()
+```
+
+## 5. Live update
+
+`Plotly.show/1` returns a `PlotlyLive` widget (a `Kino.JS.Live` process).
+`PlotlyLive.push/2` sends a new figure to that widget, which the browser applies
+via `Plotly.react` — a smooth in-place update with no flicker or re-initialisation.
+
+> **Pattern — two cells:** evaluate **Cell A** first to create and display the
+> widget. Then evaluate **Cell B** to run the animation loop. The widget in
+> Cell A updates live as Cell B runs.
+
+> **Why not `Kino.animate`?** `Kino.animate` creates a fresh widget for every
+> frame, causing `Plotly.newPlot` to fire each time — visible flickering.
+> `PlotlyLive.push/2` uses `Plotly.react` (diff-based update) instead.
+
+**Cell A — create the widget**
+
+```elixir
+initial_fig =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(x: [0], y: [0.0], mode: "lines", name: "sin(x/3)"))
+  |> Figure.update_layout(
+    title: "Live Update — Step 0",
+    xaxis: %{range: [0, 30]},
+    yaxis: %{range: [-1.1, 1.1]}
+  )
+
+kino = Plotly.show(initial_fig)
+```
+
+**Cell B — run the animation (evaluate after Cell A)**
+
+```elixir
+for i <- 1..30 do
+  xs = Enum.to_list(0..i)
+  ys = Enum.map(xs, fn x -> :math.sin(x / 3.0) end)
+
+  fig =
+    Figure.new()
+    |> Figure.add_trace(Scatter.new(x: xs, y: ys, mode: "lines", name: "sin(x/3)"))
+    |> Figure.update_layout(
+      title: "Live Update — Step #{i}",
+      xaxis: %{range: [0, 30]},
+      yaxis: %{range: [-1.1, 1.1]}
+    )
+
+  Plotly.Kino.PlotlyLive.push(kino, fig)
+  Process.sleep(100)
+end
+
+:ok
+```

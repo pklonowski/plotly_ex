@@ -1,0 +1,56 @@
+# Set Color of Treemap Sectors
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`marker.colors` assigns a color to each node (one entry per label).
+Colors can be CSS strings or numeric values — use numeric values with `marker.colorscale` for a continuous palette.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+labels  = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values  = [10, 14, 12, 10, 2, 6, 6, 4, 4]
+
+# CSS color strings
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    marker: %{
+      colors: ["pink", "royalblue", "lightgreen", "purple", "gold",
+               "cyan", "salmon", "lime", "lavender"]
+    }
+  )
+)
+|> Figure.update_layout(title: "Treemap — Custom Sector Colors")
+|> Plotly.show()
+```
+
+```elixir
+# Numeric values + colorscale
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    marker: %{
+      colors: [0, 14, 12, 10, 2, 6, 6, 4, 4],
+      colorscale: "RdBu",
+      showscale: true
+    }
+  )
+)
+|> Figure.update_layout(title: "Treemap — Colorscale")
+|> Plotly.show()
+```

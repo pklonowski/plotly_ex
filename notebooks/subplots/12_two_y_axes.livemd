@@ -1,0 +1,39 @@
+# Two Y-Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Two y-axes on one chart: the second y-axis uses `overlaying: "y"` to share the same x-axis
+and plot area. `side: "right"` puts it on the right. The trace referencing it sets `yaxis: "y2"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+y1 = [1000, 1200, 900, 1400, 1100, 1300]
+y2 = [22, 19, 25, 18, 23, 20]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(x: x, y: y1, name: "Revenue ($)", mode: "lines+markers")
+)
+|> Figure.add_trace(
+  Scatter.new(x: x, y: y2, name: "Temperature (°C)", mode: "lines+markers", yaxis: "y2")
+)
+|> Figure.update_layout(
+  title: "Two Y-Axes",
+  yaxis: %{title: %{text: "Revenue ($)"}},
+  yaxis2: %{
+    title: %{text: "Temperature (°C)"},
+    overlaying: "y",
+    side: "right"
+  }
+)
+|> Plotly.show()
+```

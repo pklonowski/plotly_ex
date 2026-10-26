@@ -1,0 +1,31 @@
+# Quiver — Grouped Express Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Keep each group's positions and components together
+
+`Plotly.quiver/2` accepts the same table inputs as the other Express helpers.
+All four selectors are required. Interleaved groups below become separate
+traces, with each group's `x`, `y`, `u`, and `v` arrays kept in row order.
+List-of-map inputs use string keys. An Explorer DataFrame can be passed with
+the same selectors.
+
+```elixir
+data = [
+  %{"x" => 0, "y" => 0, "u" => 1, "v" => 0, "field" => "east"},
+  %{"x" => 0, "y" => 1, "u" => 0, "v" => 1, "field" => "north"},
+  %{"x" => 1, "y" => 0, "u" => 1, "v" => 0, "field" => "east"},
+  %{"x" => 1, "y" => 1, "u" => 0, "v" => 1, "field" => "north"}
+]
+
+Plotly.quiver(data, x: "x", y: "y", u: "u", v: "v", color: "field")
+|> Plotly.Figure.update_layout(
+  title: "Two interleaved vector groups", yaxis: %{scaleanchor: "x"}
+)
+|> Plotly.show()
+```

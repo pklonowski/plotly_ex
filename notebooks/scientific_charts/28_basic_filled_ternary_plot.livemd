@@ -1,0 +1,70 @@
+# Basic Filled Ternary Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`fill: "toself"` on a `Scatterternary` trace closes the polygon and fills the interior.
+Use this to create filled regions (e.g. classification zones) in ternary space.
+Each trace is one filled region. Close the polygon by repeating the first point at the end.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+# Three soil classification zones as filled polygons
+zones = [
+  %{
+    name: "Clay zone",
+    a: [0.0, 0.0, 0.2, 0.4, 0.0],
+    b: [0.0, 0.4, 0.4, 0.2, 0.0],
+    c: [1.0, 0.6, 0.4, 0.4, 1.0],
+    color: "rgba(205, 133, 63, 0.4)"
+  },
+  %{
+    name: "Sand zone",
+    a: [0.8, 1.0, 1.0, 0.8, 0.8],
+    b: [0.0, 0.0, 0.0, 0.2, 0.0],
+    c: [0.2, 0.0, 0.0, 0.0, 0.2],
+    color: "rgba(245, 222, 179, 0.4)"
+  },
+  %{
+    name: "Silt zone",
+    a: [0.0, 0.2, 0.2, 0.0, 0.0],
+    b: [0.8, 0.6, 0.8, 1.0, 0.8],
+    c: [0.2, 0.2, 0.0, 0.0, 0.2],
+    color: "rgba(107, 142, 35, 0.4)"
+  }
+]
+
+fig =
+  Enum.reduce(zones, Figure.new(), fn zone, fig ->
+    Figure.add_trace(fig,
+      Scatterternary.new(
+        a: zone.a,
+        b: zone.b,
+        c: zone.c,
+        mode: "lines",
+        fill: "toself",
+        fillcolor: zone.color,
+        line: %{color: "black", width: 1},
+        name: zone.name
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Basic Filled Ternary Plot (Classification Zones)",
+  ternary: %{
+    aaxis: %{title: "Sand"},
+    baxis: %{title: "Silt"},
+    caxis: %{title: "Clay"}
+  }
+)
+|> Plotly.show()
+```

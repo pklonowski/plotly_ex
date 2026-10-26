@@ -1,0 +1,65 @@
+# Customizing the Figure with Shapes and Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`layout.shapes` and `layout.annotations` work on OHLC charts exactly as on scatter plots.
+A rect shape with `xref: "x"` and `yref: "paper"` highlights a date range across the full
+chart height. Pair with an annotation to label the event.
+
+```elixir
+alias Plotly.{Figure, Ohlc}
+
+csv =
+  Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+
+parsed =
+  Enum.map(rows, fn row -> Enum.zip(headers, String.split(row, ",")) |> Map.new() end)
+
+dates = Enum.map(parsed, & &1["Date"])
+open  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Open"]), 0)))
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+close = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Close"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(Ohlc.new(x: dates, open: open, high: high, low: low, close: close))
+|> Figure.update_layout(
+  title: "Apple OHLC — Shapes & Annotations",
+  showlegend: false,
+  xaxis: %{type: "date", rangeslider: %{visible: false}},
+  shapes: [
+    %{
+      type: "rect",
+      xref: "x", yref: "paper",
+      x0: "2016-01-01", y0: 0,
+      x1: "2016-02-01", y1: 1,
+      fillcolor: "#d3d3d3",
+      opacity: 0.3,
+      line: %{width: 0}
+    }
+  ],
+  annotations: [
+    %{
+      x: "2016-01-15",
+      y: 0.95,
+      xref: "x", yref: "paper",
+      text: "Jan 2016 drop",
+      font: %{color: "darkblue"},
+      showarrow: true,
+      ax: 0, ay: -30
+    }
+  ]
+)
+|> Plotly.show()
+```

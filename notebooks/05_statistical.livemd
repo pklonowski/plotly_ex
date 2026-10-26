@@ -1,0 +1,1623 @@
+# Statistical Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Statistical Charts > Basic Symmetric Error Bars
+
+`error_y` (or `error_x`) is a plain map on any `Scatter` or `Bar` trace.
+Key fields: `type:`, `array:`, `visible: true`.
+`type: "data"` means the error values are explicit per-point values in `array:`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2],
+    y: [6, 10, 2],
+    error_y: %{type: "data", array: [1, 2, 3], visible: true}
+  )
+)
+|> Figure.update_layout(title: "Basic Symmetric Error Bars")
+|> Plotly.show()
+```
+
+## Statistical Charts > Bar Chart with Error Bars
+
+`error_y` works on `Bar` traces too. Multiple bar groups can each carry independent error bars.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Trial 1", "Trial 2", "Trial 3"],
+    y: [3, 6, 4],
+    name: "Control",
+    error_y: %{type: "data", array: [1, 0.5, 1.5], visible: true}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Trial 1", "Trial 2", "Trial 3"],
+    y: [4, 7, 3],
+    name: "Experiment",
+    error_y: %{type: "data", array: [0.5, 1.0, 0.8], visible: true}
+  )
+)
+|> Figure.update_layout(title: "Bar Chart with Error Bars", barmode: "group")
+|> Plotly.show()
+```
+
+## Statistical Charts > Horizontal Error Bars
+
+`error_x` adds horizontal error bars. Both `error_x` and `error_y` can appear on the same trace.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [2, 1, 3, 4],
+    mode: "markers",
+    error_x: %{type: "data", array: [0.2, 0.3, 0.1, 0.4], visible: true}
+  )
+)
+|> Figure.update_layout(title: "Horizontal Error Bars")
+|> Plotly.show()
+```
+
+## Statistical Charts > Asymmetric Error Bars
+
+`arrayminus:` sets the downward (or leftward) error values independently from `array:` (upward/rightward).
+Without `arrayminus`, both directions use `array:` symmetrically.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [2, 1, 3, 4],
+    mode: "markers",
+    error_y: %{
+      type: "data",
+      array: [0.1, 0.2, 0.3, 0.4],
+      arrayminus: [0.4, 0.3, 0.2, 0.1],
+      visible: true
+    }
+  )
+)
+|> Figure.update_layout(title: "Asymmetric Error Bars")
+|> Plotly.show()
+```
+
+## Statistical Charts > Colored and Styled Error Bars
+
+`color:` sets the error bar colour. `thickness:` sets the line width of the bar.
+`width:` sets the length of the horizontal cap at the end of each bar.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2],
+    y: [6, 10, 2],
+    mode: "markers",
+    marker: %{color: "rgb(164, 194, 244)", size: 12},
+    error_y: %{
+      type: "data",
+      array: [1, 2, 3],
+      visible: true,
+      color: "purple",
+      thickness: 2.5,
+      width: 8
+    },
+    error_x: %{
+      type: "data",
+      array: [0.1, 0.2, 0.1],
+      visible: true,
+      color: "purple",
+      thickness: 2.5,
+      width: 8
+    }
+  )
+)
+|> Figure.update_layout(title: "Colored and Styled Error Bars")
+|> Plotly.show()
+```
+
+## Statistical Charts > Error Bars as a Percentage of the y-Value
+
+`type: "percent"` + `value: N` sets error bars to ±N% of each y value.
+`type: "sqrt"` sets error bars to ±√y (no `value` needed — useful for count data).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    y: [8, 7, 6, 5, 4, 3, 2, 1, 0],
+    error_y: %{type: "percent", value: 10, visible: true}
+  )
+)
+|> Figure.update_layout(title: "Error Bars as 10% of y-Value")
+|> Plotly.show()
+```
+
+## Statistical Charts > Asymmetric Error Bars with a Constant Offset
+
+`type: "constant"` + `value:` sets all upward bars to the same absolute value.
+Add `valueminus:` for a different constant in the downward direction.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [2, 4, 3, 5],
+    mode: "markers+lines",
+    error_y: %{type: "constant", value: 0.5, valueminus: 1.0, visible: true}
+  )
+)
+|> Figure.update_layout(title: "Asymmetric Error Bars — Constant Offset")
+|> Plotly.show()
+```
+
+## Statistical Charts > Basic Box Plot
+
+`Box.new(y: [...])` creates a vertical box plot from raw data.
+Plotly automatically computes the quartiles, median, whiskers, and outliers.
+Use `name:` for the legend label.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(Box.new(y: [0, 1, 1, 2, 3, 5, 8, 13, 21], name: "Fibonacci"))
+|> Figure.update_layout(title: "Basic Box Plot")
+|> Plotly.show()
+```
+
+## Statistical Charts > Box Plot That Displays the Underlying Data
+
+`boxpoints: "all"` overlays every raw data point on the box.
+`jitter` (0–1) adds horizontal scatter to the points so they don't overlap.
+`pointpos` shifts points relative to the box centre (negative = left).
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: [0, 1, 1, 2, 3, 5, 8, 13, 21],
+    name: "With Points",
+    boxpoints: "all",
+    jitter: 0.3,
+    pointpos: -1.8
+  )
+)
+|> Figure.update_layout(title: "Box Plot Displaying the Underlying Data")
+|> Plotly.show()
+```
+
+## Statistical Charts > Horizontal Box Plot
+
+Pass data as `x:` instead of `y:` to create a horizontal box plot.
+Multiple traces stack vertically.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(Box.new(x: [0, 1, 1, 2, 3, 5, 8, 13, 21], name: "Set 1"))
+|> Figure.add_trace(Box.new(x: [2, 3, 4, 5, 6, 7, 8, 9, 10], name: "Set 2"))
+|> Figure.update_layout(title: "Horizontal Box Plot")
+|> Plotly.show()
+```
+
+## Statistical Charts > Grouped Box Plot
+
+Assign the same `x:` category values across multiple Box traces to group them side-by-side.
+`layout.boxmode: "group"` positions boxes of the same category next to each other.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+x = ["day 1", "day 1", "day 1", "day 2", "day 2", "day 2"]
+
+Figure.new()
+|> Figure.add_trace(Box.new(y: [0.2, 0.2, 0.6, 1.0, 0.5, 0.4], x: x, name: "kale",     marker: %{color: "#3D9970"}))
+|> Figure.add_trace(Box.new(y: [0.6, 0.7, 0.3, 0.6, 0.0, 0.5], x: x, name: "radishes", marker: %{color: "#FF4136"}))
+|> Figure.add_trace(Box.new(y: [0.1, 0.3, 0.1, 0.9, 0.6, 0.6], x: x, name: "carrots",  marker: %{color: "#FF851B"}))
+|> Figure.update_layout(
+  title: "Grouped Box Plot",
+  yaxis: %{title: "normalized moisture", zeroline: false},
+  boxmode: "group"
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Box Plot Styling Outliers
+
+`boxpoints: "suspectedoutliers"` shows only the statistical outlier points (beyond 1.5× IQR).
+`marker.outliercolor` sets the outlier point fill colour.
+`marker.line.outliercolor` and `marker.line.outlierwidth` style the outlier point border.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+data = [0.75, 5.25, 5.5, 6.0, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75,
+        8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10.0, 10.25, 11.5, 12.0, 16.0, 20.90, 22.3, 23.25]
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: data,
+    name: "Styled Outliers",
+    boxpoints: "suspectedoutliers",
+    marker: %{
+      color: "rgb(8,81,156)",
+      outliercolor: "rgba(219, 64, 82, 0.6)",
+      line: %{outliercolor: "rgba(219, 64, 82, 1.0)", outlierwidth: 2}
+    },
+    line: %{color: "rgb(8,81,156)"}
+  )
+)
+|> Figure.update_layout(title: "Box Plot Styling Outliers")
+|> Plotly.show()
+```
+
+## Statistical Charts > Box Plot Styling Mean and Standard Deviation
+
+`boxmean: true` draws a dashed line at the mean.
+`boxmean: "sd"` draws the mean line and shades ±1 standard deviation.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+data = [2.37, 2.16, 4.82, 1.73, 1.04, 0.23, 1.32, 2.91, 0.11, 4.51,
+        0.51, 3.75, 1.35, 2.98, 4.50, 0.18, 4.66, 1.30, 2.06, 1.19]
+
+Figure.new()
+|> Figure.add_trace(Box.new(y: data, name: "Mean line only", boxmean: true))
+|> Figure.add_trace(Box.new(y: data, name: "Mean + SD",      boxmean: "sd"))
+|> Figure.update_layout(title: "Box Plot — Mean and Standard Deviation")
+|> Plotly.show()
+```
+
+## Statistical Charts > Grouped Horizontal Box Plot
+
+Combine `orientation: "h"` with categorical `y:` values and `layout.boxmode: "group"` for grouped horizontal boxes.
+With horizontal orientation, `x:` holds the data values and `y:` holds the category.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+y = ["day 1", "day 1", "day 1", "day 2", "day 2", "day 2"]
+
+Figure.new()
+|> Figure.add_trace(Box.new(x: [0.2, 0.2, 0.6, 1.0, 0.5, 0.4], y: y, name: "kale",     orientation: "h", marker: %{color: "#3D9970"}))
+|> Figure.add_trace(Box.new(x: [0.6, 0.7, 0.3, 0.6, 0.0, 0.5], y: y, name: "radishes", orientation: "h", marker: %{color: "#FF4136"}))
+|> Figure.add_trace(Box.new(x: [0.1, 0.3, 0.1, 0.9, 0.6, 0.6], y: y, name: "carrots",  orientation: "h", marker: %{color: "#FF851B"}))
+|> Figure.update_layout(title: "Grouped Horizontal Box Plot", boxmode: "group")
+|> Plotly.show()
+```
+
+## Statistical Charts > Colored Box Plot
+
+`fillcolor` sets the box interior colour (accepts rgba for transparency).
+`marker.color` sets the outlier / jitter point colour.
+`line.color` sets the box border and whisker colour.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    name: "Set 1",
+    fillcolor: "rgba(93, 164, 214, 0.5)",
+    marker: %{color: "rgb(93, 164, 214)"},
+    line: %{color: "rgb(8, 48, 107)"}
+  )
+)
+|> Figure.add_trace(
+  Box.new(
+    y: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+    name: "Set 2",
+    fillcolor: "rgba(255, 144, 14, 0.5)",
+    marker: %{color: "rgb(255, 144, 14)"},
+    line: %{color: "rgb(107, 48, 8)"}
+  )
+)
+|> Figure.update_layout(title: "Colored Box Plot")
+|> Plotly.show()
+```
+
+## Statistical Charts > Fully Styled Box Plot
+
+Combining all box plot styling: fill colour, border, mean line, underlying data points, jitter, and layout customisation.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+# Generate some sample data groups
+:rand.seed(:exsss, {1, 2, 3})
+make_data = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Box.new(
+    y: make_data.(50),
+    name: "Group A",
+    fillcolor: "rgba(93, 164, 214, 0.5)",
+    marker: %{color: "rgb(93, 164, 214)", size: 4, outliercolor: "rgba(219,64,82,0.6)"},
+    line: %{color: "rgb(8, 48, 107)"},
+    boxmean: "sd",
+    boxpoints: "suspectedoutliers"
+  )
+)
+|> Figure.add_trace(
+  Box.new(
+    y: make_data.(50),
+    name: "Group B",
+    fillcolor: "rgba(255, 144, 14, 0.5)",
+    marker: %{color: "rgb(255, 144, 14)", size: 4, outliercolor: "rgba(219,64,82,0.6)"},
+    line: %{color: "rgb(107, 48, 8)"},
+    boxmean: "sd",
+    boxpoints: "suspectedoutliers"
+  )
+)
+|> Figure.update_layout(
+  title: "Fully Styled Box Plot",
+  yaxis: %{zeroline: false},
+  showlegend: true
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Rainbow Box Plot
+
+Seven Box traces with rainbow colours demonstrate the full colour spectrum.
+Each trace's `y` data is offset slightly to space the boxes apart visually.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+:rand.seed(:exsss, {42, 42, 42})
+
+colors = ["red", "orangered", "orange", "gold", "green", "steelblue", "mediumpurple"]
+names  = ["Red", "Orange-Red", "Orange", "Yellow", "Green", "Blue", "Violet"]
+
+fig =
+  Enum.zip(colors, names)
+  |> Enum.with_index()
+  |> Enum.reduce(Figure.new(), fn {{color, name}, i}, fig ->
+    y = for _ <- 1..30 do
+      (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0) |> Kernel.+(i * 0.5)
+    end
+
+    Figure.add_trace(fig, Box.new(
+      y: y,
+      name: name,
+      fillcolor: color,
+      line: %{color: color},
+      marker: %{color: color}
+    ))
+  end)
+
+fig
+|> Figure.update_layout(title: "Rainbow Box Plot", showlegend: true)
+|> Plotly.show()
+```
+
+## Statistical Charts > Basic Histogram
+
+`Histogram.new(x: [...])` automatically bins the data and counts occurrences per bin.
+Plotly chooses the number of bins automatically; use `nbinsx:` to override.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+# Central Limit Theorem approximation: sum of 12 uniform(0,1) - 6 ≈ N(0,1)
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x))
+|> Figure.update_layout(title: "Basic Histogram")
+|> Plotly.show()
+```
+
+## Statistical Charts > Horizontal Histogram
+
+Pass data as `y:` instead of `x:` to produce a horizontal histogram.
+The x-axis becomes the count axis; y-axis shows the bin ranges.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+y = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(y: y))
+|> Figure.update_layout(title: "Horizontal Histogram")
+|> Plotly.show()
+```
+
+## Statistical Charts > Overlaid Histogram
+
+`layout.barmode: "overlay"` renders multiple histograms on top of each other.
+Use `opacity` (0–1) on each trace so the overlapping bins remain visible.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x1 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+x2 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(5.5)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x1, name: "x1", opacity: 0.5))
+|> Figure.add_trace(Histogram.new(x: x2, name: "x2", opacity: 0.5))
+|> Figure.update_layout(
+  title: "Overlaid Histogram",
+  barmode: "overlay"
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Stacked Histograms
+
+`layout.barmode: "stack"` stacks histogram bars of the same bin on top of each other.
+The total bar height shows the combined count across all traces for that bin.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x1 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+x2 = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(5.5)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x1, name: "x1"))
+|> Figure.add_trace(Histogram.new(x: x2, name: "x2"))
+|> Figure.update_layout(title: "Stacked Histograms", barmode: "stack")
+|> Plotly.show()
+```
+
+## Statistical Charts > Colored and Styled Histograms
+
+`marker.color` sets the bar fill colour (CSS string or rgba).
+`marker.line.color` and `marker.line.width` style the bar border.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram.new(
+    x: x,
+    marker: %{
+      color: "rgba(255, 100, 102, 0.7)",
+      line: %{color: "rgba(255, 100, 102, 1.0)", width: 1}
+    },
+    opacity: 0.75
+  )
+)
+|> Figure.update_layout(
+  title: "Colored and Styled Histogram",
+  xaxis: %{title: "Value"},
+  yaxis: %{title: "Count"},
+  bargap: 0.05
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Cumulative Histogram
+
+`cumulative: %{enabled: true}` turns a histogram into a cumulative distribution.
+Each bar shows how many data points fall at or below that bin's upper bound.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Histogram.new(x: x, name: "Regular",    opacity: 0.5))
+|> Figure.add_trace(Histogram.new(x: x, name: "Cumulative", opacity: 0.3, cumulative: %{enabled: true}))
+|> Figure.update_layout(
+  title: "Cumulative Histogram",
+  barmode: "overlay"
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Normalized Histogram
+
+`histnorm` normalises the y-axis:
+
+* `""` (default) — raw counts
+* `"probability"` — each bar is count / total (sums to 1)
+* `"percent"` — each bar is (count / total) × 100 (sums to 100)
+* `"density"` — count / (bin width × total) — useful for comparing distributions of different sizes
+* `"probability density"` — density that integrates to 1
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+for norm <- ["", "probability", "percent", "density"] do
+  label = if norm == "", do: "count (default)", else: norm
+
+  Figure.new()
+  |> Figure.add_trace(Histogram.new(x: x, histnorm: (if norm == "", do: nil, else: norm)))
+  |> Figure.update_layout(title: "histnorm: \"#{label}\"")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```
+
+## Statistical Charts > Specify Binning Function
+
+`histfunc` changes what is computed per bin (default `"count"`):
+
+* `"count"` — number of data points in the bin
+* `"sum"` — sum of all `y:` values for points in the bin (requires `x:` for bins + `y:` for values)
+* `"avg"` — average of `y:` values per bin
+* `"min"` / `"max"` — min or max of `y:` values per bin
+
+`nbinsx` overrides the automatic bin count.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+# x = categories, y = values to aggregate
+x = for _ <- 1..200, do: :rand.uniform() * 10
+y = for _ <- 1..200, do: :rand.uniform() * 100
+
+for func <- ["count", "sum", "avg", "min", "max"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Histogram.new(
+      x: x,
+      y: (if func == "count", do: nil, else: y),
+      histfunc: func,
+      nbinsx: 10
+    )
+  )
+  |> Figure.update_layout(title: "histfunc: \"#{func}\"", xaxis: %{title: "x"}, yaxis: %{title: func})
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 3)
+```
+
+## Statistical Charts > 2D Histogram Contour Plot with Histogram Subplots (Slider Control)
+
+A `Histogram2dcontour` in the centre with marginal `Histogram` traces on the
+top and right. The `layout.sliders` widget (same technique as
+`custom_controls/09_basic_slider.livemd`) uses `method: "restyle"` to update
+the `ncontours` property on the contour trace in real time — no JavaScript
+callbacks required.
+
+Subplot domains:
+
+| region          | xaxis | yaxis | x domain  | y domain  |
+| --------------- | ----- | ----- | --------- | --------- |
+| contour (main)  | x     | y     | [0, 0.85] | [0, 0.85] |
+| top histogram   | x     | y2    | [0, 0.85] | [0.85, 1] |
+| right histogram | x2    | y     | [0.85, 1] | [0, 0.85] |
+
+```elixir
+alias Plotly.{Figure, Histogram, Histogram2dcontour}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 500
+x = gen.(n)
+y = gen.(n)
+
+ncontours_values = [3, 5, 10, 15, 20, 30]
+
+slider_steps =
+  for {nc, _i} <- Enum.with_index(ncontours_values) do
+    %{
+      method: "restyle",
+      label: "#{nc}",
+      args: [%{ncontours: nc}, [0]]
+    }
+  end
+
+# Default active index — ncontours = 20 is index 4
+default_index = Enum.find_index(ncontours_values, &(&1 == 20))
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2dcontour.new(
+    x: x, y: y,
+    ncontours: 20,
+    colorscale: "Blues",
+    reversescale: true,
+    showscale: false,
+    xaxis: "x",
+    yaxis: "y"
+  )
+)
+|> Figure.add_trace(
+  Histogram.new(
+    x: x,
+    xaxis: "x",
+    yaxis: "y2",
+    showlegend: false,
+    marker: %{color: "rgba(31, 119, 180, 0.7)"}
+  )
+)
+|> Figure.add_trace(
+  Histogram.new(
+    y: y,
+    xaxis: "x2",
+    yaxis: "y",
+    showlegend: false,
+    marker: %{color: "rgba(31, 119, 180, 0.7)"}
+  )
+)
+|> Figure.update_layout(
+  title: "2D Contour Histogram with Marginals — Slider Controls Contour Count",
+  showlegend: false,
+  autosize: false,
+  width: 600,
+  height: 580,
+  margin: %{t: 60, l: 50, r: 20, b: 110},
+  hovermode: "closest",
+  bargap: 0,
+  xaxis: %{domain: [0, 0.85], showgrid: false, zeroline: false, title: "x"},
+  yaxis: %{domain: [0, 0.85], showgrid: false, zeroline: false, title: "y"},
+  xaxis2: %{domain: [0.85, 1], showgrid: false, zeroline: false},
+  yaxis2: %{domain: [0.85, 1], showgrid: false, zeroline: false},
+  sliders: [%{
+    steps: slider_steps,
+    active: default_index,
+    currentvalue: %{prefix: "Contours: ", visible: true, xanchor: "center"},
+    pad: %{t: 60, b: 10}
+  }]
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Filled Lines (Continuous Error Band)
+
+A continuous error band (shaded confidence interval) uses three `Scatter` traces:
+
+1. **Upper bound** — `fill: nil`, `mode: "lines"`, thin line or invisible
+2. **Lower bound** — `fill: "tonexty"`, which fills the area *between* this trace and the one drawn above it
+3. **Mean line** — drawn on top
+
+The key is that Plotly fills between consecutive traces in the order they are added.
+Use `fillcolor` on the lower-bound trace to set the band colour.
+Use `line: %{color: "transparent"}` to hide a bound line while keeping the fill anchor.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y_mean  = [2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
+y_upper = [3, 4, 5, 6, 7, 6, 5, 4, 3, 2]
+y_lower = [1, 2, 3, 4, 5, 4, 3, 2, 1, 0]
+
+Figure.new()
+|> Figure.add_trace(
+  # Upper bound — acts as the fill anchor for the next trace
+  Scatter.new(
+    x: x, y: y_upper,
+    mode: "lines",
+    line: %{color: "transparent"},
+    name: "Upper bound",
+    showlegend: false
+  )
+)
+|> Figure.add_trace(
+  # Lower bound — fill: "tonexty" fills between this and the upper bound above
+  Scatter.new(
+    x: x, y: y_lower,
+    mode: "lines",
+    fill: "tonexty",
+    fillcolor: "rgba(0, 100, 255, 0.2)",
+    line: %{color: "transparent"},
+    name: "Confidence band",
+    showlegend: true
+  )
+)
+|> Figure.add_trace(
+  # Mean line drawn on top
+  Scatter.new(
+    x: x, y: y_mean,
+    mode: "lines",
+    line: %{color: "rgb(0, 100, 255)"},
+    name: "Mean"
+  )
+)
+|> Figure.update_layout(title: "Continuous Error Band (Filled Lines)")
+|> Plotly.show()
+```
+
+## Statistical Charts > Asymmetric Filled Error Bands
+
+Asymmetric filled error bands work the same as symmetric bands but with
+different upper and lower offsets from the mean. Two `fill: "tonexty"` traces
+sandwich the upper and lower bounds respectively.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(1..10)
+y_mean  = [2, 3, 4, 5, 4, 3, 2, 3, 4, 5]
+# Upper offset is larger than lower — asymmetric band
+y_upper = Enum.zip_with(y_mean, [1.5,1.5,2.0,2.0,1.5,1.0,1.0,1.5,2.0,2.0], &(&1 + &2))
+y_lower = Enum.zip_with(y_mean, [0.5,0.5,0.5,1.0,0.5,0.5,0.5,0.5,0.5,0.5], &(&1 - &2))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y_upper,
+    mode: "lines",
+    line: %{color: "transparent"},
+    name: "Upper bound",
+    showlegend: false
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y_lower,
+    mode: "lines",
+    fill: "tonexty",
+    fillcolor: "rgba(200, 50, 50, 0.2)",
+    line: %{color: "transparent"},
+    name: "Asymmetric band",
+    showlegend: true
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y_mean,
+    mode: "lines",
+    line: %{color: "rgb(200, 50, 50)"},
+    name: "Mean"
+  )
+)
+|> Figure.update_layout(title: "Asymmetric Filled Error Bands")
+|> Plotly.show()
+```
+
+## Statistical Charts > 2D Histogram of a Bivariate Normal Distribution
+
+`Histogram2d.new(x: [...], y: [...])` creates a 2D histogram (heatmap of counts).
+Both x and y must have the same length — each element is one observation.
+The colour intensity encodes the count in each 2D bin.
+
+```elixir
+alias Plotly.{Figure, Histogram2d}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+# ~N(0,1) via Central Limit Theorem
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 500
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(Histogram2d.new(x: x, y: y))
+|> Figure.update_layout(title: "2D Histogram of a Bivariate Normal Distribution")
+|> Plotly.show()
+```
+
+## Statistical Charts > 2D Histogram Binning and Styling Options
+
+`nbinsx:` / `nbinsy:` control how many bins appear on each axis.
+`colorscale:` picks a named Plotly colour scale (e.g. `"Hot"`, `"Viridis"`, `"Jet"`).
+`reversescale: true` flips the colour direction.
+
+```elixir
+alias Plotly.{Figure, Histogram2d}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 500
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2d.new(
+    x: x,
+    y: y,
+    nbinsx: 20,
+    nbinsy: 20,
+    colorscale: "Hot",
+    reversescale: true
+  )
+)
+|> Figure.update_layout(title: "2D Histogram — Custom Bins and Colourscale")
+|> Plotly.show()
+```
+
+## Statistical Charts > 2D Histogram Overlaid with a Scatter Chart
+
+Combining a `Histogram2d` with a `Scatter` trace on the same axes lets you see
+both the density distribution and the individual data points at once.
+Set `opacity` on the histogram to let the scatter points show through.
+
+```elixir
+alias Plotly.{Figure, Histogram2d, Scatter}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 200
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2d.new(
+    x: x, y: y,
+    colorscale: "YlOrRd",
+    opacity: 0.7
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x, y: y,
+    mode: "markers",
+    marker: %{color: "white", size: 4, opacity: 0.5}
+  )
+)
+|> Figure.update_layout(title: "2D Histogram Overlaid with Scatter")
+|> Plotly.show()
+```
+
+## Statistical Charts > Basic SPC Control Chart
+
+A Statistical Process Control (SPC) chart tracks a process over time with three
+horizontal reference lines: the mean (centre line), and upper/lower control
+limits (UCL/LCL), typically set at ±3σ.
+
+`layout.shapes` draws horizontal lines across the full x range.
+Each shape entry is a map with `type: "line"`, `x0`/`x1` (or use `"paper"` coordinates),
+and `y0`/`y1` set to the same value for a horizontal line.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+:rand.seed(:exsss, {10, 20, 30})
+
+n = 30
+# Simulated process measurements with occasional shift
+process = for i <- 1..n do
+  base = (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  if i > 20, do: base + 1.5, else: base
+end
+
+mean  = Enum.sum(process) / n
+sigma = :math.sqrt(Enum.sum(Enum.map(process, fn v -> (v - mean) * (v - mean) end)) / n)
+ucl   = mean + 3 * sigma
+lcl   = mean - 3 * sigma
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..n),
+    y: process,
+    mode: "lines+markers",
+    name: "Measurements",
+    marker: %{size: 6}
+  )
+)
+|> Figure.update_layout(
+  title: "Basic SPC Control Chart",
+  shapes: [
+    %{type: "line", x0: 1, x1: n, y0: mean, y1: mean,
+      line: %{color: "green", dash: "solid", width: 2}},
+    %{type: "line", x0: 1, x1: n, y0: ucl, y1: ucl,
+      line: %{color: "red", dash: "dash", width: 1.5}},
+    %{type: "line", x0: 1, x1: n, y0: lcl, y1: lcl,
+      line: %{color: "red", dash: "dash", width: 1.5}}
+  ],
+  annotations: [
+    %{x: n, y: mean, xanchor: "left", text: "Mean", showarrow: false},
+    %{x: n, y: ucl,  xanchor: "left", text: "UCL (+3σ)", showarrow: false},
+    %{x: n, y: lcl,  xanchor: "left", text: "LCL (−3σ)", showarrow: false}
+  ]
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > SPC Control Chart and Distribution
+
+The control chart (left, 70% width) shows measurements with UCL/LCL and a centre
+line drawn as scatter traces so they appear in the legend. Points outside the
+control limits are highlighted as violation markers.
+
+The distribution histogram (right, 20% width) uses `orientation: "h"` so bins run
+along the shared y-scale. It has its own independent `yaxis2` anchored to `xaxis2`,
+with tick labels hidden to avoid duplication.
+
+```elixir
+alias Plotly.{Figure, Scatter, Histogram}
+
+:rand.seed(:exsss, {10, 20, 30})
+
+n = 30
+process =
+  for i <- 1..n do
+    base = (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+    if i > 20, do: base + 1.5, else: base
+  end
+
+mean  = Enum.sum(process) / n
+sigma = :math.sqrt(Enum.sum(Enum.map(process, fn v -> (v - mean) * (v - mean) end)) / n)
+ucl   = mean + 3 * sigma
+lcl   = mean - 3 * sigma
+
+violations =
+  process
+  |> Enum.with_index(1)
+  |> Enum.filter(fn {v, _i} -> v > ucl or v < lcl end)
+
+viol_x = Enum.map(violations, fn {_v, i} -> i end)
+viol_y = Enum.map(violations, fn {v, _i} -> v end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: Enum.to_list(1..n),
+    y: process,
+    mode: "lines+markers",
+    name: "Data",
+    line: %{color: "blue", width: 2},
+    marker: %{color: "blue", size: 8, symbol: "circle"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: viol_x,
+    y: viol_y,
+    mode: "markers",
+    name: "Violation",
+    marker: %{color: "rgb(255,65,54)", size: 12, symbol: "circle-open", line: %{width: 3}, opacity: 0.5}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0.5, n + 0.5, nil, 0.5, n + 0.5],
+    y: [lcl, lcl, nil, ucl, ucl],
+    mode: "lines",
+    name: "LCL/UCL",
+    line: %{color: "red", dash: "dash", width: 2}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0.5, n + 0.5],
+    y: [mean, mean],
+    mode: "lines",
+    name: "Centre",
+    line: %{color: "grey", width: 2}
+  )
+)
+|> Figure.add_trace(
+  Histogram.new(
+    y: process,
+    orientation: "h",
+    name: "Distribution",
+    xaxis: "x2",
+    yaxis: "y2",
+    marker: %{color: "blue", line: %{color: "white", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "SPC Control Chart and Distribution",
+  xaxis: %{domain: [0, 0.7], zeroline: false},
+  yaxis: %{zeroline: false},
+  xaxis2: %{domain: [0.8, 1]},
+  yaxis2: %{anchor: "x2", matches: "y", showticklabels: false}
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Basic Violin Plot
+
+`Violin.new(y: [...])` creates a vertical violin plot.
+The shape mirrors a kernel density estimate (KDE) of the data.
+Like a box plot, it shows median, quartiles, and whiskers, but also the full
+distribution shape.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+y = for _ <- 1..100 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(Violin.new(y: y, name: "Sample"))
+|> Figure.update_layout(title: "Basic Violin Plot")
+|> Plotly.show()
+```
+
+## Statistical Charts > Grouped Violin Plot
+
+Multiple Violin traces with the same categorical `x:` values group side-by-side.
+`layout.violinmode: "group"` places them next to each other (default is `"overlay"`).
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n, shift ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0 - shift)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(50, 0.0) ++ gen.(50, 0.0),
+    x: List.duplicate("Mon", 50) ++ List.duplicate("Tue", 50),
+    name: "Group A",
+    box: %{visible: true},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(50, 1.0) ++ gen.(50, 1.0),
+    x: List.duplicate("Mon", 50) ++ List.duplicate("Tue", 50),
+    name: "Group B",
+    box: %{visible: true},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.update_layout(
+  title: "Grouped Violin Plot",
+  violinmode: "group"
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Horizontal Violin Plot
+
+`orientation: "h"` makes the violin horizontal. Pass data as `x:` instead of `y:`.
+Multiple horizontal violins stack vertically using categorical `y:` values.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    x: gen.(80),
+    y: List.duplicate("Group A", 80),
+    name: "Group A",
+    orientation: "h",
+    box: %{visible: true}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    x: gen.(80),
+    y: List.duplicate("Group B", 80),
+    name: "Group B",
+    orientation: "h",
+    box: %{visible: true}
+  )
+)
+|> Figure.update_layout(title: "Horizontal Violin Plot")
+|> Plotly.show()
+```
+
+## Statistical Charts > Split Violin Plot
+
+`side: "positive"` draws the KDE on the right side of the centre line only.
+`side: "negative"` draws only the left side.
+`violinmode: "overlay"` layers both traces on the same axis so the two halves
+form a single split violin for each category.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n, shift ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0 - shift)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(80, 0.0),
+    name: "Male",
+    side: "negative",
+    line: %{color: "blue"},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    y: gen.(80, 0.5),
+    name: "Female",
+    side: "positive",
+    line: %{color: "orchid"},
+    meanline: %{visible: true}
+  )
+)
+|> Figure.update_layout(
+  title: "Split Violin Plot",
+  violinmode: "overlay"
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Advanced Violin Plot
+
+Combining all violin options in one chart:
+
+* `box: %{visible: true}` — overlays a box plot inside the violin
+* `points: "all"` — shows every data point as a jittered dot
+* `meanline: %{visible: true}` — draws a line at the mean
+* `jitter` — spreads the overlay points horizontally
+* `pointpos` — shifts the point cloud left or right of the violin centre
+
+Each trace is given an explicit `x` array so each violin sits at its own
+categorical x position. `pointpos: -1.0` shifts dots to the left of the violin
+centre without overflowing into the neighbouring violin — `±1.8` is only safe
+for a single isolated violin; for adjacent violins the shift lands the dots
+inside the neighbouring body. `xaxis: range` is extended slightly so the
+leftmost violin's (Kale) dots don't clip at the axis boundary.
+
+```elixir
+alias Plotly.{Figure, Violin}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n, shift ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0 - shift)
+  end
+end
+
+n = 60
+
+Figure.new()
+|> Figure.add_trace(
+  Violin.new(
+    x: List.duplicate("Kale", n),
+    y: gen.(n, 0.0),
+    name: "Kale",
+    box: %{visible: true},
+    meanline: %{visible: true},
+    points: "all",
+    jitter: 0.05,
+    pointpos: -1.0,
+    line: %{color: "green"},
+    marker: %{color: "green", size: 4}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    x: List.duplicate("Radishes", n),
+    y: gen.(n, 0.5),
+    name: "Radishes",
+    box: %{visible: true},
+    meanline: %{visible: true},
+    points: "all",
+    jitter: 0.05,
+    pointpos: -1.0,
+    line: %{color: "red"},
+    marker: %{color: "red", size: 4}
+  )
+)
+|> Figure.add_trace(
+  Violin.new(
+    x: List.duplicate("Carrots", n),
+    y: gen.(n, 1.0),
+    name: "Carrots",
+    box: %{visible: true},
+    meanline: %{visible: true},
+    points: "all",
+    jitter: 0.05,
+    pointpos: -1.0,
+    line: %{color: "orange"},
+    marker: %{color: "orange", size: 4}
+  )
+)
+|> Figure.update_layout(
+  title: "Advanced Violin Plot",
+  xaxis: %{range: [-0.8, 2.5]}
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Basic Parallel Categories Diagram
+
+`Parcats.new(dimensions: [...])` renders a parallel categories (alluvial / Sankey-for-categories) diagram.
+Each dimension is a map with `values:` (one entry per observation) and `label:` (column header).
+The flows represent how observations move between categories across dimensions.
+
+```elixir
+alias Plotly.{Figure, Parcats}
+
+Figure.new()
+|> Figure.add_trace(
+  Parcats.new(
+    dimensions: [
+      %{values: ["Cat A", "Cat A", "Cat B", "Cat B", "Cat A", "Cat B", "Cat A"],
+        label: "Dimension 1"},
+      %{values: ["High",  "High",  "Low",   "High",  "Low",   "Low",   "High"],
+        label: "Dimension 2"},
+      %{values: ["X",     "Y",     "X",     "Y",     "Y",     "X",     "X"],
+        label: "Dimension 3"}
+    ]
+  )
+)
+|> Figure.update_layout(title: "Basic Parallel Categories Diagram")
+|> Plotly.show()
+```
+
+## Statistical Charts > Parallel Categories Diagram with Counts
+
+`counts:` is a list of integers, one per unique combination of category values.
+It lets you pass pre-aggregated data instead of one row per observation.
+The length of `counts` must equal the number of *unique* value combinations.
+When using counts, each element of `values` in each dimension must be the same
+length as `counts`.
+
+```elixir
+alias Plotly.{Figure, Parcats}
+
+# Pre-aggregated: 4 unique combinations, with their counts
+Figure.new()
+|> Figure.add_trace(
+  Parcats.new(
+    dimensions: [
+      %{values: ["Female", "Female", "Male", "Male"], label: "Gender"},
+      %{values: ["1",      "2",      "1",    "2"],    label: "Class"}
+    ],
+    counts: [9, 40, 10, 41]
+  )
+)
+|> Figure.update_layout(title: "Parallel Categories with Counts")
+|> Plotly.show()
+```
+
+## Statistical Charts > Multi-Color Parallel Categories Diagram
+
+`line: %{color: [...], colorscale: "..."}` colours each flow by a numeric variable.
+Provide one colour value per observation (same length as `values` in each dimension).
+The `colorscale` maps the numeric range to colours (e.g. `"Jet"`, `"Viridis"`, `"Hot"`).
+
+```elixir
+alias Plotly.{Figure, Parcats}
+
+# colour index: 0 = Survived, 1 = Died
+survived = [0, 0, 0, 1, 1, 1, 1, 0, 0, 1]
+
+Figure.new()
+|> Figure.add_trace(
+  Parcats.new(
+    dimensions: [
+      %{values: ["Female", "Female", "Male", "Male", "Male", "Female", "Female", "Male", "Male", "Female"],
+        label: "Gender"},
+      %{values: ["1", "2", "1", "3", "2", "3", "1", "2", "3", "2"],
+        label: "Class"},
+      %{values: ["Adult","Child","Adult","Adult","Child","Adult","Child","Adult","Adult","Adult"],
+        label: "Age"}
+    ],
+    line: %{
+      color: survived,
+      colorscale: [[0, "lightsteelblue"], [1, "mediumseagreen"]],
+      shape: "hspline"
+    }
+  )
+)
+|> Figure.update_layout(title: "Multi-Color Parallel Categories")
+|> Plotly.show()
+```
+
+## Statistical Charts > Scatter Plot Matrix (SPLOM) of the Iris Dataset
+
+`Splom.new(dimensions: [...])` creates a Scatter Plot Matrix (SPLOM).
+Each dimension is a map with `label:` (axis title) and `values:` (numeric list).
+Every pair of dimensions gets its own scatter panel.
+
+The Iris dataset is inlined here as simple representative data.
+
+```elixir
+alias Plotly.{Figure, Splom}
+
+# Simplified Iris dataset (20 samples, 3 classes encoded as 0/1/2)
+sepal_len  = [5.1,4.9,4.7,4.6,5.0,5.4,4.6,5.0,4.4,4.9,7.0,6.4,6.9,5.5,6.5,5.7,6.3,4.9,6.6,5.2]
+sepal_wid  = [3.5,3.0,3.2,3.1,3.6,3.9,3.4,3.4,2.9,3.1,3.2,3.2,3.1,2.3,2.8,2.8,3.3,2.4,2.9,2.7]
+petal_len  = [1.4,1.4,1.3,1.5,1.4,1.7,1.4,1.5,1.4,1.5,4.7,4.5,4.9,4.0,4.6,4.5,4.7,3.3,4.6,3.9]
+petal_wid  = [0.2,0.2,0.2,0.2,0.2,0.4,0.3,0.2,0.2,0.1,1.4,1.5,1.5,1.3,1.5,1.3,1.6,1.0,1.3,1.4]
+species    = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]
+
+Figure.new()
+|> Figure.add_trace(
+  Splom.new(
+    dimensions: [
+      %{label: "Sepal Length", values: sepal_len},
+      %{label: "Sepal Width",  values: sepal_wid},
+      %{label: "Petal Length", values: petal_len},
+      %{label: "Petal Width",  values: petal_wid}
+    ],
+    marker: %{
+      color: species,
+      colorscale: "Viridis",
+      size: 5,
+      showscale: false,
+      line: %{width: 0.5, color: "white"}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "SPLOM — Iris Dataset",
+  dragmode: "select",
+  height: 700,
+  margin: %{l: 130}
+)
+|> Plotly.show()
+```
+
+## Statistical Charts > Scatter Plot Matrix (SPLOM) — Styled
+
+`showupperhalf: false` hides the upper triangle, leaving only the lower half and diagonal.
+`diagonal: %{visible: false}` removes the histograms on the diagonal.
+`marker.size` can be reduced for denser datasets.
+
+This example uses synthetic 3-variable data to demonstrate multi-class colouring.
+
+```elixir
+alias Plotly.{Figure, Splom}
+
+:rand.seed(:exsss, {7, 14, 21})
+
+# 3 clusters of 20 points each, encoded as class 0/1/2
+gen_cluster = fn n, cx, cy, cz ->
+  for _ <- 1..n do
+    x = cx + ((for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0))
+    y = cy + ((for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0))
+    z = cz + ((for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0))
+    {x, y, z}
+  end
+end
+
+all = gen_cluster.(20, 0, 0, 0) ++ gen_cluster.(20, 5, 3, 2) ++ gen_cluster.(20, -4, 4, -2)
+x_vals = Enum.map(all, fn {x, _, _} -> x end)
+y_vals = Enum.map(all, fn {_, y, _} -> y end)
+z_vals = Enum.map(all, fn {_, _, z} -> z end)
+classes = List.duplicate(0, 20) ++ List.duplicate(1, 20) ++ List.duplicate(2, 20)
+
+Figure.new()
+|> Figure.add_trace(
+  Splom.new(
+    dimensions: [
+      %{label: "Feature A", values: x_vals},
+      %{label: "Feature B", values: y_vals},
+      %{label: "Feature C", values: z_vals}
+    ],
+    marker: %{
+      color: classes,
+      colorscale: "Portland",
+      size: 4,
+      showscale: false
+    },
+    showupperhalf: false,
+    diagonal: %{visible: false}
+  )
+)
+|> Figure.update_layout(title: "Styled SPLOM — Lower Half Only")
+|> Plotly.show()
+```
+
+## Statistical Charts > Basic 2D Histogram Contour
+
+`Histogram2dcontour.new(x: [...], y: [...])` creates a 2D kernel density contour plot.
+Like `Histogram2d` but draws contour lines instead of filled squares.
+Both x and y must have the same length (one point per observation).
+
+```elixir
+alias Plotly.{Figure, Histogram2dcontour}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 300
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(Histogram2dcontour.new(x: x, y: y))
+|> Figure.update_layout(title: "Basic 2D Histogram Contour")
+|> Plotly.show()
+```
+
+## Statistical Charts > 2D Histogram Contour Colorscale
+
+`colorscale:` picks the named colour scale for the contour fill.
+`reversescale: true` flips the colour direction (lowest count = darkest).
+`ncontours:` sets how many contour levels are drawn.
+
+```elixir
+alias Plotly.{Figure, Histogram2dcontour}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 300
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2dcontour.new(
+    x: x,
+    y: y,
+    colorscale: "Hot",
+    reversescale: true,
+    ncontours: 20
+  )
+)
+|> Figure.update_layout(title: "2D Histogram Contour — Custom Colorscale")
+|> Plotly.show()
+```
+
+## Statistical Charts > Styled 2D Histogram Contour
+
+`contours: %{showlines: false}` removes the contour outlines, leaving only the fill.
+`line: %{width: 0}` achieves the same result when using the `line` key.
+Overlaying a `Scatter` on top shows individual data points within the density map.
+
+```elixir
+alias Plotly.{Figure, Histogram2dcontour, Scatter}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 300
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2dcontour.new(
+    x: x,
+    y: y,
+    colorscale: "Blues",
+    ncontours: 15,
+    contours: %{showlines: false}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{color: "rgba(255,255,255,0.5)", size: 3},
+    showlegend: false
+  )
+)
+|> Figure.update_layout(title: "Styled 2D Histogram Contour")
+|> Plotly.show()
+```

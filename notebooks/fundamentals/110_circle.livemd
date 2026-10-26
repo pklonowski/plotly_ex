@@ -1,0 +1,50 @@
+# Circle
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Draw circles in paper coordinates (0–1 on both axes, independent of data
+scale) using `xref: "paper"` and `yref: "paper"`. Also demonstrates an
+unfilled circle (no `fillcolor`) versus a filled one.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1.5, 4.5], y: [0.75, 0.75], mode: "text", text: ["Unfilled", "Filled"]))
+|> Figure.update_layout(
+  title: "Circle Shapes",
+  xaxis: %{range: [0, 6]},
+  yaxis: %{range: [0, 1.5]},
+  shapes: [
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 1,
+      y0: 0.25,
+      x1: 2,
+      y1: 1.25,
+      line: %{color: "RoyalBlue"}
+    },
+    %{
+      type: "circle",
+      xref: "x",
+      yref: "y",
+      x0: 3,
+      y0: 0.25,
+      x1: 5,
+      y1: 1.25,
+      line: %{color: "LightSeaGreen"},
+      fillcolor: "PaleTurquoise"
+    }
+  ]
+)
+|> Plotly.show()
+```

@@ -1,0 +1,47 @@
+# Colored Bar Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combine `orientation: "h"` with `marker.color` (rgba string) and `marker.line` for a styled grouped horizontal bar chart.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    y: ["giraffes", "orangutans", "monkeys"],
+    x: [20, 14, 23],
+    name: "SF Zoo",
+    orientation: "h",
+    marker: %{
+      color: "rgba(55, 128, 191, 0.6)",
+      line: %{color: "rgba(55, 128, 191, 1.0)", width: 3}
+    }
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    y: ["giraffes", "orangutans", "monkeys"],
+    x: [12, 18, 29],
+    name: "LA Zoo",
+    orientation: "h",
+    marker: %{
+      color: "rgba(255, 153, 51, 0.6)",
+      line: %{color: "rgba(255, 153, 51, 1.0)", width: 3}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Colored Horizontal Bar Chart",
+  barmode: "group"
+)
+|> Plotly.show()
+```

@@ -1,0 +1,23 @@
+# Horizontal Box Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass data as `x:` instead of `y:` to create a horizontal box plot.
+Multiple traces stack vertically.
+
+```elixir
+alias Plotly.{Figure, Box}
+
+Figure.new()
+|> Figure.add_trace(Box.new(x: [0, 1, 1, 2, 3, 5, 8, 13, 21], name: "Set 1"))
+|> Figure.add_trace(Box.new(x: [2, 3, 4, 5, 6, 7, 8, 9, 10], name: "Set 2"))
+|> Figure.update_layout(title: "Horizontal Box Plot")
+|> Plotly.show()
+```

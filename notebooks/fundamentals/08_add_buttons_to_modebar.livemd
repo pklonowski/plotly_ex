@@ -1,0 +1,60 @@
+# Add Buttons to ModeBar
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.modeBarButtonsToAdd` accepts a list of button definition maps. Each button
+has a `name`, an `icon` (SVG path or a `Plotly.Icons.*` reference), and a `click`
+handler function.
+
+> **Limitation in Livebook:** Plotly.js button definitions require JavaScript
+> function objects for `click` and SVG data for `icon`. These are serialised as
+> JSON strings via `Plotly.RawJS` — but `JSON.parse()` in the browser converts
+> them back to plain strings, so the functions are **not executable**. This config
+> option is best used via a custom Phoenix LiveView component where you can inject
+> raw JavaScript, or via a `<script>` block in a standalone HTML page.
+>
+> The code below demonstrates the correct Elixir data structure. The button will
+> appear in the modebar but the click handler will be a string rather than a
+> function.
+
+```elixir
+alias Plotly.{Figure, Scatter, RawJS}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Chart with custom modebar button structure"},
+  config: %{
+    displayModeBar: true,
+    modeBarButtonsToAdd: [
+      %{
+        name: "alert_button",
+        title: "Click me",
+        icon: RawJS.new("Plotly.Icons.camera"),
+        click: RawJS.new("function(gd) { alert('Chart id: ' + gd.id); }")
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```
+
+For a fully functional custom button in a standalone HTML page, use JavaScript directly:
+
+```elixir
+# This is the equivalent JavaScript (for reference — not executable in Livebook):
+# config = {
+#   modeBarButtonsToAdd: [{
+#     name: 'alert_button',
+#     title: 'Click me',
+#     icon: Plotly.Icons.camera,
+#     click: function(gd) { alert('Chart id: ' + gd.id); }
+#   }]
+# }
+```

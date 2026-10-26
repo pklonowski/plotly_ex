@@ -1,0 +1,54 @@
+# Time Series with Rangeslider
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`xaxis.rangeslider: %{range: [start, end]}` adds an interactive minimap slider below the
+chart. `xaxis.rangeselector: %{buttons: [...]}` adds preset period buttons above the chart.
+Both can be combined. `step: "all"` shows the complete dataset.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(mode: "lines", name: "AAPL High", x: dates, y: high, line: %{color: "#17BECF"})
+)
+|> Figure.add_trace(
+  Scatter.new(mode: "lines", name: "AAPL Low",  x: dates, y: low,  line: %{color: "#7F7F7F"})
+)
+|> Figure.update_layout(
+  title: "Time Series with Rangeslider",
+  xaxis: %{
+    type: "date",
+    autorange: true,
+    rangeselector: %{
+      buttons: [
+        %{count: 1,  label: "1m", step: "month", stepmode: "backward"},
+        %{count: 6,  label: "6m", step: "month", stepmode: "backward"},
+        %{step: "all"}
+      ]
+    },
+    rangeslider: %{range: ["2015-02-17", "2017-02-16"]}
+  },
+  yaxis: %{autorange: true}
+)
+|> Plotly.show()
+```

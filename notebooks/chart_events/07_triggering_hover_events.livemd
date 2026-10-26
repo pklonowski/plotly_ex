@@ -1,0 +1,18 @@
+# Triggering Hover Events
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Triggering Hover Events
+
+> **N/A — JavaScript-only API**
+>
+> The JS example calls `Plotly.Fx.hover(graphDiv, [{curveNumber:0, pointNumber:0}])` to
+> programmatically trigger a hover — a browser DOM API with no Elixir equivalent.
+>
+> For Livebook, hover effects are handled automatically by the browser when the user
+> moves the mouse over data points. No Elixir code required.

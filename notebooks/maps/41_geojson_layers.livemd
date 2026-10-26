@@ -1,0 +1,65 @@
+# GeoJSON Layers
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+`layout.map.layers` with `sourcetype: "geojson"` renders GeoJSON shapes as a map layer
+(not a trace). This is different from `Choroplethmap` — it paints uniform color fills
+with no data encoding, useful for geographic context (park boundaries, administrative zones, etc.).
+`type: "fill"` for polygons, `"line"` for linestrings.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# Fetch a small GeoJSON — US states outline
+geojson_url = "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+geojson = Req.get!(geojson_url).body |> Jason.decode!()
+
+# Filter to a small subset (first 10 California counties)
+ca_counties = Map.update!(geojson, "features", fn features ->
+  features
+  |> Enum.filter(fn f -> String.starts_with?(f["id"], "06") end)
+  |> Enum.take(10)
+end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [37.5],
+    lon: [-120.0],
+    mode: "markers",
+    marker: %{size: 1, opacity: 0},
+    showlegend: false
+  )
+)
+|> Figure.update_layout(
+  title: "GeoJSON Layer — California Counties (first 10)",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 37.5, lon: -121.0},
+    zoom: 6,
+    layers: [
+      %{
+        sourcetype: "geojson",
+        source: ca_counties,
+        type: "fill",
+        color: "rgba(0, 100, 200, 0.3)"
+      },
+      %{
+        sourcetype: "geojson",
+        source: ca_counties,
+        type: "line",
+        color: "rgba(0, 100, 200, 0.8)"
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```

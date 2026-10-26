@@ -1,0 +1,151 @@
+# Add Multiple Traces
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+This example visualizes flow over a Karman-Trefftz airfoil using multiple traces on a
+`Carpet` grid. The dataset is fetched from GitHub. The visualization combines:
+- A `Carpet` base grid defining the coordinate system
+- A filled `Contourcarpet` for pressure coefficient (cp) values
+- A `Contourcarpet` for streamlines (`coloring: "none"`, `ncontours: 50`)
+- A `Contourcarpet` for pressure contour lines
+- `Scatter` traces for the airfoil surface shape
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet, Contourcarpet, Scatter}
+
+url = "https://raw.githubusercontent.com/bcdunbar/datasets/master/airfoil_data.json"
+json = url |> Req.get!() |> Map.get(:body) |> Jason.decode!()
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: json |> List.first() |> Map.get("a"),
+    b: json |> List.first() |> Map.get("b"),
+    x: json |> List.first() |> Map.get("x"),
+    y: json |> List.first() |> Map.get("y"),
+    aaxis: %{
+      startlinewidth: 2,
+      startline: true,
+      showticklabels: "none",
+      endline: true,
+      showgrid: false,
+      endlinewidth: 2,
+      smoothing: 0
+    },
+    baxis: %{
+      startline: false,
+      endline: false,
+      showticklabels: "none",
+      smoothing: 0,
+      showgrid: false
+    }
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    name: "Pressure",
+    z: json |> Enum.at(1) |> Map.get("z"),
+    autocolorscale: false,
+    colorscale: "Viridis",
+    zmin: -8,
+    zmax: 1,
+    autocontour: false,
+    zauto: false,
+    contours: %{start: -1, size: 0.025, end: 1.0, showlines: false},
+    line: %{smoothing: 0},
+    colorbar: %{
+      y: 0,
+      yanchor: "bottom",
+      len: 0.75,
+      title: %{text: "Pressure coefficient, c<sub>p</sub>"}
+    }
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    name: "Streamlines",
+    z: json |> Enum.at(2) |> Map.get("z"),
+    opacity: 0.3,
+    showlegend: true,
+    autocontour: true,
+    ncontours: 50,
+    contours: %{coloring: "none"},
+    line: %{color: "white", width: 1}
+  )
+)
+|> Figure.add_trace(
+  Contourcarpet.new(
+    carpet: "c1",
+    name: "Pressure<br>contours",
+    z: json |> Enum.at(3) |> Map.get("z"),
+    showlegend: true,
+    autocontour: false,
+    contours: %{size: 0.25, start: -4, coloring: "none", end: 1.0, showlines: true},
+    line: %{color: "rgba(0, 0, 0, 0.5)", smoothing: 1}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    legendgroup: "g1",
+    name: "Surface<br>pressure",
+    mode: "lines",
+    hoverinfo: "skip",
+    x: json |> Enum.at(4) |> Map.get("x"),
+    y: json |> Enum.at(4) |> Map.get("y"),
+    line: %{color: "rgba(255, 0, 0, 0.5)", width: 1, shape: "spline", smoothing: 1},
+    fill: "toself",
+    fillcolor: "rgba(255, 0, 0, 0.2)"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    showlegend: false,
+    legendgroup: "g1",
+    mode: "lines",
+    hoverinfo: "skip",
+    x: json |> Enum.at(5) |> Map.get("x"),
+    y: json |> Enum.at(5) |> Map.get("y"),
+    line: %{color: "rgba(255, 0, 0, 0.3)", width: 1}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    showlegend: false,
+    legendgroup: "g1",
+    name: "cp",
+    text: json |> Enum.at(6) |> Map.get("text"),
+    mode: "lines",
+    hoverinfo: "text",
+    x: json |> Enum.at(6) |> Map.get("x"),
+    y: json |> Enum.at(6) |> Map.get("y"),
+    line: %{color: "rgba(255, 0, 0, 0.2)", width: 0}
+  )
+)
+|> Figure.update_layout(
+  title: "Flow over a Karman-Trefftz Airfoil",
+  hovermode: "closest",
+  height: 700,
+  width: 900,
+  margin: %{r: 60, b: 40, l: 40, t: 80},
+  xaxis: %{
+    zeroline: false,
+    scaleratio: 1,
+    scaleanchor: "y",
+    range: [-3.8, 3.8],
+    showgrid: false
+  },
+  yaxis: %{zeroline: false, range: [-1.8, 1.8], showgrid: false}
+)
+|> Plotly.show()
+```

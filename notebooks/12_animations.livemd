@@ -1,0 +1,590 @@
+# Animations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Animations > Animating the Data
+
+Frame-based animation: pre-compute all states as a `frames` list,
+add a `layout.updatemenus` Play button. Click ▶ Play to animate.
+
+Each frame is a plain map `%{name: "frameN", data: [partial_trace_update]}`.
+The `data` list has one entry per trace — only changed keys are needed.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n_frames = 50
+frames =
+  for i <- 1..n_frames do
+    x = Enum.to_list(0..i)
+    y = Enum.map(x, fn xi -> :math.sin(xi * 0.3) + :math.cos(xi * 0.1) end)
+    %{name: "f#{i}", data: [%{x: x, y: y}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0.0], mode: "lines", name: "wave")],
+  layout: %{
+    title: "Animating the Data",
+    xaxis: %{range: [0, n_frames], autorange: false},
+    yaxis: %{range: [-2.2, 2.2], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 50, redraw: false}, transition: %{duration: 0}}]
+      }, %{
+        label: "⏸ Pause",
+        method: "animate",
+        args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Animating the Layout
+
+Frames can include a `layout` key to animate layout properties — title, axis
+ranges, annotations, etc. — alongside or instead of data changes.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 30
+x = Enum.to_list(0..n)
+y = Enum.map(x, fn xi -> :math.sin(xi * 0.4) end)
+
+frames =
+  for i <- 0..(n - 1) do
+    %{
+      name: "f#{i}",
+      data: [%{x: Enum.take(x, i + 2), y: Enum.take(y, i + 2)}],
+      layout: %{title: %{text: "Step #{i + 1} of #{n}"}}
+    }
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0.0], mode: "lines+markers", name: "sin")],
+  layout: %{
+    title: "Step 1 of #{n}",
+    xaxis: %{range: [0, n], autorange: false},
+    yaxis: %{range: [-1.2, 1.2], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 80, redraw: false}, transition: %{duration: 30}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Defining Named Frames
+
+Frames have a `name:` field. The `args` list in a button's animation call can
+reference specific frame names to play a subset — `["frame1", "frame2"]` plays
+only those two frames.
+
+This example has named frames for each season, each with distinct sales data.
+The buttons swap the chart to that season's values.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+months = ~w[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec]
+
+spring_sales = [90,  85,  130, 200, 220, 180,  0,   0,   0,   0,   0,   0]
+summer_sales = [0,   0,   0,   0,   0,   210, 270, 290, 240,  0,   0,   0]
+autumn_sales = [0,   0,   0,   0,   0,   0,   0,   0,   200, 180, 150, 120]
+
+frames = [
+  %{name: "spring", data: [%{y: spring_sales}]},
+  %{name: "summer", data: [%{y: summer_sales}]},
+  %{name: "autumn", data: [%{y: autumn_sales}]}
+]
+
+button = fn label, frame_names ->
+  %{
+    label: label,
+    method: "animate",
+    args: [frame_names, %{frame: %{duration: 600}, transition: %{duration: 300}}]
+  }
+end
+
+Figure.new(
+  data: [Bar.new(x: months, y: spring_sales, name: "Sales")],
+  layout: %{
+    title: "Monthly Sales by Season — Named Frame Navigation",
+    yaxis: %{range: [0, 320]},
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [
+        button.("Spring", ["spring"]),
+        button.("Summer", ["summer"]),
+        button.("Autumn", ["autumn"])
+      ]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Animating Sequences of Frames
+
+Pass a list of frame names as the first `args` element to play a specific
+sequence. `nil` plays all frames. Combine with `transition.duration` for smooth interpolation.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Build frames for a growing spiral
+frames =
+  for i <- 1..60 do
+    t = Enum.map(0..i, fn j -> j * 0.2 end)
+    x = Enum.map(t, fn ti -> ti * :math.cos(ti) end)
+    y = Enum.map(t, fn ti -> ti * :math.sin(ti) end)
+    %{name: "s#{i}", data: [%{x: x, y: y}]}
+  end
+
+odd_frames = for i <- 1..30, do: "s#{i * 2 - 1}"   # frames s1, s3, s5 ...
+even_frames = for i <- 1..30, do: "s#{i * 2}"       # frames s2, s4, s6 ...
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0], mode: "lines", line: %{color: "steelblue"})],
+  layout: %{
+    title: "Spiral Animation — Sequence Selection",
+    xaxis: %{range: [-13, 13], autorange: false},
+    yaxis: %{range: [-13, 13], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [
+        %{label: "All frames", method: "animate",
+          args: [nil, %{frame: %{duration: 30, redraw: false}}]},
+        %{label: "Odd frames", method: "animate",
+          args: [odd_frames, %{frame: %{duration: 60}}]},
+        %{label: "Even frames", method: "animate",
+          args: [even_frames, %{frame: %{duration: 60}}]}
+      ]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Animating Many Frames Quickly
+
+`frame.duration: 0` and `redraw: false` enable maximum performance.
+`redraw: false` skips a full SVG redraw — safe when only trace data changes
+(not layout or axes). With `transition.duration: 0`, frames swap without interpolation.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 200
+frames =
+  for i <- 1..n do
+    t = i / 10.0
+    x = Enum.map(0..99, fn j -> :math.cos(t + j * 0.2) end)
+    y = Enum.map(0..99, fn j -> :math.sin(t + j * 0.2 * 1.3) end)
+    %{name: "f#{i}", data: [%{x: x, y: y}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(
+    x: Enum.map(0..99, &:math.cos/1),
+    y: Enum.map(0..99, &:math.sin/1),
+    mode: "markers",
+    marker: %{size: 4}
+  )],
+  layout: %{
+    title: "#{n} frames at max speed (duration: 0, redraw: false)",
+    xaxis: %{range: [-1.5, 1.5], autorange: false},
+    yaxis: %{range: [-1.5, 1.5], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play (fast)",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 0, redraw: false}, transition: %{duration: 0}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Object Constancy
+
+When bars/markers animate between frames, Plotly.js transitions each visual
+element by matching it to the same position in the data array. Without `ids`,
+elements are matched by array index — which can cause incorrect transitions when
+data is reordered.
+
+Setting `ids:` on traces gives each element a stable identity across frames,
+ensuring each bar/marker smoothly transitions to its new value regardless of order.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+:rand.seed(:exsplus, {1, 2, 3})
+categories = ~w[Alpha Beta Gamma Delta Epsilon]
+
+# Frames with ids: each category tracks its own bar through reordering
+frames_with_id =
+  for step <- 1..5 do
+    vals = Enum.map(categories, fn _ -> :rand.uniform(100) end)
+    sorted = Enum.sort_by(Enum.zip(categories, vals), &elem(&1, 1), :desc)
+    {sorted_c, sorted_v} = Enum.unzip(sorted)
+    %{name: "step#{step}", data: [%{x: sorted_c, y: sorted_v, ids: sorted_c}]}
+  end
+
+Figure.new(
+  data: [Bar.new(x: categories, y: [50, 60, 40, 80, 30], ids: categories)],
+  layout: %{
+    title: "Object Constancy via ids: — bars track their category through reordering",
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [%{
+        label: "▶ Animate",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 800}, transition: %{duration: 600, easing: "cubic-in-out"}}]
+      }]
+    }]
+  },
+  frames: frames_with_id
+)
+|> Plotly.show()
+```
+
+## Animations > Frame Groups and Animation Modes
+
+`frame.group` tags frames so you can play only a named group.
+`animationOpts.mode` controls playback:
+- `"immediate"` — jump to frame instantly (stop current animation)
+- `"afterall"` — wait for current animation to finish
+- `"next"` — enqueue after the currently playing group
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Group A: expanding circle
+group_a =
+  for r <- 1..20 do
+    theta = Enum.map(0..36, fn i -> i * 10 * :math.pi / 180 end)
+    x = Enum.map(theta, fn t -> r * :math.cos(t) end)
+    y = Enum.map(theta, fn t -> r * :math.sin(t) end)
+    %{name: "a#{r}", group: "circle", data: [%{x: x, y: y}]}
+  end
+
+# Group B: Lissajous figure
+group_b =
+  for phase <- 0..19 do
+    t = Enum.map(0..100, fn i -> i * 2 * :math.pi / 100 end)
+    x = Enum.map(t, fn ti -> :math.sin(2 * ti + phase * 0.3) end)
+    y = Enum.map(t, fn ti -> :math.sin(3 * ti) end)
+    %{name: "b#{phase}", group: "lissajous", data: [%{x: x, y: y}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0], mode: "lines")],
+  layout: %{
+    title: "Frame Groups — Circle vs Lissajous",
+    xaxis: %{range: [-21, 21], autorange: false},
+    yaxis: %{range: [-21, 21], autorange: false, scaleanchor: "x"},
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [
+        %{label: "Circle", method: "animate",
+          args: [Enum.map(group_a, & &1.name), %{frame: %{duration: 80}}]},
+        %{label: "Lissajous", method: "animate",
+          args: [Enum.map(group_b, & &1.name), %{frame: %{duration: 100}}]}
+      ]
+    }]
+  },
+  frames: group_a ++ group_b
+)
+|> Plotly.show()
+```
+
+## Animations > Animating with a Slider
+
+`layout.sliders` adds a scrub bar below the chart. Each step in the slider
+is linked to a named frame via `method: "animate"` + `args: [[frame_name], ...]`.
+The Play button and slider work together.
+
+Key `slider` fields:
+- `steps: [%{label:, method: "animate", args: [[frame_name], anim_opts]}]` — one per frame
+- `active: 0` — starting position
+- `pad: %{t: 50}` — top padding (space for Play button)
+- `currentvalue: %{prefix: "Year: ", visible: true}` — display current step value
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+years = 2000..2020
+
+:rand.seed(:exsplus, {1, 2, 3})
+countries = ~w[A B C D E F G H I J]
+base_gdp = Enum.map(countries, fn _ -> :rand.uniform(40_000) + 5_000 end)
+base_life = Enum.map(countries, fn _ -> :rand.uniform(30) + 50 end)
+
+frames =
+  for {year, i} <- Enum.with_index(years) do
+    gdp = Enum.map(base_gdp, fn g -> g * (1 + i * 0.02) end)
+    life = Enum.map(base_life, fn l -> l + i * 0.3 end)
+    %{
+      name: "#{year}",
+      data: [%{x: gdp, y: life}],
+      layout: %{title: %{text: "Life Expectancy vs GDP — #{year}"}}
+    }
+  end
+
+slider_steps =
+  for year <- years do
+    %{
+      label: "#{year}",
+      method: "animate",
+      args: [["#{year}"], %{mode: "immediate", frame: %{duration: 300}, transition: %{duration: 200}}]
+    }
+  end
+
+Figure.new(
+  data: [Scatter.new(
+    x: base_gdp,
+    y: base_life,
+    mode: "markers",
+    text: countries,
+    marker: %{size: 15, color: "steelblue", opacity: 0.7}
+  )],
+  layout: %{
+    title: "Life Expectancy vs GDP — 2000",
+    xaxis: %{title: "GDP per capita", range: [0, 65_000]},
+    yaxis: %{title: "Life expectancy", range: [45, 90]},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      yanchor: "top",
+      pad: %{t: 60},
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 400}, transition: %{duration: 200}, fromcurrent: true}]
+      }, %{
+        label: "⏸ Pause",
+        method: "animate",
+        args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]
+      }]
+    }],
+    sliders: [%{
+      steps: slider_steps,
+      active: 0,
+      currentvalue: %{prefix: "Year: ", visible: true, xanchor: "center"},
+      pad: %{t: 50},
+      x: 0.05,
+      len: 0.9
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Filled-Area Animation
+
+Animate a filled area chart by updating the trace data per frame.
+`fill: "tozeroy"` fills down to y=0.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..50)
+n_frames = 40
+
+frames =
+  for i <- 1..n_frames do
+    phase = i * 0.3
+    y = Enum.map(x, fn xi -> max(0, :math.sin(xi * 0.3 + phase) * 5 + 5) end)
+    %{name: "f#{i}", data: [%{x: x, y: y}]}
+  end
+
+init_y = Enum.map(x, fn xi -> max(0, :math.sin(xi * 0.3) * 5 + 5) end)
+
+Figure.new(
+  data: [Scatter.new(
+    x: x,
+    y: init_y,
+    mode: "lines",
+    fill: "tozeroy",
+    fillcolor: "rgba(100, 149, 237, 0.4)",
+    line: %{color: "steelblue"}
+  )],
+  layout: %{
+    title: "Filled-Area Animation",
+    xaxis: %{range: [0, 50], autorange: false},
+    yaxis: %{range: [0, 12], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 60, redraw: false}, transition: %{duration: 30}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Multiple Trace Filled-Area Animation
+
+Animate multiple filled area traces simultaneously. Each frame's `data` list
+has one entry per trace (index-matched). Using `stackgroup: "g1"` stacks the areas.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = Enum.to_list(0..30)
+n_frames = 30
+
+frames =
+  for i <- 1..n_frames do
+    phase = i * 0.25
+    y1 = Enum.map(x, fn xi -> abs(:math.sin(xi * 0.4 + phase)) * 3 + 1 end)
+    y2 = Enum.map(x, fn xi -> abs(:math.cos(xi * 0.3 + phase)) * 2 + 1 end)
+    y3 = Enum.map(x, fn xi -> abs(:math.sin(xi * 0.5 + phase * 1.5)) * 1.5 + 0.5 end)
+    %{name: "f#{i}", data: [%{y: y1}, %{y: y2}, %{y: y3}]}
+  end
+
+mk_trace = fn init_y, name, color ->
+  Scatter.new(
+    x: x, y: init_y, mode: "lines", name: name,
+    fill: "tonexty", fillcolor: "rgba(#{color}, 0.4)",
+    line: %{color: "rgba(#{color}, 0.9)"},
+    stackgroup: "g1"
+  )
+end
+
+Figure.new(
+  data: [
+    mk_trace.(Enum.map(x, fn xi -> abs(:math.sin(xi * 0.4)) * 3 + 1 end), "Series A", "100, 149, 237"),
+    mk_trace.(Enum.map(x, fn xi -> abs(:math.cos(xi * 0.3)) * 2 + 1 end), "Series B", "255, 127, 80"),
+    mk_trace.(Enum.map(x, fn xi -> abs(:math.sin(xi * 0.5)) * 1.5 + 0.5 end), "Series C", "60, 179, 113")
+  ],
+  layout: %{
+    title: "Multiple Trace Stacked Filled-Area Animation",
+    xaxis: %{range: [0, 30], autorange: false},
+    yaxis: %{autorange: false, range: [0, 15]},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 80, redraw: false}, transition: %{duration: 40}}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```
+
+## Animations > Map Animations
+
+Animate a choropleth map across time using frames. Each frame has a `data` entry
+with updated `z` values. The map projection stays fixed.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+# Simulated GDP growth data per country across years
+countries = ~w[USA GBR DEU FRA JPN CHN IND BRA CAN AUS]
+base_gdp = %{
+  "USA" => 65000, "GBR" => 42000, "DEU" => 48000, "FRA" => 43000, "JPN" => 40000,
+  "CHN" => 12000, "IND" => 7000, "BRA" => 15000, "CAN" => 52000, "AUS" => 55000
+}
+years = 2015..2022
+
+frames =
+  for {year, i} <- Enum.with_index(years) do
+    z = Enum.map(countries, fn c -> base_gdp[c] * (1 + i * 0.04) end)
+    %{
+      name: "#{year}",
+      data: [%{z: z, zmin: 5000, zmax: 80000}],
+      layout: %{title: %{text: "GDP per Capita — #{year}"}}
+    }
+  end
+
+slider_steps =
+  for year <- years do
+    %{
+      label: "#{year}",
+      method: "animate",
+      args: [["#{year}"], %{mode: "immediate", frame: %{duration: 500}, transition: %{duration: 300}}]
+    }
+  end
+
+Figure.new(
+  data: [Choropleth.new(
+    locations: countries,
+    z: Enum.map(countries, fn c -> base_gdp[c] end),
+    locationmode: "ISO-3",
+    colorscale: "Blues",
+    zmin: 5000,
+    zmax: 80000,
+    colorbar: %{title: %{text: "GDP/capita"}}
+  )],
+  layout: %{
+    title: "GDP per Capita — 2015",
+    geo: %{projection: %{type: "natural earth"}, showland: true, landcolor: "lightgray"},
+    sliders: [%{
+      steps: slider_steps,
+      active: 0,
+      currentvalue: %{prefix: "Year: ", visible: true},
+      pad: %{t: 50}
+    }],
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      yanchor: "top",
+      pad: %{t: 60},
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 600}, transition: %{duration: 300}, fromcurrent: true}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

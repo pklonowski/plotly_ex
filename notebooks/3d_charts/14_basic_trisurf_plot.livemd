@@ -1,0 +1,57 @@
+# Basic Trisurf Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The plotly.js "Tri-Surf" examples use `Mesh3d` with parametric surfaces sampled as point
+clouds, then reconstructed using `alphahull`. Here we sample a hemisphere surface, pass the
+points to `Mesh3d`, and use `alphahull: 0` (convex hull) to reconstruct the mesh.
+`intensity:` colors the surface by z-height.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Sample hemisphere: theta [0, pi/2], phi [0, 2pi]
+n_theta = 20
+n_phi = 30
+
+points = for i <- 0..(n_theta - 1), j <- 0..(n_phi - 1) do
+  theta = i / (n_theta - 1) * :math.pi() / 2
+  phi   = j / (n_phi - 1) * 2 * :math.pi()
+  {:math.sin(theta) * :math.cos(phi),
+   :math.sin(theta) * :math.sin(phi),
+   :math.cos(theta)}
+end
+
+xs = Enum.map(points, &elem(&1, 0))
+ys = Enum.map(points, &elem(&1, 1))
+zs = Enum.map(points, &elem(&1, 2))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: xs,
+    y: ys,
+    z: zs,
+    alphahull: 0,
+    intensity: zs,
+    colorscale: "Viridis",
+    opacity: 0.9
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Trisurf — Hemisphere",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

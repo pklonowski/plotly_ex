@@ -1,0 +1,51 @@
+# Logarithmic Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.xaxis.type: "log"` switches the x-axis to a base-10 log scale.
+The data values remain in linear space — Plotly converts them automatically.
+Set `layout.yaxis.type: "log"` for the y-axis too.
+
+Note: this duplicates the Fundamentals "Logarithmic Axes" notebook but in the context
+of Scientific Charts where log plots are typically used (e.g. exponential growth data).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Exponential growth: y = 2^x
+x = Enum.to_list(0..20)
+y = Enum.map(x, fn i -> :math.pow(2, i) end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: y, mode: "lines+markers", name: "y = 2^x"))
+|> Figure.update_layout(
+  title: "Logarithmic Y-Axis",
+  xaxis: %{title: "x"},
+  yaxis: %{title: "2^x", type: "log"}
+)
+|> Plotly.show()
+```
+
+Show both axes log:
+
+```elixir
+# Power law: y = x^2 — straight line on log-log
+x2 = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
+y2 = Enum.map(x2, fn v -> v * v end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x2, y: y2, mode: "lines+markers", name: "y = x²"))
+|> Figure.update_layout(
+  title: "Log-Log Plot (straight line for power laws)",
+  xaxis: %{title: "x", type: "log"},
+  yaxis: %{title: "x²", type: "log"}
+)
+|> Plotly.show()
+```

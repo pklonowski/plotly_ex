@@ -1,0 +1,32 @@
+# Set Date in Text Template
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`texttemplate` on a Funnel chart with a date-typed y-axis uses `%{label}` to
+render the date label text inside each funnel stage.
+
+```elixir
+alias Plotly.{Figure, Funnel}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnel.new(
+    x: [1200, 909, 600, 300, 80],
+    y: ["2024-01-15", "2024-02-15", "2024-03-15", "2024-04-15", "2024-05-15"],
+    texttemplate: "%{label}",
+    textposition: "inside"
+  )
+)
+|> Figure.update_layout(
+  title: "Funnel Chart with Date Labels via texttemplate",
+  yaxis: %{type: "date"}
+)
+|> Plotly.show()
+```

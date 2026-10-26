@@ -1,0 +1,49 @@
+# Basic Time Series
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+This example plots AAPL High and Low prices over ~2 years. Data is fetched from a GitHub CSV.
+`mode: "lines"` with named traces gives a clean time series. Plotly auto-detects the date
+axis from the ISO string format.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+csv = Req.get!("https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv").body
+[header | rows] = String.split(csv, "\n", trim: true)
+headers = String.split(header, ",")
+parsed = Enum.map(rows, fn row ->
+  Enum.zip(headers, String.split(row, ",")) |> Map.new()
+end)
+
+dates = Enum.map(parsed, & &1["Date"])
+high  = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.High"]), 0)))
+low   = Enum.map(parsed, &(elem(Float.parse(&1["AAPL.Low"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    mode: "lines",
+    name: "AAPL High",
+    x: dates, y: high,
+    line: %{color: "#17BECF"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    mode: "lines",
+    name: "AAPL Low",
+    x: dates, y: low,
+    line: %{color: "#7F7F7F"}
+  )
+)
+|> Figure.update_layout(title: "Apple Stock High & Low")
+|> Plotly.show()
+```

@@ -1,0 +1,48 @@
+# locationmode: 'country names'
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`locationmode: "country names"` accepts full English country names as in
+[ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) — e.g. `"United States"`, `"United Kingdom"`.
+Useful when data already contains country names instead of codes.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+country_names = [
+  "United States", "United Kingdom", "France", "Germany", "Italy",
+  "Spain", "Canada", "Australia", "Japan", "South Korea",
+  "Brazil", "India", "China", "Mexico", "South Africa"
+]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergeo.new(
+    locations: country_names,
+    locationmode: "country names",
+    mode: "markers",
+    text: country_names,
+    hoverinfo: "text",
+    marker: %{size: 8, color: "darkred", symbol: "circle-open"}
+  )
+)
+|> Figure.update_layout(
+  title: "locationmode: 'country names'",
+  geo: %{
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true,
+    projection: %{type: "natural earth"}
+  }
+)
+|> Plotly.show()
+```

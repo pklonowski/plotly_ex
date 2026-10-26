@@ -1,0 +1,49 @@
+# Line and Scatter Styling
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Style markers with `marker: %{color:, size:}` and lines with
+`line: %{color:, width:}`. Both accept CSS color strings or hex values.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17],
+    mode: "markers",
+    name: "Scatter",
+    marker: %{color: "rgb(219, 64, 82)", size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 3, 4, 5],
+    y: [16, 5, 11, 9],
+    mode: "lines",
+    name: "Lines",
+    line: %{color: "rgb(55, 128, 191)", width: 3}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: "lines+markers",
+    name: "Lines and Markers",
+    marker: %{color: "rgb(128, 0, 128)", size: 8},
+    line: %{color: "rgb(128, 0, 128)", width: 1}
+  )
+)
+|> Figure.update_layout(title: "Line and Scatter Styling")
+|> Plotly.show()
+```

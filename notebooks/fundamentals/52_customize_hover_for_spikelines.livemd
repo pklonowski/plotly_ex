@@ -1,0 +1,33 @@
+# Customize Hover for Spikelines
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When hovering over a 3D surface, plotly.js can draw **spikelines** — lines
+dropped from the hover point to each axis plane. Customise them via
+`layout.scene.xaxis.showspikes`, `spikecolor`, `spikethickness`, and
+`spikesides`.
+
+```elixir
+alias Plotly.{Figure, Surface}
+
+z = for i <- 0..19, do: (for j <- 0..19, do: :math.sin(i / 5.0) * :math.cos(j / 5.0))
+
+Figure.new()
+|> Figure.add_trace(Surface.new(z: z, colorscale: "Viridis"))
+|> Figure.update_layout(
+  title: "3D Hover — Spikelines (hover over the surface)",
+  scene: %{
+    xaxis: %{showspikes: true, spikesides: false, spikecolor: "#3d1478", spikethickness: 2},
+    yaxis: %{showspikes: true, spikesides: false, spikecolor: "#1c6e13", spikethickness: 2},
+    zaxis: %{showspikes: true, spikecolor: "#ab2626", spikethickness: 2}
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,60 @@
+# Supported ISO Codes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+All UN member states and territories have ISO 3166-1 alpha-3 codes supported by Plotly.
+This reference notebook plots a broad sample coloured by continent.
+
+```elixir
+alias Plotly.{Figure, Scattergeo}
+
+# Sample by continent
+europe = ["GBR", "FRA", "DEU", "ITA", "ESP", "PRT", "NLD", "BEL", "SWE", "NOR", "FIN", "DNK", "POL", "AUT", "CHE"]
+americas = ["USA", "CAN", "MEX", "BRA", "ARG", "CHL", "COL", "PER", "VEN", "ECU"]
+asia = ["CHN", "JPN", "KOR", "IND", "IDN", "THA", "VNM", "PHL", "MYS", "SGP"]
+africa = ["ZAF", "NGA", "EGY", "ETH", "KEN", "TZA", "GHA", "MAR", "TUN", "SDN"]
+oceania = ["AUS", "NZL", "PNG", "FJI"]
+
+traces = [
+  {europe, "Europe", "blue"},
+  {americas, "Americas", "red"},
+  {asia, "Asia", "green"},
+  {africa, "Africa", "orange"},
+  {oceania, "Oceania", "purple"}
+]
+
+fig = Figure.new()
+
+fig =
+  Enum.reduce(traces, fig, fn {locs, name, color}, acc ->
+    Figure.add_trace(acc,
+      Scattergeo.new(
+        locations: locs,
+        locationmode: "ISO-3",
+        mode: "markers",
+        name: name,
+        marker: %{size: 6, color: color}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Supported ISO-3 Codes — Sample by Continent",
+  geo: %{
+    showland: true,
+    landcolor: "#EAEAAE",
+    showocean: true,
+    oceancolor: "#BDDDE4",
+    showcountries: true
+  }
+)
+|> Plotly.show()
+```

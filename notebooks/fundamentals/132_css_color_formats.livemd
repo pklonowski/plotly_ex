@@ -1,0 +1,29 @@
+# Modern CSS Color Formats
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Hex alpha, space-separated RGB/HSL, and OKLCH
+
+Plotly.js v4 accepts modern CSS color forms, including 8-digit hex with alpha,
+space-separated `rgb()` and `hsl()` with slash alpha, and perceptual `oklch()`.
+All four colors below include transparency, visible against the pale background.
+This example uses a static Kino widget: it renders once, without live updates.
+
+```elixir
+alias Plotly.{Bar, Figure}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(
+  x: ["Hex alpha", "RGB / alpha", "OKLCH", "HSL / alpha"],
+  y: [3, 4, 2, 5],
+  marker: %{color: ["#3366CC80", "rgb(255 0 0 / 0.5)",
+    "oklch(65% 0.2 145 / 0.7)", "hsl(270 80% 50% / 0.6)"]}
+))
+|> Figure.update_layout(title: "Modern CSS colors", plot_bgcolor: "#eeeeee")
+|> Plotly.Kino.PlotlyStatic.new()
+```

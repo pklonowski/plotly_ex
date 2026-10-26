@@ -1,0 +1,39 @@
+# WebGL with Many Traces
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+WebGL also handles many separate traces efficiently.
+Here 10 traces of 1,000 points each — SVG would create 10,000 DOM elements;
+WebGL renders all in a single GPU pass.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n_traces = 10
+n_per_trace = 1_000
+
+fig =
+  Enum.reduce(1..n_traces, Figure.new(), fn i, fig ->
+    x = for _ <- 1..n_per_trace, do: :rand.uniform()
+    y = for _ <- 1..n_per_trace, do: :rand.uniform()
+
+    Figure.add_trace(fig, Scattergl.new(
+      x: x,
+      y: y,
+      mode: "markers",
+      name: "Trace #{i}",
+      marker: %{size: 3}
+    ))
+  end)
+
+fig
+|> Figure.update_layout(title: "WebGL with 10 Traces × 1,000 Points")
+|> Plotly.show()
+```

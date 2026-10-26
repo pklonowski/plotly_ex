@@ -1,0 +1,44 @@
+# Bar Chart with Direct Labels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `textposition: "auto"` to display text labels directly on bars (inside
+if the bar is tall enough, outside otherwise). Plotly automatically picks
+the best placement.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["Product A", "Product B", "Product C", "Product D"]
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: x,
+    y: [20, 14, 23, 18],
+    text: [20, 14, 23, 18],
+    textposition: "auto",
+    name: "Primary",
+    marker: %{color: "rgb(49, 130, 189)", opacity: 0.7}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: x,
+    y: [19, 14, 22, 14],
+    text: [19, 14, 22, 14],
+    textposition: "auto",
+    name: "Secondary",
+    marker: %{color: "rgba(204, 204, 204, 1)", opacity: 0.5}
+  )
+)
+|> Figure.update_layout(title: "Bar Chart with Direct Labels")
+|> Plotly.show()
+```

@@ -1,0 +1,61 @@
+# Styling and Coloring Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Customize annotation boxes with `bgcolor`, `bordercolor`, `borderwidth`, and
+`opacity`. Style the text with `font`. Control the arrow with `arrowcolor`,
+`arrowsize`, and `arrowwidth`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 3, 5, 4], mode: "lines+markers")
+)
+|> Figure.update_layout(
+  title: "Styled Annotations",
+  annotations: [
+    %{
+      x: 2,
+      y: 4,
+      xref: "x",
+      yref: "y",
+      text: "Styled box",
+      showarrow: true,
+      arrowhead: 7,
+      ax: 0,
+      ay: -60,
+      bordercolor: "#c7c7c7",
+      borderwidth: 2,
+      borderpad: 4,
+      bgcolor: "#ff7f0e",
+      opacity: 0.8,
+      font: %{color: "white", size: 14}
+    },
+    %{
+      x: 4,
+      y: 5,
+      xref: "x",
+      yref: "y",
+      text: "Arrow styled",
+      showarrow: true,
+      arrowhead: 2,
+      arrowsize: 1.5,
+      arrowwidth: 2,
+      arrowcolor: "royalblue",
+      ax: -50,
+      ay: -30,
+      font: %{color: "royalblue", size: 13}
+    }
+  ]
+)
+|> Plotly.show()
+```

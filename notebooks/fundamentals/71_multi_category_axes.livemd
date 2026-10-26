@@ -1,0 +1,28 @@
+# Multi-Category Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multi-category axes display a two-level hierarchy on an axis. Pass `x` as a
+list of two lists: the outer list provides the top-level grouping and the
+inner list provides the sub-categories. Plotly renders a grouped tick label
+with the outer label spanning its children.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(
+  x: [["First", "First", "Second", "Second"], ["A", "B", "A", "B"]],
+  y: [2, 3, 1, 5],
+  name: "Values"
+))
+|> Figure.update_layout(title: "Multi-Category Axes")
+|> Plotly.show()
+```

@@ -1,0 +1,52 @@
+# Add Named Container Array Items
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.template` lets you define default chart elements. You can name
+template items (e.g. images) and then reference them with `templateitemname`
+in the actual figure. Items in the figure with a matching `templateitemname`
+inherit the template item's properties.
+
+This notebook shows adding a named image item (a watermark) via the
+template, then toggling its visibility with `visible: false` on a matching
+figure item.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+watermark_template = %{
+  layout: %{
+    images: [
+      %{
+        name: "watermark",
+        source: "https://elixir-lang.org/images/logo/logo.png",
+        xref: "paper",
+        yref: "paper",
+        x: 0.5,
+        y: 0.5,
+        sizex: 0.5,
+        sizey: 0.5,
+        xanchor: "center",
+        yanchor: "middle",
+        opacity: 0.2,
+        layer: "above"
+      }
+    ]
+  }
+}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 6], mode: "lines+markers"))
+|> Figure.update_layout(
+  title: "Chart With Watermark from Template",
+  template: watermark_template
+)
+|> Plotly.show()
+```

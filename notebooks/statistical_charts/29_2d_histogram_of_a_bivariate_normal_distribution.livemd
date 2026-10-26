@@ -1,0 +1,36 @@
+# 2D Histogram of a Bivariate Normal Distribution
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Histogram2d.new(x: [...], y: [...])` creates a 2D histogram (heatmap of counts).
+Both x and y must have the same length — each element is one observation.
+The colour intensity encodes the count in each 2D bin.
+
+```elixir
+alias Plotly.{Figure, Histogram2d}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+# ~N(0,1) via Central Limit Theorem
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 500
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(Histogram2d.new(x: x, y: y))
+|> Figure.update_layout(title: "2D Histogram of a Bivariate Normal Distribution")
+|> Plotly.show()
+```

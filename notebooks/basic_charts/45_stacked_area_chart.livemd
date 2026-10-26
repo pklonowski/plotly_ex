@@ -1,0 +1,41 @@
+# Stacked Area Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`fill: "tonexty"` fills between a trace and the trace below it in the data array.
+The first trace uses `fill: "tozeroy"` to fill from y=0; subsequent traces use `fill: "tonexty"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    mode: "lines",
+    fill: "tozeroy",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    mode: "lines",
+    fill: "tonexty",
+    name: "Trace 2"
+  )
+)
+|> Figure.update_layout(title: "Stacked Area Chart")
+|> Plotly.show()
+```

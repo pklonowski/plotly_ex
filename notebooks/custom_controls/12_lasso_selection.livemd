@@ -1,0 +1,55 @@
+# Lasso Selection
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Lasso and box select are built into the Plotly.js toolbar. In Livebook, selected
+points can be captured via the `plotly_selected` event using `PlotlyLive.subscribe/2`
+from `Batch 1`.
+
+Click the lasso or box-select toolbar icon, draw a selection on the chart, then
+evaluate the `receive` cell to see the selected points.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+:rand.seed(:exsplus, {42, 0, 0})
+n = 80
+x = Enum.map(1..n, fn _ -> :rand.normal() * 2 end)
+y = Enum.map(1..n, fn _ -> :rand.normal() * 2 end)
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{size: 10, color: "steelblue", opacity: 0.7}
+  ))
+  |> Figure.update_layout(
+    title: "Use lasso/box select tool, then run next cell",
+    dragmode: "lasso"
+  )
+  |> PlotlyLive.new()
+
+PlotlyLive.subscribe(chart, :selection, :selected)
+chart
+```
+
+```elixir
+# Draw a selection above, then evaluate this cell
+receive do
+  {:selection, %{"data" => %{"points" => pts}}} ->
+    IO.puts("Selected #{length(pts)} points")
+    Enum.each(pts, fn p -> IO.puts("  x=#{p["x"]}, y=#{p["y"]}") end)
+after
+  15_000 -> "No selection within 15 s — use the lasso tool first"
+end
+```

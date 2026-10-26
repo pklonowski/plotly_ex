@@ -1,0 +1,46 @@
+# Line Dash
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`line.dash` controls the line pattern. Options:
+- `"solid"` — continuous line (default)
+- `"dot"` — dotted
+- `"dash"` — dashed
+- `"longdash"` — longer dashes
+- `"dashdot"` — alternating dash and dot
+- `"longdashdot"` — long dash followed by dot
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+dashes = ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]
+x = [1, 2, 3, 4, 5]
+
+fig =
+  Enum.reduce(Enum.with_index(dashes), Figure.new(), fn {dash, i}, fig ->
+    Figure.add_trace(fig,
+      Scatter.new(
+        x: x,
+        y: Enum.map(x, fn _ -> i + 1 end),
+        mode: "lines",
+        name: dash,
+        line: %{dash: dash, width: 3}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Line Dash Options",
+  xaxis: %{range: [0.8, 5.2]},
+  yaxis: %{range: [0, 8]}
+)
+|> Plotly.show()
+```

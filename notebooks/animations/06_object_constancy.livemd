@@ -1,0 +1,51 @@
+# Object Constancy
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When bars/markers animate between frames, Plotly.js transitions each visual
+element by matching it to the same position in the data array. Without `ids`,
+elements are matched by array index — which can cause incorrect transitions when
+data is reordered.
+
+Setting `ids:` on traces gives each element a stable identity across frames,
+ensuring each bar/marker smoothly transitions to its new value regardless of order.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+:rand.seed(:exsplus, {1, 2, 3})
+categories = ~w[Alpha Beta Gamma Delta Epsilon]
+
+# Frames with ids: each category tracks its own bar through reordering
+frames_with_id =
+  for step <- 1..5 do
+    vals = Enum.map(categories, fn _ -> :rand.uniform(100) end)
+    sorted = Enum.sort_by(Enum.zip(categories, vals), &elem(&1, 1), :desc)
+    {sorted_c, sorted_v} = Enum.unzip(sorted)
+    %{name: "step#{step}", data: [%{x: sorted_c, y: sorted_v, ids: sorted_c}]}
+  end
+
+Figure.new(
+  data: [Bar.new(x: categories, y: [50, 60, 40, 80, 30], ids: categories)],
+  layout: %{
+    title: "Object Constancy via ids: — bars track their category through reordering",
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [%{
+        label: "▶ Animate",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 800}, transition: %{duration: 600, easing: "cubic-in-out"}}]
+      }]
+    }]
+  },
+  frames: frames_with_id
+)
+|> Plotly.show()
+```

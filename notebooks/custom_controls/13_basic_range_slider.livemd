@@ -1,0 +1,96 @@
+# Basic Range Slider on Time Series
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`xaxis.rangeslider: %{visible: true}` adds a minimap below the chart for panning
+and zooming time series data. `xaxis.rangeselector` adds preset range buttons.
+
+Combined, these give a full time-series navigation experience.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# 3 years of daily close prices (random walk)
+:rand.seed(:exsplus, {1, 2, 3})
+dates = for i <- 0..1094, do: Date.add(~D[2022-01-01], i) |> Date.to_string()
+prices =
+  Enum.scan(1..1095, 150.0, fn _, acc ->
+    change = :rand.normal() * 2.5
+    max(10.0, acc + change)
+  end)
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(
+  x: dates,
+  y: prices,
+  mode: "lines",
+  name: "Price",
+  line: %{color: "steelblue", width: 1.5}
+))
+|> Figure.update_layout(
+  title: "Stock Price with Range Slider",
+  xaxis: %{
+    title: "Date",
+    rangeslider: %{visible: true},
+    rangeselector: %{
+      buttons: [
+        %{count: 1,  label: "1M", step: "month", stepmode: "backward"},
+        %{count: 3,  label: "3M", step: "month", stepmode: "backward"},
+        %{count: 6,  label: "6M", step: "month", stepmode: "backward"},
+        %{count: 1,  label: "YTD", step: "year", stepmode: "todate"},
+        %{count: 1,  label: "1Y",  step: "year", stepmode: "backward"},
+        %{step: "all", label: "All"}
+      ]
+    },
+    type: "date"
+  },
+  yaxis: %{title: "Price ($)", fixedrange: false},
+  height: 500
+)
+|> Plotly.show()
+```
+
+## Kino.Input Approach
+
+For Elixir-driven range selection, use `PlotlyLive.subscribe/2` to capture
+`plotly_relayout` zoom events and respond with new data:
+
+```elixir
+alias Plotly.Kino.PlotlyLive
+
+# (Reuse `chart` and `dates`/`prices` from the cell above if running in sequence)
+output = Kino.Frame.new()
+
+chart2 =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(x: dates, y: prices, mode: "lines", name: "Price"))
+  |> Figure.update_layout(
+    title: "Range Slider + Zoom Event Capture",
+    xaxis: %{rangeslider: %{visible: true}, type: "date"},
+    yaxis: %{title: "Price ($)"}
+  )
+  |> PlotlyLive.new()
+
+listener =
+  spawn(fn ->
+    for _ <- 1..1000 do
+      receive do
+        {:zoom, %{"data" => data}} ->
+          x0 = data["xaxis.range[0]"] || data["xaxis.range[0] "] || "—"
+          x1 = data["xaxis.range[1]"] || "—"
+          Kino.Frame.render(output, Kino.Markdown.new("**Zoomed to:** #{x0} → #{x1}"))
+      after 60_000 -> :ok
+      end
+    end
+  end)
+
+PlotlyLive.subscribe(chart2, listener, :zoom)
+Kino.Layout.grid([chart2, output])
+```

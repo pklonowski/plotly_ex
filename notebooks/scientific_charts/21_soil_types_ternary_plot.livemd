@@ -1,0 +1,51 @@
+# Soil Types Ternary Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Scatterternary` traces classify different soil types by their
+sand, silt, and clay composition. Each trace represents one soil class.
+`text:` provides hover labels for individual points.
+
+```elixir
+alias Plotly.{Figure, Scatterternary}
+
+# Sand / Silt / Clay fractions for 3 soil types (each row sums to 1)
+soils = [
+  %{name: "Clay",        a: [0.1, 0.15, 0.2],  b: [0.1, 0.15, 0.1],  c: [0.8, 0.7, 0.7],  color: "peru"},
+  %{name: "Sandy Loam",  a: [0.6, 0.65, 0.55], b: [0.2, 0.15, 0.25], c: [0.2, 0.2, 0.2],  color: "wheat"},
+  %{name: "Silt Loam",   a: [0.15, 0.2, 0.1],  b: [0.6, 0.55, 0.65], c: [0.25, 0.25, 0.25], color: "darkkhaki"}
+]
+
+fig =
+  Enum.reduce(soils, Figure.new(), fn soil, fig ->
+    Figure.add_trace(fig,
+      Scatterternary.new(
+        a: soil.a,
+        b: soil.b,
+        c: soil.c,
+        mode: "markers",
+        name: soil.name,
+        marker: %{size: 12, color: soil.color, symbol: "circle"}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Soil Types Ternary Plot",
+  ternary: %{
+    aaxis: %{title: "Sand"},
+    baxis: %{title: "Silt"},
+    caxis: %{title: "Clay"},
+    bgcolor: "lightyellow"
+  }
+)
+|> Plotly.show()
+```

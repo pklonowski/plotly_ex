@@ -1,0 +1,54 @@
+# 3D Annotations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Add annotations to 3D plots via `layout.scene.annotations` — a list of maps
+with `x`, `y`, `z` (data coordinates), `text`, and optional arrow/font
+settings. Set `showarrow: false` for floating text labels.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter3d.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 3, 2, 4, 3],
+    z: [2, 4, 3, 5, 4],
+    mode: "markers+lines",
+    marker: %{size: 6}
+  )
+)
+|> Figure.update_layout(
+  title: "3D Annotations",
+  scene: %{
+    annotations: [
+      %{
+        x: 2,
+        y: 3,
+        z: 4,
+        text: "Peak Point",
+        showarrow: true,
+        arrowhead: 2,
+        font: %{size: 14, color: "red"}
+      },
+      %{
+        x: 4,
+        y: 4,
+        z: 5,
+        text: "Maximum",
+        showarrow: false,
+        font: %{size: 12, color: "blue"}
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```

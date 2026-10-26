@@ -1,0 +1,44 @@
+# Tile Choropleth — MapLibre
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Embedded GeoJSON regions
+
+`Choroplethmap` uses `layout.map` and token-free tiles. This small synthetic
+GeoJSON avoids downloading a county dataset; production county boundaries use
+the same `featureidkey` and `locations` mapping. Transparency belongs inside
+`marker`, not at the trace's top level.
+
+```elixir
+alias Plotly.{Figure, Choroplethmap}
+
+geojson = %{
+  type: "FeatureCollection",
+  features: [
+    %{type: "Feature", id: "west", properties: %{}, geometry: %{
+      type: "Polygon", coordinates: [[[-74.04, 40.70], [-74.00, 40.70],
+        [-74.00, 40.75], [-74.04, 40.75], [-74.04, 40.70]]]
+    }},
+    %{type: "Feature", id: "east", properties: %{}, geometry: %{
+      type: "Polygon", coordinates: [[[-74.00, 40.70], [-73.96, 40.70],
+        [-73.96, 40.75], [-74.00, 40.75], [-74.00, 40.70]]]
+    }}
+  ]
+}
+
+Figure.new()
+|> Figure.add_trace(Choroplethmap.new(
+  geojson: geojson, locations: ["west", "east"], z: [12, 28],
+  featureidkey: "id", colorscale: "YlOrRd", marker: %{opacity: 0.65}
+))
+|> Figure.update_layout(
+  title: "Two example regions",
+  map: %{style: "carto-positron", center: %{lat: 40.725, lon: -74.0}, zoom: 11}
+)
+|> Plotly.show()
+```

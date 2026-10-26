@@ -1,0 +1,33 @@
+# WebGL with 100,000 Points
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattergl` uses WebGL rendering instead of SVG. The API is identical to `Scatter`,
+but WebGL handles hundreds of thousands of points without degrading browser performance.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n = 100_000
+x = for _ <- 1..n, do: :rand.uniform()
+y = for _ <- 1..n, do: :rand.uniform()
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergl.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{size: 2, color: "steelblue", opacity: 0.5}
+  )
+)
+|> Figure.update_layout(title: "WebGL with 100,000 Points")
+|> Plotly.show()
+```

@@ -1,0 +1,44 @@
+# 2D Histogram Binning and Styling Options
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`nbinsx:` / `nbinsy:` control how many bins appear on each axis.
+`colorscale:` picks a named Plotly colour scale (e.g. `"Hot"`, `"Viridis"`, `"Jet"`).
+`reversescale: true` flips the colour direction.
+
+```elixir
+alias Plotly.{Figure, Histogram2d}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+gen = fn n ->
+  for _ <- 1..n do
+    (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+  end
+end
+
+n = 500
+x = gen.(n)
+y = gen.(n)
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram2d.new(
+    x: x,
+    y: y,
+    nbinsx: 20,
+    nbinsy: 20,
+    colorscale: "Hot",
+    reversescale: true
+  )
+)
+|> Figure.update_layout(title: "2D Histogram — Custom Bins and Colourscale")
+|> Plotly.show()
+```

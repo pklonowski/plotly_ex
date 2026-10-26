@@ -1,0 +1,47 @@
+# Click Event Data
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`PlotlyLive.subscribe/2` registers the current process (or a given pid) to receive
+`{tag, event_map}` messages whenever a Plotly event fires in the browser.
+
+Click a data point in the chart below, then evaluate the `receive` cell to see the event payload.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+alias Plotly.Kino.PlotlyLive
+
+chart =
+  Figure.new()
+  |> Figure.add_trace(Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 4, 9, 16, 25],
+    mode: "markers",
+    marker: %{size: 15, color: "steelblue"},
+    text: ["A", "B", "C", "D", "E"]
+  ))
+  |> Figure.update_layout(title: "Click any point — then run the next cell")
+  |> PlotlyLive.new()
+```
+
+```elixir
+PlotlyLive.subscribe(chart, :click_data, :click)
+chart
+```
+
+```elixir
+# Click a point above, then evaluate this cell
+receive do
+  {:click_data, event} ->
+    IO.inspect(event, label: "click event", pretty: true)
+after
+  10_000 -> "No click within 10 s — click a point first, then re-run this cell"
+end
+```

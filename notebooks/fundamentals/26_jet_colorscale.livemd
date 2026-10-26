@@ -1,0 +1,25 @@
+# Jet Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`"Jet"` is the classic rainbow colorscale (blue → cyan → green → yellow → red).
+Note: it is not perceptually uniform — `"Viridis"` or `"Plasma"` are generally
+preferred for scientific data.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(z: z, colorscale: "Jet"))
+|> Figure.update_layout(title: "Jet Colorscale Heatmap")
+|> Plotly.show()
+```

@@ -1,0 +1,43 @@
+# Adding Text to Data in Line and Scatter Plots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `mode` to include `"text"` (e.g. `"markers+text"` or `"lines+markers+text"`)
+and provide a `text` list to display labels directly on data points. Control
+placement with `textposition`: `"top center"`, `"bottom center"`, `"middle right"`, etc.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 1, 3, 1, 2],
+    mode: "markers+text",
+    text: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
+    textposition: "top center",
+    marker: %{size: 10},
+    name: "Team A"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [4, 3, 5, 3, 4],
+    mode: "lines+markers+text",
+    text: ["A", "B", "C", "D", "E"],
+    textposition: "bottom center",
+    name: "Team B"
+  )
+)
+|> Figure.update_layout(title: "Text Labels on Scatter/Line Points")
+|> Plotly.show()
+```

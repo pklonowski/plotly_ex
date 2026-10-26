@@ -1,0 +1,57 @@
+# Trisurf Cube
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A cube can also be built as a Tri-Surf: sample points on each of the 6 faces and let
+`alphahull: 0` reconstruct the surface. This gives the same result as explicit `i/j/k`
+but from a parametric point-sampling approach. Each face contributes a uniform grid of
+points.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+# Sample each face of a unit cube as a grid of points
+steps = [0, 0.25, 0.5, 0.75, 1.0]
+
+face_points =
+  # bottom (z=0), top (z=1)
+  (for x <- steps, y <- steps, z <- [0, 1], do: {x, y, z}) ++
+  # front (y=0), back (y=1)
+  (for x <- steps, z <- steps, y <- [0, 1], do: {x, y, z}) ++
+  # left (x=0), right (x=1)
+  (for y <- steps, z <- steps, x <- [0, 1], do: {x, y, z})
+
+# Deduplicate
+face_points = Enum.uniq(face_points)
+
+xs = Enum.map(face_points, &elem(&1, 0))
+ys = Enum.map(face_points, &elem(&1, 1))
+zs = Enum.map(face_points, &elem(&1, 2))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(
+    x: xs, y: ys, z: zs,
+    alphahull: 0,
+    intensity: zs,
+    colorscale: "Portland",
+    opacity: 0.7
+  )
+)
+|> Figure.update_layout(
+  title: "Trisurf Cube — Sampled Faces",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

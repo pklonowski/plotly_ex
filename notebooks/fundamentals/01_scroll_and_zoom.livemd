@@ -1,0 +1,24 @@
+# Scroll and Zoom
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`config.scrollZoom: true` enables zooming with the mouse wheel or two-finger
+trackpad scroll. Without it, scroll events pan the page rather than zoom the chart.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new(
+  data: [Scatter.new(x: [1, 2, 3, 4, 5], y: [2, 4, 1, 5, 3], mode: "lines+markers")],
+  layout: %{title: "Scroll to zoom — try the mouse wheel"},
+  config: %{scrollZoom: true}
+)
+|> Plotly.show()
+```

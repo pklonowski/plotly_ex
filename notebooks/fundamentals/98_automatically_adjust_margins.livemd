@@ -1,0 +1,37 @@
+# Automatically Adjust Margins
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Setting `yaxis.automargin: true` tells Plotly to automatically expand the
+margin so that tick labels and axis titles are never clipped. This is useful
+when tick labels are long or the axis title is large.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: [20, 14, 23],
+    y: ["giraffes", "orangutans", "monkeys"],
+    orientation: "h"
+  )
+)
+|> Figure.update_layout(
+  autosize: false,
+  width: 500,
+  height: 400,
+  yaxis: %{
+    automargin: true,
+    title: %{text: "Animal", font: %{size: 18}, standoff: 20}
+  }
+)
+|> Plotly.show()
+```

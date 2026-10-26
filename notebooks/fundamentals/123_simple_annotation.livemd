@@ -1,0 +1,46 @@
+# Simple Annotation
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A basic annotation with an arrow pointing to a data coordinate. Key fields:
+- `x`, `y`: the point the arrow tip touches (in data coordinates)
+- `xref`, `yref`: `"x"` / `"y"` to anchor to data
+- `ax`, `ay`: arrow tail offset in pixels from the annotation text box
+- `arrowhead`: integer 0–8 selecting the arrowhead style
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [0, 1, 2, 3, 4],
+    y: [0, 1, 4, 9, 16],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Simple Annotation",
+  annotations: [
+    %{
+      x: 2,
+      y: 4,
+      xref: "x",
+      yref: "y",
+      text: "Peak at (2, 4)",
+      showarrow: true,
+      arrowhead: 2,
+      ax: 0,
+      ay: -40
+    }
+  ]
+)
+|> Plotly.show()
+```

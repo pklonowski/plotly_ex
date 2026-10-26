@@ -1,0 +1,58 @@
+# Frame Groups and Animation Modes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`frame.group` tags frames so you can play only a named group.
+`animationOpts.mode` controls playback:
+- `"immediate"` — jump to frame instantly (stop current animation)
+- `"afterall"` — wait for current animation to finish
+- `"next"` — enqueue after the currently playing group
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Group A: expanding circle
+group_a =
+  for r <- 1..20 do
+    theta = Enum.map(0..36, fn i -> i * 10 * :math.pi / 180 end)
+    x = Enum.map(theta, fn t -> r * :math.cos(t) end)
+    y = Enum.map(theta, fn t -> r * :math.sin(t) end)
+    %{name: "a#{r}", group: "circle", data: [%{x: x, y: y}]}
+  end
+
+# Group B: Lissajous figure
+group_b =
+  for phase <- 0..19 do
+    t = Enum.map(0..100, fn i -> i * 2 * :math.pi / 100 end)
+    x = Enum.map(t, fn ti -> :math.sin(2 * ti + phase * 0.3) end)
+    y = Enum.map(t, fn ti -> :math.sin(3 * ti) end)
+    %{name: "b#{phase}", group: "lissajous", data: [%{x: x, y: y}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0], mode: "lines")],
+  layout: %{
+    title: "Frame Groups — Circle vs Lissajous",
+    xaxis: %{range: [-21, 21], autorange: false},
+    yaxis: %{range: [-21, 21], autorange: false, scaleanchor: "x"},
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [
+        %{label: "Circle", method: "animate",
+          args: [Enum.map(group_a, & &1.name), %{frame: %{duration: 80}}]},
+        %{label: "Lissajous", method: "animate",
+          args: [Enum.map(group_b, & &1.name), %{frame: %{duration: 100}}]}
+      ]
+    }]
+  },
+  frames: group_a ++ group_b
+)
+|> Plotly.show()
+```

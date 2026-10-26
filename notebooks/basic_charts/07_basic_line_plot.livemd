@@ -1,0 +1,39 @@
+# Basic Line Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+The simplest line chart: a single `Scatter` trace with x and y arrays.
+The default `mode` for `Scatter` is `"lines"` when y values are provided
+without an explicit mode.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17]
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [16, 5, 11, 9]
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12]
+  )
+)
+|> Plotly.show()
+```

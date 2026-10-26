@@ -1,0 +1,45 @@
+# Multiple Y-Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Three y-axes: narrow the x-axis domain to leave room for the extra axis on the right.
+`yaxis3.position` is a 0.0–1.0 fraction of the plot width where the axis line appears.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: x, y: [10, 15, 13, 17, 12], name: "Price", mode: "lines"))
+|> Figure.add_trace(
+  Scatter.new(x: x, y: [1000, 1200, 900, 1400, 1100], name: "Volume", mode: "lines", yaxis: "y2")
+)
+|> Figure.add_trace(
+  Scatter.new(x: x, y: [22, 19, 25, 18, 23], name: "Temp (°C)", mode: "lines", yaxis: "y3")
+)
+|> Figure.update_layout(
+  title: "Multiple Y-Axes",
+  xaxis: %{domain: [0.0, 0.8]},
+  yaxis: %{title: %{text: "Price"}},
+  yaxis2: %{
+    title: %{text: "Volume"},
+    overlaying: "y",
+    side: "right"
+  },
+  yaxis3: %{
+    title: %{text: "Temperature (°C)"},
+    overlaying: "y",
+    side: "right",
+    position: 0.9
+  }
+)
+|> Plotly.show()
+```

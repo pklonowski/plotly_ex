@@ -1,0 +1,94 @@
+# Animating with a Slider
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.sliders` adds a scrub bar below the chart. Each step in the slider
+is linked to a named frame via `method: "animate"` + `args: [[frame_name], ...]`.
+The Play button and slider work together.
+
+Key `slider` fields:
+- `steps: [%{label:, method: "animate", args: [[frame_name], anim_opts]}]` — one per frame
+- `active: 0` — starting position
+- `pad: %{t: 50}` — top padding (space for Play button)
+- `currentvalue: %{prefix: "Year: ", visible: true}` — display current step value
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+years = 2000..2020
+
+:rand.seed(:exsplus, {1, 2, 3})
+countries = ~w[A B C D E F G H I J]
+base_gdp = Enum.map(countries, fn _ -> :rand.uniform(40_000) + 5_000 end)
+base_life = Enum.map(countries, fn _ -> :rand.uniform(30) + 50 end)
+
+frames =
+  for {year, i} <- Enum.with_index(years) do
+    gdp = Enum.map(base_gdp, fn g -> g * (1 + i * 0.02) end)
+    life = Enum.map(base_life, fn l -> l + i * 0.3 end)
+    %{
+      name: "#{year}",
+      data: [%{x: gdp, y: life}],
+      layout: %{title: %{text: "Life Expectancy vs GDP — #{year}"}}
+    }
+  end
+
+slider_steps =
+  for year <- years do
+    %{
+      label: "#{year}",
+      method: "animate",
+      args: [["#{year}"], %{mode: "immediate", frame: %{duration: 300}, transition: %{duration: 200}}]
+    }
+  end
+
+Figure.new(
+  data: [Scatter.new(
+    x: base_gdp,
+    y: base_life,
+    mode: "markers",
+    text: countries,
+    marker: %{size: 15, color: "steelblue", opacity: 0.7}
+  )],
+  layout: %{
+    title: "Life Expectancy vs GDP — 2000",
+    xaxis: %{title: "GDP per capita", range: [0, 65_000]},
+    yaxis: %{title: "Life expectancy", range: [45, 90]},
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      yanchor: "top",
+      pad: %{t: 60},
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 400}, transition: %{duration: 200}, fromcurrent: true}]
+      }, %{
+        label: "⏸ Pause",
+        method: "animate",
+        args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]
+      }]
+    }],
+    sliders: [%{
+      steps: slider_steps,
+      active: 0,
+      currentvalue: %{prefix: "Year: ", visible: true, xanchor: "center"},
+      pad: %{t: 50},
+      x: 0.05,
+      len: 0.9
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

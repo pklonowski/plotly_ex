@@ -1,0 +1,31 @@
+# Styling and Coloring the Legend
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Customize the legend box with `bgcolor`, `bordercolor`, `borderwidth`, and
+`font` inside `layout.legend`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [2, 4, 3], name: "Alpha", mode: "lines"))
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [3, 1, 4], name: "Beta", mode: "lines"))
+|> Figure.update_layout(
+  title: "Styled Legend",
+  legend: %{
+    bgcolor: "#E2E2E2",
+    bordercolor: "#FFFFFF",
+    borderwidth: 2,
+    font: %{family: "Arial", size: 14, color: "black"}
+  }
+)
+|> Plotly.show()
+```

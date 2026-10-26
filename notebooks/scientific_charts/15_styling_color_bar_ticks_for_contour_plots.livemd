@@ -1,0 +1,47 @@
+# Styling Color Bar Ticks for Contour Plots
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`colorbar` tick styling mirrors axis tick styling:
+- `tickmode: "linear"` + `dtick:` — fixed interval ticks
+- `tickmode: "array"` + `tickvals:` + `ticktext:` — explicit custom ticks
+- `nticks:` — approximate count of auto ticks
+- `ticks: "outside"` — tick marks on the outside of the bar
+- `ticklen:`, `tickwidth:`, `tickcolor:` — tick appearance
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Portland",
+    colorbar: %{
+      tickmode: "array",
+      tickvals: [-1.0, -0.5, 0.0, 0.5, 1.0],
+      ticktext: ["−1.0", "−0.5", "0", "+0.5", "+1.0"],
+      ticks: "outside",
+      ticklen: 8,
+      tickwidth: 2,
+      tickcolor: "black",
+      title: %{text: "z", side: "right"}
+    }
+  )
+)
+|> Figure.update_layout(title: "Contour — Styled Color Bar Ticks")
+|> Plotly.show()
+```

@@ -1,0 +1,57 @@
+# Reset User Changes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When `layout.uirevision` **changes** on each update, plotly.js resets the user's
+interactive state back to the original view — as if the chart was freshly rendered.
+This is useful when the data changes so significantly that the old zoom window is
+no longer meaningful.
+
+> **Two-cell pattern:** evaluate **Cell A** first, zoom in on the chart, then
+> evaluate **Cell B**. Your zoom will reset on every update.
+
+**Cell A — create the widget**
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+kino =
+  Figure.new(
+    data: [Scatter.new(
+      x: Enum.to_list(1..20),
+      y: Enum.map(1..20, fn _ -> :rand.uniform() * 10 end),
+      mode: "lines+markers",
+      name: "live data"
+    )],
+    layout: %{
+      title: "Step 0 — zoom in, then run Cell B",
+      uirevision: 0
+    }
+  )
+  |> Plotly.show()
+```
+
+**Cell B — push updates (zoom resets each time)**
+
+```elixir
+for i <- 1..8 do
+  new_y = Enum.map(1..20, fn _ -> :rand.uniform() * 10 end)
+
+  Figure.new(
+    data: [Scatter.new(x: Enum.to_list(1..20), y: new_y, mode: "lines+markers", name: "live data")],
+    layout: %{title: "Update #{i} — zoom reset (uirevision: #{i})", uirevision: i}
+  )
+  |> then(&Plotly.Kino.PlotlyLive.push(kino, &1))
+
+  Process.sleep(600)
+end
+
+:ok
+```

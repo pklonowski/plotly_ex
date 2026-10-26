@@ -1,0 +1,46 @@
+# A Contour and Scatter Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple trace types can be combined in a single figure by adding them to the same `Figure`.
+Here a `Contour` heatmap background is overlaid with `Scatter` points.
+
+```elixir
+alias Plotly.{Figure, Contour, Scatter}
+
+# A 20x20 z-matrix: sin/cos pattern for a visually interesting contour
+z =
+  for i <- 0..19 do
+    for j <- 0..19 do
+      :math.sin(i * 0.3) * :math.cos(j * 0.3)
+    end
+  end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Jet",
+    showscale: false,
+    name: "Contour"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 5, 8, 12, 15, 18],
+    y: [5, 10, 5, 14, 10, 17],
+    mode: "markers",
+    name: "Points",
+    marker: %{color: "white", size: 10, line: %{color: "black", width: 2}}
+  )
+)
+|> Figure.update_layout(title: "Contour and Scatter Plot")
+|> Plotly.show()
+```

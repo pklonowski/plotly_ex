@@ -1,0 +1,41 @@
+# Funnelarea Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Funnelarea` renders a triangular funnel where each section's area is proportional to its
+`values:` entry. `text:` labels each section. Unlike `Funnel`, it does not show absolute widths
+but relative areas. `textfont:` styles all section labels at once.
+
+```elixir
+alias Plotly.{Figure, Funnelarea}
+
+Figure.new()
+|> Figure.add_trace(
+  Funnelarea.new(
+    values: [5, 4, 3, 2, 1],
+    text: ["The 1st", "The 2nd", "The 3rd", "The 4th", "The 5th"],
+    marker: %{
+      colors: ["#59D4E8", "#DDB6C6", "#A696C8", "#67EACA", "#94D2E6"],
+      line: %{
+        color: ["#3E4E88", "#606470", "#3E4E88", "#606470", "#3E4E88"],
+        width: [2, 1, 5, 0, 3]
+      }
+    },
+    textfont: %{family: "Old Standard TT", size: 13, color: "black"},
+    opacity: 0.65
+  )
+)
+|> Figure.update_layout(
+  title: "Funnelarea Chart",
+  margin: %{l: 200, r: 200},
+  showlegend: true
+)
+|> Plotly.show()
+```

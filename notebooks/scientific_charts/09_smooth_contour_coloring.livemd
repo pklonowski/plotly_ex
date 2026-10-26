@@ -1,0 +1,40 @@
+# Smooth Contour Coloring
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`contours: %{coloring: "..."}` controls how the space between lines is filled:
+- `"fill"` (default) — discrete colour bands between contour lines
+- `"heatmap"` — smooth continuous colour interpolation (like a heatmap)
+- `"lines"` — colour only the lines themselves, no fill
+- `"none"` — transparent fill, coloured lines
+
+```elixir
+alias Plotly.{Figure, Contour}
+
+z = for i <- 0..19 do
+  for j <- 0..19 do
+    :math.sin(i * :math.pi() / 10) * :math.cos(j * :math.pi() / 10)
+  end
+end
+
+for coloring <- ["fill", "heatmap", "lines", "none"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Contour.new(
+      z: z,
+      colorscale: "RdBu",
+      contours: %{coloring: coloring}
+    )
+  )
+  |> Figure.update_layout(title: "Contour coloring: \"#{coloring}\"")
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

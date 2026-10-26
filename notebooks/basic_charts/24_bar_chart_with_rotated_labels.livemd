@@ -1,0 +1,31 @@
+# Bar Chart with Rotated Labels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `xaxis.tickangle` to rotate tick labels. Negative values rotate
+clockwise (e.g. `-45` tilts labels 45° to the right). This prevents
+overlapping when x categories are long strings.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+months = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: months, y: [20, 14, 25, 16, 18, 22, 19, 15, 12, 16, 14, 17], name: "Primary Product", marker: %{color: "rgba(55, 128, 191, 0.7)"}))
+|> Figure.add_trace(Bar.new(x: months, y: [19, 14, 22, 14, 16, 19, 17, 14, 10, 12, 12, 16], name: "Secondary Product", marker: %{color: "rgba(219, 64, 82, 0.7)"}))
+|> Figure.update_layout(
+  title: "Bar Chart with Rotated X Labels",
+  xaxis: %{tickangle: -45},
+  barmode: "group"
+)
+|> Plotly.show()
+```

@@ -1,0 +1,33 @@
+# Custom Colorscale
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A custom colorscale is a list of `[stop, color]` pairs where `stop` ranges from
+`0.0` to `1.0`. Colors can be CSS names, hex strings, or `"rgb(r,g,b)"`.
+
+```elixir
+alias Plotly.{Figure, Heatmap}
+
+z = for i <- 0..9, do: (for j <- 0..9, do: :math.sin(i / 3.0 + j / 5.0) * 10)
+
+Figure.new()
+|> Figure.add_trace(Heatmap.new(
+  z: z,
+  colorscale: [
+    [0.0, "navy"],
+    [0.25, "royalblue"],
+    [0.5, "white"],
+    [0.75, "orange"],
+    [1.0, "red"]
+  ]
+))
+|> Figure.update_layout(title: "Custom Colorscale Heatmap")
+|> Plotly.show()
+```

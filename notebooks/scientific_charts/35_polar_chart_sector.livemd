@@ -1,0 +1,40 @@
+# Polar Chart Sector
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layout.polar.sector: [start_deg, end_deg]` restricts the visible angular range,
+creating a partial (sector) polar chart instead of a full circle.
+`[0, 180]` creates a semicircle; `[0, 90]` creates a quarter circle.
+
+```elixir
+alias Plotly.{Figure, Scatterpolar}
+
+theta = Enum.map(0..18, fn i -> i * 10 end)
+r     = Enum.map(theta, fn t -> 1 + :math.sin(t * :math.pi() / 180 * 2) end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatterpolar.new(
+    r: r,
+    theta: theta,
+    mode: "lines+markers",
+    fill: "toself",
+    name: "Upper semicircle"
+  )
+)
+|> Figure.update_layout(
+  title: "Polar Chart Sector — Upper Half (0° to 180°)",
+  polar: %{
+    sector: [0, 180],
+    radialaxis: %{range: [0, 2.5]}
+  }
+)
+|> Plotly.show()
+```

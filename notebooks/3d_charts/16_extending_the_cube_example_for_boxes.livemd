@@ -1,0 +1,53 @@
+# Extending the Cube Example for Boxes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+A general rectangular box is just a cube with independent scaling per axis. Scale the
+unit-cube sample points by `(a, b, c)` to get a box of size `a × b × c`. Here we define
+a helper function and render two boxes with different proportions.
+
+```elixir
+alias Plotly.{Figure, Mesh3d}
+
+box_points = fn a, b, c ->
+  steps = [0, 0.25, 0.5, 0.75, 1.0]
+  pts =
+    (for x <- steps, y <- steps, z <- [0, 1], do: {x * a, y * b, z * c}) ++
+    (for x <- steps, z <- steps, y <- [0, 1], do: {x * a, y * b, z * c}) ++
+    (for y <- steps, z <- steps, x <- [0, 1], do: {x * a, y * b, z * c})
+  pts = Enum.uniq(pts)
+  {Enum.map(pts, &elem(&1, 0)),
+   Enum.map(pts, &elem(&1, 1)),
+   Enum.map(pts, &elem(&1, 2))}
+end
+
+{x1, y1, z1} = box_points.(1, 2, 3)
+{x2, y2, z2} = box_points.(3, 1, 1)
+
+# Offset second box so they don't overlap
+x2 = Enum.map(x2, &(&1 + 4))
+
+Figure.new()
+|> Figure.add_trace(
+  Mesh3d.new(x: x1, y: y1, z: z1, alphahull: 0, color: "cyan", opacity: 0.6, name: "1×2×3")
+)
+|> Figure.add_trace(
+  Mesh3d.new(x: x2, y: y2, z: z2, alphahull: 0, color: "magenta", opacity: 0.6, name: "3×1×1")
+)
+|> Figure.update_layout(
+  title: "Rectangular Boxes via Trisurf",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

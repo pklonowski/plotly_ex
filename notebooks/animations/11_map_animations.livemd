@@ -1,0 +1,82 @@
+# Map Animations
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Animate a choropleth map across time using frames. Each frame has a `data` entry
+with updated `z` values. The map projection stays fixed.
+
+```elixir
+alias Plotly.{Figure, Choropleth}
+
+# Simulated GDP growth data per country across years
+countries = ~w[USA GBR DEU FRA JPN CHN IND BRA CAN AUS]
+base_gdp = %{
+  "USA" => 65000, "GBR" => 42000, "DEU" => 48000, "FRA" => 43000, "JPN" => 40000,
+  "CHN" => 12000, "IND" => 7000, "BRA" => 15000, "CAN" => 52000, "AUS" => 55000
+}
+years = 2015..2022
+
+frames =
+  for {year, i} <- Enum.with_index(years) do
+    z = Enum.map(countries, fn c -> base_gdp[c] * (1 + i * 0.04) end)
+    %{
+      name: "#{year}",
+      data: [%{z: z, zmin: 5000, zmax: 80000}],
+      layout: %{title: %{text: "GDP per Capita — #{year}"}}
+    }
+  end
+
+slider_steps =
+  for year <- years do
+    %{
+      label: "#{year}",
+      method: "animate",
+      args: [["#{year}"], %{mode: "immediate", frame: %{duration: 500}, transition: %{duration: 300}}]
+    }
+  end
+
+Figure.new(
+  data: [Choropleth.new(
+    locations: countries,
+    z: Enum.map(countries, fn c -> base_gdp[c] end),
+    locationmode: "ISO-3",
+    colorscale: "Blues",
+    zmin: 5000,
+    zmax: 80000,
+    colorbar: %{title: %{text: "GDP/capita"}}
+  )],
+  layout: %{
+    title: "GDP per Capita — 2015",
+    geo: %{projection: %{type: "natural earth"}, showland: true, landcolor: "lightgray"},
+    sliders: [%{
+      steps: slider_steps,
+      active: 0,
+      currentvalue: %{prefix: "Year: ", visible: true},
+      pad: %{t: 50}
+    }],
+    updatemenus: [%{
+      type: "buttons",
+      showactive: false,
+      y: 0,
+      x: 0.5,
+      xanchor: "center",
+      yanchor: "top",
+      pad: %{t: 60},
+      buttons: [%{
+        label: "▶ Play",
+        method: "animate",
+        args: [nil, %{frame: %{duration: 600}, transition: %{duration: 300}, fromcurrent: true}]
+      }]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

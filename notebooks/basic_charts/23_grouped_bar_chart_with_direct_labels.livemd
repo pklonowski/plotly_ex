@@ -1,0 +1,41 @@
+# Grouped Bar Chart with Direct Labels
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Combine `barmode: "group"` with `text:` and `textposition: "auto"` to add
+direct labels to a grouped bar chart.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    name: "15-44",
+    x: ["China", "France", "Germany", "USA"],
+    y: [26000, 18000, 23000, 25000],
+    text: [26000, 18000, 23000, 25000],
+    textposition: "auto",
+    marker: %{color: "rgba(55, 128, 191, 0.7)", line: %{color: "rgba(55, 128, 191, 1.0)", width: 2}}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    name: "45-65",
+    x: ["China", "France", "Germany", "USA"],
+    y: [22000, 21000, 21000, 19000],
+    text: [22000, 21000, 21000, 19000],
+    textposition: "auto",
+    marker: %{color: "rgba(219, 64, 82, 0.7)", line: %{color: "rgba(219, 64, 82, 1.0)", width: 2}}
+  )
+)
+|> Figure.update_layout(title: "Grouped Bar Chart with Labels", barmode: "group")
+|> Plotly.show()
+```

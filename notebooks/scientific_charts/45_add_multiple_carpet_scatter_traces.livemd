@@ -1,0 +1,67 @@
+# Add Multiple Carpet Scatter Traces
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Multiple `Scattercarpet` traces demonstrate iso-lines along constant `a` or constant `b`.
+`cheaterslope: 1` on the carpet controls the apparent angle of the a-axis in cheater mode.
+`marker.size` and `marker.color` as lists set per-point styling.
+
+```elixir
+alias Plotly.{Figure, Carpet, Scattercarpet}
+
+Figure.new()
+|> Figure.add_trace(
+  Carpet.new(
+    carpet: "c1",
+    a: [0.1, 0.2, 0.3],
+    b: [1, 2, 3],
+    y: [[1, 2.2, 3], [1.5, 2.7, 3.5], [1.7, 2.9, 3.7]],
+    cheaterslope: 1,
+    aaxis: %{title: %{text: "a"}, tickmode: "linear", dtick: 0.05, minorgridcount: 9},
+    baxis: %{title: %{text: "b"}, tickmode: "linear", dtick: 0.5, minorgridcount: 9}
+  )
+)
+|> Figure.add_trace(Scattercarpet.new(carpet: "c1", name: "b = 1.5", a: [0.05, 0.15, 0.25, 0.35], b: [1.5, 1.5, 1.5, 1.5]))
+|> Figure.add_trace(Scattercarpet.new(carpet: "c1", name: "b = 2", a: [0.05, 0.15, 0.25, 0.35], b: [2, 2, 2, 2]))
+|> Figure.add_trace(Scattercarpet.new(carpet: "c1", name: "b = 2.5", a: [0.05, 0.15, 0.25, 0.35], b: [2.5, 2.5, 2.5, 2.5]))
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    name: "a = 0.15",
+    a: [0.15, 0.15, 0.15, 0.15],
+    b: [0.5, 1.5, 2.5, 3.5],
+    line: %{smoothing: 1, shape: "spline"}
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    name: "a = 0.2",
+    a: [0.2, 0.2, 0.2, 0.2],
+    b: [0.5, 1.5, 2.5, 3.5],
+    line: %{smoothing: 1, shape: "spline"},
+    marker: %{size: [10, 20, 30, 40], color: ["#000", "#f00", "#ff0", "#fff"]}
+  )
+)
+|> Figure.add_trace(
+  Scattercarpet.new(
+    carpet: "c1",
+    name: "a = 0.25",
+    a: [0.25, 0.25, 0.25, 0.25],
+    b: [0.5, 1.5, 2.5, 3.5],
+    line: %{smoothing: 1, shape: "spline"}
+  )
+)
+|> Figure.update_layout(
+  title: "Scattercarpet Extrapolation, Clipping, and Smoothing",
+  hovermode: "closest"
+)
+|> Plotly.show()
+```

@@ -1,0 +1,60 @@
+# Animate Button
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`method: "animate"` triggers `Plotly.animate` when clicked. This is the same
+mechanism used in the `notebooks/animations/` series. Here we show how to
+place Play/Pause buttons inside `layout.updatemenus` as a custom control panel.
+
+Multiple buttons can target different frame subsets or animation speeds.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 40
+frames =
+  for i <- 1..n do
+    xs = Enum.to_list(0..i)
+    ys = Enum.map(xs, fn x -> :math.sin(x * 0.5) * :math.exp(-x * 0.05) end)
+    %{name: "f#{i}", data: [%{x: xs, y: ys}]}
+  end
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0.0], mode: "lines+markers",
+           line: %{color: "steelblue"}, marker: %{size: 6})],
+  layout: %{
+    title: "Animate Button — Damped Wave",
+    xaxis: %{range: [0, n], autorange: false},
+    yaxis: %{range: [-1.1, 1.1], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      direction: "right",
+      x: 0.5,
+      xanchor: "center",
+      y: 0,
+      yanchor: "top",
+      showactive: false,
+      buttons: [
+        %{label: "▶ Play (normal)",
+          method: "animate",
+          args: [nil, %{frame: %{duration: 80, redraw: false}, transition: %{duration: 40}, fromcurrent: false}]},
+        %{label: "▶ Play (fast)",
+          method: "animate",
+          args: [nil, %{frame: %{duration: 20, redraw: false}, transition: %{duration: 0}}]},
+        %{label: "⏸ Pause",
+          method: "animate",
+          args: [[nil], %{mode: "immediate", frame: %{duration: 0}}]}
+      ]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

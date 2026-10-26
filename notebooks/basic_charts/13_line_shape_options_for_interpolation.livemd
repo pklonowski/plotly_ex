@@ -1,0 +1,47 @@
+# Line Shape Options for Interpolation
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`line.shape` controls how points are connected:
+- `"linear"` — straight lines between points (default)
+- `"spline"` — smooth curved interpolation
+- `"vhv"` — vertical then horizontal then vertical steps
+- `"hvh"` — horizontal then vertical then horizontal steps
+- `"vh"` — vertical then horizontal steps
+- `"hv"` — horizontal then vertical steps
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+y = [1, 3, 2, 3, 1]
+
+shapes = ["linear", "spline", "vhv", "hvh", "vh", "hv"]
+
+fig =
+  Enum.reduce(Enum.with_index(shapes), Figure.new(), fn {shape, i}, fig ->
+    Figure.add_trace(fig,
+      Scatter.new(
+        x: x,
+        y: Enum.map(y, fn v -> v + i * 5 end),
+        mode: "lines+markers",
+        name: shape,
+        line: %{shape: shape}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Line Shape Options for Interpolation",
+  legend: %{y: 0.5, traceorder: "reversed", font: %{size: 16}}
+)
+|> Plotly.show()
+```

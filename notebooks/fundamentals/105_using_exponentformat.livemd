@@ -1,0 +1,33 @@
+# Using Exponentformat
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Use `exponentformat` to control how large numbers are displayed on axes.
+Set `showexponent: "all"` to apply formatting to all ticks. Options for
+`exponentformat`: `"none"`, `"e"`, `"E"`, `"power"`, `"SI"`, `"B"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000],
+    y: [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000],
+    mode: "markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Exponent Format on Axes",
+  xaxis: %{showexponent: "all", exponentformat: "e"},
+  yaxis: %{showexponent: "all", exponentformat: "power"}
+)
+|> Plotly.show()
+```

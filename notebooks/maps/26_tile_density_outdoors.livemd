@@ -1,0 +1,59 @@
+# Tile Density Heatmap — Outdoors Tile
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Section
+
+Same `Densitymap` data as the light tile example, but with `style: "open-street-map"`.
+The street context helps interpret cluster locations geographically.
+
+```elixir
+alias Plotly.{Figure, Densitymap}
+
+url = "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv"
+body = Req.get!(url).body
+
+[header | rows] = String.split(body, "\n", trim: true)
+keys = String.split(header, ",") |> Enum.map(&String.trim/1)
+
+airports =
+  rows
+  |> Enum.map(fn row ->
+    values = String.split(row, ",")
+    Enum.zip(keys, values) |> Map.new()
+  end)
+  |> Enum.filter(fn a ->
+    match?({_, _}, Float.parse(a["lat"] || "")) and
+    match?({_, _}, Float.parse(a["long"] || ""))
+  end)
+
+lat = Enum.map(airports, &(elem(Float.parse(&1["lat"]), 0)))
+lon = Enum.map(airports, &(elem(Float.parse(&1["long"]), 0)))
+
+Figure.new()
+|> Figure.add_trace(
+  Densitymap.new(
+    lat: lat,
+    lon: lon,
+    radius: 15,
+    colorscale: "Viridis",
+    opacity: 0.6,
+    showscale: true
+  )
+)
+|> Figure.update_layout(
+  title: "US Airport Traffic Density — OpenStreetMap",
+  map: %{
+    style: "open-street-map",
+    center: %{lat: 37.8, lon: -96.0},
+    zoom: 3
+  }
+)
+|> Plotly.show()
+```

@@ -1,0 +1,41 @@
+# Basic Overlaid Area Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`fill: "tozeroy"` fills from the trace down to y=0. Multiple traces with `fill: "tozeroy"` overlay.
+`mode: "none"` hides the line and shows only the filled area.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 2"
+  )
+)
+|> Figure.update_layout(title: "Basic Overlaid Area Chart")
+|> Plotly.show()
+```

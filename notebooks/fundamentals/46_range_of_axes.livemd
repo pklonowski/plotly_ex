@@ -1,0 +1,35 @@
+# Range of Axes
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set explicit axis ranges in a 3D scene via `layout.scene.xaxis.range`,
+`yaxis.range`, and `zaxis.range`. Without explicit ranges, plotly.js
+auto-scales to fit the data.
+
+```elixir
+alias Plotly.{Figure, Scatter3d}
+
+t = Enum.map(0..100, fn i -> i / 10 end)
+x = Enum.map(t, &:math.cos/1)
+y = Enum.map(t, &:math.sin/1)
+z = t
+
+Figure.new()
+|> Figure.add_trace(Scatter3d.new(x: x, y: y, z: z, mode: "lines", name: "helix"))
+|> Figure.update_layout(
+  title: "3D Axes — Manual Range",
+  scene: %{
+    xaxis: %{range: [-2, 2]},
+    yaxis: %{range: [-2, 2]},
+    zaxis: %{range: [0, 8]}
+  }
+)
+|> Plotly.show()
+```

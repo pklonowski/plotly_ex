@@ -1,0 +1,35 @@
+# Quiver Over a Contour Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Overlay the gradient of a potential
+
+The potential is `z = x² + y²`; its gradient is `(2x, 2y)`. Both traces share
+the same Cartesian axes. The contour shows potential values, while arrows show
+the gradient direction and relative magnitude.
+
+```elixir
+alias Plotly.{Contour, Figure, Quiver}
+
+axis = Enum.to_list(-3..3)
+positions = for x <- axis, y <- axis, do: {x, y}
+
+Figure.new()
+|> Figure.add_trace(Contour.new(
+  x: axis, y: axis, z: for(y <- axis, do: for(x <- axis, do: x * x + y * y)),
+  colorscale: "Blues", showscale: false
+))
+|> Figure.add_trace(Quiver.new(
+  x: Enum.map(positions, &elem(&1, 0)), y: Enum.map(positions, &elem(&1, 1)),
+  u: Enum.map(positions, fn {x, _y} -> 2 * x end),
+  v: Enum.map(positions, fn {_x, y} -> 2 * y end),
+  lengthmode: "raw", lengthfactor: 0.1, marker: %{color: "darkred"}, name: "Gradient"
+))
+|> Figure.update_layout(title: "Potential and gradient", yaxis: %{scaleanchor: "x"})
+|> Plotly.show()
+```

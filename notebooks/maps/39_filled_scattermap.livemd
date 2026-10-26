@@ -1,0 +1,44 @@
+# Filled Scattermap Trace
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`Scattermap` with `fill: "toself"` closes the lat/lon path and fills the enclosed area.
+`fillcolor:` with rgba allows transparency so the tile map shows through.
+Close the polygon by repeating the first point at the end.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+# Approximate boundary of the state of Colorado (rectangular)
+lat = [41.0, 41.0, 37.0, 37.0, 41.0]
+lon = [-109.05, -102.05, -102.05, -109.05, -109.05]
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: lat,
+    lon: lon,
+    mode: "lines",
+    fill: "toself",
+    fillcolor: "rgba(0, 0, 255, 0.2)",
+    line: %{color: "blue", width: 2},
+    name: "Colorado"
+  )
+)
+|> Figure.update_layout(
+  title: "Filled Scattermap — Colorado Boundary",
+  map: %{
+    style: "carto-positron",
+    center: %{lat: 39.0, lon: -105.5},
+    zoom: 5
+  }
+)
+|> Plotly.show()
+```

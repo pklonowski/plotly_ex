@@ -1,0 +1,48 @@
+# Zero Line Layer
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`layer: "below traces"` on an axis moves the entire axis (grid, zero line)
+below the trace rendering layer, so bars or filled areas draw on top of the
+zero line. The default is `"above traces"`.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["A", "B", "C", "D"]
+y = [-5, 3, -2, 8]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: y))
+|> Figure.update_layout(
+  title: "Zero Line Layer: above traces (default)",
+  yaxis: %{
+    zeroline: true,
+    zerolinecolor: "red",
+    zerolinewidth: 3
+  }
+)
+|> Plotly.show()
+```
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: y))
+|> Figure.update_layout(
+  title: "Zero Line Layer: below traces",
+  yaxis: %{
+    zeroline: true,
+    zerolinecolor: "red",
+    zerolinewidth: 3,
+    layer: "below traces"
+  }
+)
+|> Plotly.show()
+```

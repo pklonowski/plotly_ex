@@ -1,0 +1,2656 @@
+# Basic Charts
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Basic Charts > Line and Scatter Plot
+
+Three common trace modes for scatter-type charts:
+
+* `mode: "markers"` — scatter plot (points only)
+* `mode: "lines"` — line chart (no markers)
+* `mode: "lines+markers"` — both
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17],
+    mode: "markers",
+    name: "Scatter"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 3, 4, 5],
+    y: [16, 5, 11, 9],
+    mode: "lines",
+    name: "Lines"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: "lines+markers",
+    name: "Lines+Markers"
+  )
+)
+|> Figure.update_layout(title: "Line and Scatter Plot")
+|> Plotly.show()
+```
+
+## Basic Charts > Data Labels Hover
+
+Pass a `text` list to a scatter trace to add custom labels to each point.
+By default these appear in the hover tooltip. Use `hoverinfo: "text"` to
+show only the custom text (hiding x/y values).
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 6, 3, 6, 1],
+    mode: "markers",
+    marker: %{size: 20, color: ["rgb(93,164,214)", "rgb(255,144,14)",
+                                "rgb(44,160,101)", "rgb(255,65,54)", "rgb(207,114,255)"]},
+    text: ["A<br>size: 40", "B<br>size: 60", "C<br>size: 80", "D<br>size: 60", "E<br>size: 40"],
+    hoverinfo: "text"
+  )
+)
+|> Figure.update_layout(
+  title: "Data Labels on Hover",
+  xaxis: %{range: [0, 6]},
+  yaxis: %{range: [0, 8]}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Data Labels on The Plot
+
+Set `mode` to include `"text"` to render labels directly on the plot (not
+just on hover). Use `textposition` to control placement: `"top center"`,
+`"bottom center"`, `"middle right"`, etc. Style labels with `textfont`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [2, 1, 4, 3, 5],
+    mode: "markers+text",
+    name: "Team A",
+    text: ["A-1", "A-2", "A-3", "A-4", "A-5"],
+    textposition: "top center",
+    textfont: %{family: "Raleway, sans-serif"},
+    marker: %{size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [4, 3, 6, 5, 7],
+    mode: "markers+text",
+    name: "Team B",
+    text: ["B-1", "B-2", "B-3", "B-4", "B-5"],
+    textposition: "bottom center",
+    textfont: %{family: "Times New Roman"},
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(
+  title: "Data Labels on the Plot",
+  legend: %{y: 0.5, font: %{size: 16}}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Scatter Plot with a Color Dimension
+
+Pass a list of numbers to `marker.color` to apply a continuous color scale
+to marker colors. Set `colorscale` to a named scale (e.g. `"Viridis"`,
+`"Plasma"`, `"RdBu"`) and `showscale: true` to display the color bar.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+n = 50
+x = Enum.map(1..n, fn _ -> :rand.uniform() * 10 end)
+y = Enum.map(1..n, fn _ -> :rand.uniform() * 10 end)
+colors = Enum.map(1..n, fn _ -> :rand.uniform() * 100 end)
+sizes = Enum.map(1..n, fn _ -> trunc(:rand.uniform() * 30) + 10 end)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{
+      color: colors,
+      colorscale: "Viridis",
+      showscale: true,
+      size: sizes,
+      opacity: 0.8
+    }
+  )
+)
+|> Figure.update_layout(title: "Scatter Plot with Color Dimension")
+|> Plotly.show()
+```
+
+## Basic Charts > Grouped Scatter Plot
+
+Set `layout.scattermode: "group"` to display multiple scatter traces
+side-by-side at each categorical x-axis position, similar to grouped bar
+charts. Each trace needs the same x categories.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+categories = ["Category 1", "Category 2", "Category 3", "Category 4"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: categories,
+    y: [4, 3, 5, 2],
+    mode: "markers",
+    name: "Group A",
+    marker: %{size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: categories,
+    y: [3, 5, 2, 4],
+    mode: "markers",
+    name: "Group B",
+    marker: %{size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: categories,
+    y: [5, 2, 4, 3],
+    mode: "markers",
+    name: "Group C",
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(
+  title: "Grouped Scatter Plot",
+  scattermode: "group"
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Grouped Scatter Plot with Custom Scatter Gap
+
+`layout.scattergap` controls the fraction of space between groups in a
+grouped scatter plot. Values range from 0 (no gap) to 1 (maximum gap).
+The default is 0.2.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+categories = ["Category 1", "Category 2", "Category 3", "Category 4"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(x: categories, y: [4, 3, 5, 2], mode: "markers", name: "Group A", marker: %{size: 14})
+)
+|> Figure.add_trace(
+  Scatter.new(x: categories, y: [3, 5, 2, 4], mode: "markers", name: "Group B", marker: %{size: 14})
+)
+|> Figure.add_trace(
+  Scatter.new(x: categories, y: [5, 2, 4, 3], mode: "markers", name: "Group C", marker: %{size: 14})
+)
+|> Figure.update_layout(
+  title: "Grouped Scatter with Custom Gap (scattergap: 0.7)",
+  scattermode: "group",
+  scattergap: 0.7
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Line Plot
+
+The simplest line chart: a single `Scatter` trace with x and y arrays.
+The default `mode` for `Scatter` is `"lines"` when y values are provided
+without an explicit mode.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17]
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [16, 5, 11, 9]
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12]
+  )
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Line and Scatter Plot (Line Charts)
+
+Same modes as the Line and Scatter section: explicitly set `mode` to control
+how data is rendered. This example is from the Line Charts documentation
+section, showing the modes side by side.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17],
+    mode: "markers",
+    name: "Scatter"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 3, 4, 5],
+    y: [16, 5, 11, 9],
+    mode: "lines",
+    name: "Lines"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: "lines+markers",
+    name: "Lines and Markers"
+  )
+)
+|> Figure.update_layout(title: "Line and Scatter Plot")
+|> Plotly.show()
+```
+
+## Basic Charts > Adding Names to Line and Scatter Plot
+
+Set `name:` on each trace to control what appears in the legend. Without
+names, Plotly uses "trace 0", "trace 1", etc.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17],
+    mode: "markers",
+    name: "Scatter"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 3, 4, 5],
+    y: [16, 5, 11, 9],
+    mode: "lines",
+    name: "Lines"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: "lines+markers",
+    name: "Lines and Markers"
+  )
+)
+|> Figure.update_layout(title: "Named Traces")
+|> Plotly.show()
+```
+
+## Basic Charts > Line and Scatter Styling
+
+Style markers with `marker: %{color:, size:}` and lines with
+`line: %{color:, width:}`. Both accept CSS color strings or hex values.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 15, 13, 17],
+    mode: "markers",
+    name: "Scatter",
+    marker: %{color: "rgb(219, 64, 82)", size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 3, 4, 5],
+    y: [16, 5, 11, 9],
+    mode: "lines",
+    name: "Lines",
+    line: %{color: "rgb(55, 128, 191)", width: 3}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: "lines+markers",
+    name: "Lines and Markers",
+    marker: %{color: "rgb(128, 0, 128)", size: 8},
+    line: %{color: "rgb(128, 0, 128)", width: 1}
+  )
+)
+|> Figure.update_layout(title: "Line and Scatter Styling")
+|> Plotly.show()
+```
+
+## Basic Charts > Styling Line Plot
+
+Use `line: %{color:, width:}` on a trace to set the line colour and
+thickness. Control figure dimensions with `layout.width` and `layout.height`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+trace1 = Scatter.new(
+  x: [1, 2, 3, 4],
+  y: [10, 15, 13, 17],
+  mode: "lines",
+  name: "Red Thin",
+  line: %{color: "firebrick", width: 2}
+)
+
+trace2 = Scatter.new(
+  x: [1, 2, 3, 4],
+  y: [16, 5, 11, 9],
+  mode: "lines",
+  name: "Blue Thick",
+  line: %{color: "royalblue", width: 4}
+)
+
+Figure.new()
+|> Figure.add_trace(trace1)
+|> Figure.add_trace(trace2)
+|> Figure.update_layout(
+  title: "Styling Line Plots",
+  width: 500,
+  height: 400
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Colored and Styled Scatter Plot
+
+Add a border to markers with `marker.line` (a nested map with `color` and
+`width`). Set axis titles with `xaxis.title` and `yaxis.title`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [52698, 43117],
+    y: [53, 31],
+    mode: "markers",
+    name: "North America",
+    text: ["United States", "Canada"],
+    marker: %{
+      color: "rgb(164, 194, 244)",
+      size: 12,
+      line: %{color: "black", width: 0.5}
+    }
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [39317, 37236, 35650, 30066, 29570, 27159, 23557, 21046, 18007],
+    y: [33, 20, 13, 19, 27, 19, 49, 44, 38],
+    mode: "markers",
+    name: "Europe",
+    text: ["Germany", "Britain", "France", "Spain", "Italy",
+           "Czech Rep.", "Greece", "Poland", "Portugal"],
+    marker: %{
+      color: "rgb(255, 217, 102)",
+      size: 12,
+      line: %{color: "black", width: 0.5}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Quarter 1 Growth",
+  xaxis: %{title: "GDP per Capita", showgrid: false, zeroline: false},
+  yaxis: %{title: "Percent", showline: false}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Line Shape Options for Interpolation
+
+`line.shape` controls how points are connected:
+
+* `"linear"` — straight lines between points (default)
+* `"spline"` — smooth curved interpolation
+* `"vhv"` — vertical then horizontal then vertical steps
+* `"hvh"` — horizontal then vertical then horizontal steps
+* `"vh"` — vertical then horizontal steps
+* `"hv"` — horizontal then vertical steps
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+y = [1, 3, 2, 3, 1]
+
+shapes = ["linear", "spline", "vhv", "hvh", "vh", "hv"]
+
+fig =
+  Enum.reduce(Enum.with_index(shapes), Figure.new(), fn {shape, i}, fig ->
+    Figure.add_trace(fig,
+      Scatter.new(
+        x: x,
+        y: Enum.map(y, fn v -> v + i * 5 end),
+        mode: "lines+markers",
+        name: shape,
+        line: %{shape: shape}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Line Shape Options for Interpolation",
+  legend: %{y: 0.5, traceorder: "reversed", font: %{size: 16}}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Graph and Axes Titles
+
+Set the plot title via `layout.title`. Set axis titles via `xaxis.title`
+and `yaxis.title`. Both accept a plain string or a map with `text` and
+`font` for styled titles.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 6, 3, 6, 1],
+    mode: "lines+markers"
+  )
+)
+|> Figure.update_layout(
+  title: "Plot Title",
+  xaxis: %{title: "x Axis Title"},
+  yaxis: %{title: "y Axis Title"}
+)
+|> Plotly.show()
+```
+
+Styled with font:
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [4, 5, 4], mode: "lines"))
+|> Figure.update_layout(
+  title: %{text: "Styled Title", font: %{family: "Courier New, monospace", size: 24, color: "#7f7f7f"}},
+  xaxis: %{title: %{text: "x Axis", font: %{family: "Courier New, monospace", size: 18, color: "#7f7f7f"}}},
+  yaxis: %{title: %{text: "y Axis", font: %{family: "Courier New, monospace", size: 18, color: "#7f7f7f"}}}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Line Dash
+
+`line.dash` controls the line pattern. Options:
+
+* `"solid"` — continuous line (default)
+* `"dot"` — dotted
+* `"dash"` — dashed
+* `"longdash"` — longer dashes
+* `"dashdot"` — alternating dash and dot
+* `"longdashdot"` — long dash followed by dot
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+dashes = ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]
+x = [1, 2, 3, 4, 5]
+
+fig =
+  Enum.reduce(Enum.with_index(dashes), Figure.new(), fn {dash, i}, fig ->
+    Figure.add_trace(fig,
+      Scatter.new(
+        x: x,
+        y: Enum.map(x, fn _ -> i + 1 end),
+        mode: "lines",
+        name: dash,
+        line: %{dash: dash, width: 3}
+      )
+    )
+  end)
+
+fig
+|> Figure.update_layout(
+  title: "Line Dash Options",
+  xaxis: %{range: [0.8, 5.2]},
+  yaxis: %{range: [0, 8]}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Connect Gaps Between Data
+
+Use `nil` in the y (or x) list to represent missing values. By default,
+Plotly leaves a gap in the line where nil values appear. Set
+`connectgaps: true` to bridge across missing values instead.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [10, 20, nil, 15, 10, 5, 15, nil, 20, 10, 10, 15, 25, 20, 10],
+    mode: "lines+markers",
+    connectgaps: false,
+    name: "Gaps (connectgaps: false)"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [5, 15, nil, 10, 5, 0, 10, nil, 15, 5, 5, 10, 20, 15, 5],
+    mode: "lines+markers",
+    connectgaps: true,
+    name: "Connected (connectgaps: true)"
+  )
+)
+|> Figure.update_layout(title: "Connect Gaps Between Data")
+|> Plotly.show()
+```
+
+## Basic Charts > Labelling Lines with Annotations
+
+Instead of a legend, place text annotations at the end of each line using
+`layout.annotations`. Set `xref: "paper"` with `x: 1` to anchor to the
+right edge, and `yref: "y"` to match the line's y value. Set
+`showarrow: false` and use `xanchor: "left"` to avoid overlapping the line.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+years = Enum.to_list(2001..2013)
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: [74, 82, 80, 74, 73, 72, 74, 70, 70, 66, 66, 69, 67],
+    mode: "lines",
+    name: "Rest of world",
+    showlegend: false
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: [45, 42, 45, 45, 44, 42, 45, 40, 40, 37, 37, 38, 38],
+    mode: "lines",
+    name: "China",
+    showlegend: false
+  )
+)
+|> Figure.update_layout(
+  title: "Labelling Lines with Annotations",
+  showlegend: false,
+  annotations: [
+    %{
+      xref: "paper",
+      x: 1.0,
+      y: 67,
+      xanchor: "left",
+      yanchor: "middle",
+      text: "Rest of world",
+      font: %{size: 14},
+      showarrow: false
+    },
+    %{
+      xref: "paper",
+      x: 1.0,
+      y: 38,
+      xanchor: "left",
+      yanchor: "middle",
+      text: "China",
+      font: %{size: 14},
+      showarrow: false
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Bar Chart
+
+Create a bar chart with `Bar.new(x:, y:)`. The `x` list contains category
+labels; `y` contains the bar heights.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["giraffes", "orangutans", "monkeys"],
+    y: [20, 14, 23]
+  )
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Grouped Bar Chart
+
+Add multiple `Bar` traces with the same x categories and set
+`layout.barmode: "group"` to display them side by side. Use `name:` on
+each trace for legend labels.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [20, 14, 23], name: "SF Zoo"))
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [12, 18, 29], name: "LA Zoo"))
+|> Figure.update_layout(barmode: "group")
+|> Plotly.show()
+```
+
+## Basic Charts > Stacked Bar Chart
+
+Set `layout.barmode: "stack"` to stack multiple Bar traces on top of each
+other at each x category.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [20, 14, 23], name: "SF Zoo"))
+|> Figure.add_trace(Bar.new(x: ["giraffes", "orangutans", "monkeys"], y: [12, 18, 29], name: "LA Zoo"))
+|> Figure.update_layout(barmode: "stack")
+|> Plotly.show()
+```
+
+## Basic Charts > Bar Chart with Hover Text
+
+Pass a `text` list to a Bar trace to supply custom hover text per bar.
+Use `xaxis.tickangle` to rotate x-axis tick labels (negative = clockwise).
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Product A", "Product B", "Product C", "Product D"],
+    y: [20, 14, 23, 18],
+    text: ["20 units", "14 units", "23 units", "18 units"],
+    marker: %{color: "rgb(158, 202, 225)", opacity: 0.6,
+              line: %{color: "rgb(8, 48, 107)", width: 1.5}}
+  )
+)
+|> Figure.update_layout(
+  title: "Bar Chart with Custom Hover Text",
+  xaxis: %{tickangle: -45}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Bar Chart with Direct Labels
+
+Set `textposition: "auto"` to display text labels directly on bars (inside
+if the bar is tall enough, outside otherwise). Plotly automatically picks
+the best placement.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["Product A", "Product B", "Product C", "Product D"]
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: x,
+    y: [20, 14, 23, 18],
+    text: [20, 14, 23, 18],
+    textposition: "auto",
+    name: "Primary",
+    marker: %{color: "rgb(49, 130, 189)", opacity: 0.7}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: x,
+    y: [19, 14, 22, 14],
+    text: [19, 14, 22, 14],
+    textposition: "auto",
+    name: "Secondary",
+    marker: %{color: "rgba(204, 204, 204, 1)", opacity: 0.5}
+  )
+)
+|> Figure.update_layout(title: "Bar Chart with Direct Labels")
+|> Plotly.show()
+```
+
+## Basic Charts > Grouped Bar Chart with Direct Labels
+
+Combine `barmode: "group"` with `text:` and `textposition: "auto"` to add
+direct labels to a grouped bar chart.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    name: "15-44",
+    x: ["China", "France", "Germany", "USA"],
+    y: [26000, 18000, 23000, 25000],
+    text: [26000, 18000, 23000, 25000],
+    textposition: "auto",
+    marker: %{color: "rgba(55, 128, 191, 0.7)", line: %{color: "rgba(55, 128, 191, 1.0)", width: 2}}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    name: "45-65",
+    x: ["China", "France", "Germany", "USA"],
+    y: [22000, 21000, 21000, 19000],
+    text: [22000, 21000, 21000, 19000],
+    textposition: "auto",
+    marker: %{color: "rgba(219, 64, 82, 0.7)", line: %{color: "rgba(219, 64, 82, 1.0)", width: 2}}
+  )
+)
+|> Figure.update_layout(title: "Grouped Bar Chart with Labels", barmode: "group")
+|> Plotly.show()
+```
+
+## Basic Charts > Bar Chart with Rotated Labels
+
+Use `xaxis.tickangle` to rotate tick labels. Negative values rotate
+clockwise (e.g. `-45` tilts labels 45° to the right). This prevents
+overlapping when x categories are long strings.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+months = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: months, y: [20, 14, 25, 16, 18, 22, 19, 15, 12, 16, 14, 17], name: "Primary Product", marker: %{color: "rgba(55, 128, 191, 0.7)"}))
+|> Figure.add_trace(Bar.new(x: months, y: [19, 14, 22, 14, 16, 19, 17, 14, 10, 12, 12, 16], name: "Secondary Product", marker: %{color: "rgba(219, 64, 82, 0.7)"}))
+|> Figure.update_layout(
+  title: "Bar Chart with Rotated X Labels",
+  xaxis: %{tickangle: -45},
+  barmode: "group"
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Customizing Individual Bar Colors
+
+Pass a list of colors to `marker.color` to assign a different color to
+each bar individually.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Feature A", "Feature B", "Feature C", "Feature D", "Feature E"],
+    y: [20, 14, 23, 25, 22],
+    marker: %{
+      color: [
+        "rgba(204, 204, 204, 1)",
+        "rgba(222, 45, 38, 0.8)",
+        "rgba(204, 204, 204, 1)",
+        "rgba(204, 204, 204, 1)",
+        "rgba(204, 204, 204, 1)"
+      ]
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Least Used Feature",
+  xaxis: %{title: "Feature"},
+  yaxis: %{title: "Usage"}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Customizing Individual Bar Widths
+
+Pass a list to `width:` to set different widths for each bar. Values are
+in the same units as the x axis. This is useful for variable-width bar
+charts (also called Marimekko or Mekko charts).
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: [1, 2, 3, 5.5, 10],
+    y: [10, 8, 6, 4, 2],
+    width: [0.8, 0.8, 0.8, 3.5, 4],
+    marker: %{color: "rgba(100, 200, 102, 0.7)", line: %{color: "rgba(100, 200, 102, 1.0)", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "Customized Bar Widths",
+  bargap: 0.05
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Customizing Individual Bar Base
+
+`base:` sets the starting point (base) of each bar. By default bars start
+at 0. Setting `base` to a list makes each bar start at a different y value,
+creating floating or waterfall-like bars.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["2016", "2017", "2018", "2019", "2020"],
+    y: [500, 600, 700, 1000, 900],
+    base: [-500, -600, -700, -1000, -900],
+    marker: %{color: "red"},
+    name: "Expenses"
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: ["2016", "2017", "2018", "2019", "2020"],
+    y: [300, 400, 500, 700, 600],
+    base: 0,
+    marker: %{color: "blue"},
+    name: "Revenue"
+  )
+)
+|> Figure.update_layout(title: "Bar Chart with Custom Base")
+|> Plotly.show()
+```
+
+## Basic Charts > Rounded Corners on Bars
+
+Set `layout.barcornerradius` to apply rounded corners to all bars in the
+figure. The value is in pixels. Introduced in plotly.js v2.25.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Apples", "Bananas", "Cherries", "Dates"],
+    y: [5, 4, 7, 3],
+    name: "Fruits",
+    marker: %{color: ["#FF6B6B", "#FFD93D", "#C084FC", "#6BCB77"]}
+  )
+)
+|> Figure.update_layout(
+  title: "Rounded Corners on Bars",
+  barcornerradius: 15
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Colored and Styled Bar Chart
+
+`layout.bargap` sets the gap between bar groups (0–1). `layout.bargroupgap`
+sets the gap between bars within a group (0–1). Use these to control
+whitespace around bars.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    y: [28, 26, 30, 25, 22, 20, 17, 13, 10, 8],
+    name: "Primary",
+    marker: %{color: "rgba(255, 102, 0, 0.7)", line: %{color: "rgba(255, 102, 0, 1.0)", width: 1}}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    y: [50, 45, 55, 42, 36, 28, 20, 12, 8, 4],
+    name: "Comparison",
+    marker: %{color: "rgba(58, 71, 80, 0.7)", line: %{color: "rgba(58, 71, 80, 1.0)", width: 1}}
+  )
+)
+|> Figure.update_layout(
+  title: "Colored and Styled Bar Chart",
+  bargap: 0.15,
+  bargroupgap: 0.1
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Waterfall Bar Chart
+
+A waterfall chart shows cumulative change step by step. Each `"relative"`
+bar floats from the running total; `"total"` bars drop back to zero to
+display a subtotal or final value.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    x: ["Product Revenue", "Services Revenue", "Total Revenue",
+        "Fixed Costs", "Variable Costs", "Total"],
+    y: [400, 260, 660, -370, -75, 215],
+    measure: ["relative", "relative", "total",
+              "relative", "relative", "total"],
+    increasing: %{marker: %{color: "#26a65b"}},
+    decreasing: %{marker: %{color: "red"}},
+    totals: %{marker: %{color: "#4C8BE2"}},
+    connector: %{line: %{color: "rgb(63, 63, 63)"}}
+  )
+)
+|> Figure.update_layout(
+  title: "Waterfall Bar Chart",
+  xaxis: %{tickangle: -30}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Bar Chart with Relative Barmode
+
+`barmode: "relative"` stacks positive values above the baseline and
+negative values below it. This is useful for showing both gains and
+losses in the same chart.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: [10, 15, 12, 18, 14, 20], name: "Inflow"))
+|> Figure.add_trace(Bar.new(x: x, y: [-5, -8, -6, -10, -7, -12], name: "Outflow"))
+|> Figure.add_trace(Bar.new(x: x, y: [3, -2, 5, -3, 4, -1], name: "Adjustments"))
+|> Figure.update_layout(
+  title: "Bar Chart with Relative Barmode",
+  barmode: "relative",
+  yaxis: %{title: "Value"}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Pie Chart
+
+Create a pie chart with `Pie.new(labels:, values:)`. Plotly automatically
+calculates the percentage for each slice.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Residential", "Non-Residential", "Utility"],
+    values: [19, 26, 55]
+  )
+)
+|> Figure.update_layout(
+  title: "Basic Pie Chart",
+  height: 400,
+  width: 500
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Pie Chart Subplots
+
+Place multiple Pie charts side-by-side using `domain:` on each trace to
+define its position on the figure (0–1 in x and y). Use `layout.grid` to
+create a grid of subplots.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Residential", "Non-Residential", "Utility"],
+    values: [19, 26, 55],
+    name: "GHG Emissions",
+    hoverinfo: "label+percent+name",
+    domain: %{row: 0, column: 0}
+  )
+)
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["US", "China", "European Union", "Russian Federation", "Brazil", "India", "Rest of World"],
+    values: [16, 15, 12, 6, 5, 4, 42],
+    name: "CO2 Emissions",
+    hoverinfo: "label+percent+name",
+    domain: %{row: 0, column: 1}
+  )
+)
+|> Figure.update_layout(
+  title: "Global Emissions 1990-2011",
+  height: 400,
+  showlegend: true,
+  grid: %{rows: 1, columns: 2}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Donut Chart
+
+Set `hole: 0.4` (or any 0–1 value) to cut a hole in the centre of the
+pie, creating a donut chart. Use a paper-referenced annotation to add text
+in the centre.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Residential", "Non-Residential", "Utility"],
+    values: [19, 26, 55],
+    hole: 0.4,
+    name: "GHG Emissions"
+  )
+)
+|> Figure.update_layout(
+  title: "Donut Chart",
+  height: 450,
+  width: 500,
+  annotations: [
+    %{
+      text: "GHG",
+      x: 0.5,
+      y: 0.5,
+      font: %{size: 20},
+      showarrow: false
+    }
+  ]
+)
+|> Plotly.show()
+```
+
+Side-by-side donut charts with `domain`:
+
+```elixir
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    values: [16, 15, 12, 6, 5, 4, 42],
+    labels: ["US", "China", "EU", "Russia", "Brazil", "India", "Rest"],
+    domain: %{x: [0, 0.45]},
+    name: "CO2",
+    hoverinfo: "label+percent+name",
+    hole: 0.4
+  )
+)
+|> Figure.add_trace(
+  Pie.new(
+    values: [27, 11, 25, 8, 1, 3, 25],
+    labels: ["US", "China", "EU", "Russia", "Brazil", "India", "Rest"],
+    domain: %{x: [0.55, 1]},
+    name: "GHG",
+    hoverinfo: "label+percent+name",
+    hole: 0.4
+  )
+)
+|> Figure.update_layout(
+  title: "CO2 vs GHG Emissions",
+  height: 400,
+  annotations: [
+    %{text: "CO2", x: 0.18, y: 0.5, showarrow: false, font: %{size: 16}},
+    %{text: "GHG", x: 0.82, y: 0.5, showarrow: false, font: %{size: 16}}
+  ]
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Automatically Adjust Margins
+
+Set `automargin: true` on a Pie trace to let Plotly automatically expand
+the figure margins so that outside labels are never clipped.
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+Figure.new()
+|> Figure.add_trace(
+  Pie.new(
+    labels: ["Labrador Retriever", "German Shepherd", "Golden Retriever",
+             "French Bulldog", "Bulldog", "Poodle", "Beagle"],
+    values: [12, 10, 9, 8, 5, 5, 4],
+    textinfo: "label+percent",
+    textposition: "outside",
+    automargin: true
+  )
+)
+|> Figure.update_layout(
+  title: "Dog Popularity — Auto Margin",
+  height: 500,
+  width: 500,
+  margin: %{t: 0, b: 0, l: 0, r: 0},
+  showlegend: false
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Control Text Orientation Inside Pie Chart Sectors
+
+`insidetextorientation` controls the rotation of text inside pie sectors:
+
+* `"auto"` (default) — Plotly picks the orientation
+* `"horizontal"` — always horizontal
+* `"radial"` — radiates outward from the centre
+* `"tangential"` — perpendicular to the radius
+
+```elixir
+alias Plotly.{Figure, Pie}
+
+for orientation <- ["auto", "horizontal", "radial", "tangential"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Pie.new(
+      labels: ["Residential", "Non-Residential", "Utility"],
+      values: [19, 26, 55],
+      textinfo: "label+percent",
+      insidetextorientation: orientation
+    )
+  )
+  |> Figure.update_layout(
+    title: "insidetextorientation: \"#{orientation}\"",
+    height: 400,
+    width: 500
+  )
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```
+
+## Basic Charts > Marker Size on Bubble Charts
+
+Bubble charts use `mode: "markers"` with `marker.size` as a list to scale each point individually.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 11, 12, 13],
+    mode: "markers",
+    marker: %{size: [40, 60, 80, 100]}
+  )
+)
+|> Figure.update_layout(title: "Marker Size on Bubble Charts")
+|> Plotly.show()
+```
+
+## Basic Charts > Marker Size and Color on Bubble Charts
+
+Combine `marker.size` and `marker.color` as lists with a `colorscale` to encode two dimensions.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 11, 12, 13],
+    mode: "markers",
+    marker: %{
+      color: [120, 125, 130, 135],
+      size: [40, 60, 80, 100],
+      colorscale: "Viridis",
+      showscale: true
+    }
+  )
+)
+|> Figure.update_layout(title: "Marker Size and Color on Bubble Charts")
+|> Plotly.show()
+```
+
+## Basic Charts > Hover Text on Bubble Charts
+
+Use `text:` as a list of strings and `hoverinfo: "text"` to show only custom labels on hover.
+HTML `<br>` works inside hover strings.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4],
+    y: [10, 11, 12, 13],
+    mode: "markers",
+    text: [
+      "A<br>size: 40",
+      "B<br>size: 60",
+      "C<br>size: 80",
+      "D<br>size: 100"
+    ],
+    hoverinfo: "text",
+    marker: %{size: [40, 60, 80, 100]}
+  )
+)
+|> Figure.update_layout(title: "Hover Text on Bubble Charts")
+|> Plotly.show()
+```
+
+## Basic Charts > Bubble Size Scaling on Charts
+
+`marker.sizemode` controls how `marker.size` values are interpreted:
+
+* `"diameter"` (default): `size` is the diameter in pixels
+* `"area"`: `size` is proportional to area — more perceptually accurate for data comparison
+
+`marker.sizeref` scales all sizes. Recommended formula: `sizeref = 2 * max(size) / max_px^2`
+where `max_px` is the desired pixel size of the largest bubble.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+sizes = [10, 20, 30, 40, 50]
+desired_max_px = 50
+sizeref = 2.0 * Enum.max(sizes) / desired_max_px ** 2
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 2, 3, 4, 5],
+    mode: "markers",
+    name: "sizemode: area",
+    marker: %{
+      size: sizes,
+      sizemode: "area",
+      sizeref: sizeref,
+      sizemin: 4
+    }
+  )
+)
+|> Figure.update_layout(title: "Bubble Size Scaling (sizemode: area)")
+|> Plotly.show()
+```
+
+## Basic Charts > Marker Size, Color, and Symbol as an Array
+
+`marker.symbol` can be a list to assign a different symbol to each point.
+Common symbols: `"circle"`, `"square"`, `"diamond"`, `"cross"`, `"x"`, `"triangle-up"`, `"star"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3, 4, 5],
+    y: [1, 4, 9, 16, 25],
+    mode: "markers",
+    marker: %{
+      size: [20, 30, 40, 50, 60],
+      color: ["blue", "red", "green", "orange", "purple"],
+      symbol: ["circle", "square", "diamond", "cross", "x"]
+    }
+  )
+)
+|> Figure.update_layout(title: "Marker Size, Color, and Symbol as an Array")
+|> Plotly.show()
+```
+
+## Basic Charts > Categorical Dot Plot
+
+A categorical dot plot uses `Scatter` with categorical y-axis values.
+Each category appears as a row; multiple traces encode different groups with different colors.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+countries = ["Japan", "China", "Russia", "Brazil", "USA"]
+female = [19, 24, 30, 37, 46]
+male = [25, 28, 33, 39, 48]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: female,
+    y: countries,
+    mode: "markers",
+    name: "Female",
+    marker: %{color: "pink", size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: male,
+    y: countries,
+    mode: "markers",
+    name: "Male",
+    marker: %{color: "blue", size: 12}
+  )
+)
+|> Figure.update_layout(
+  title: "Categorical Dot Plot",
+  xaxis: %{title: "Life Expectancy at Birth (years)"}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Overlaid Area Chart
+
+`fill: "tozeroy"` fills from the trace down to y=0. Multiple traces with `fill: "tozeroy"` overlay.
+`mode: "none"` hides the line and shows only the filled area.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 2"
+  )
+)
+|> Figure.update_layout(title: "Basic Overlaid Area Chart")
+|> Plotly.show()
+```
+
+## Basic Charts > Overlaid Area Chart Without Boundary Lines
+
+Setting `line: %{color: "transparent"}` removes the boundary line while keeping the fill.
+This produces cleaner overlapping areas.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 1",
+    line: %{color: "transparent"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    fill: "tozeroy",
+    mode: "none",
+    name: "Trace 2",
+    line: %{color: "transparent"}
+  )
+)
+|> Figure.update_layout(title: "Overlaid Area Chart Without Boundary Lines")
+|> Plotly.show()
+```
+
+## Basic Charts > Stacked Area Chart
+
+`fill: "tonexty"` fills between a trace and the trace below it in the data array.
+The first trace uses `fill: "tozeroy"` to fill from y=0; subsequent traces use `fill: "tonexty"`.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    mode: "lines",
+    fill: "tozeroy",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    mode: "lines",
+    fill: "tonexty",
+    name: "Trace 2"
+  )
+)
+|> Figure.update_layout(title: "Stacked Area Chart")
+|> Plotly.show()
+```
+
+## Basic Charts > Normalized Stacked Area Chart
+
+`stackgroup` groups traces into a stack. `groupnorm: "percent"` normalises all stacks to 100%
+so each x position sums to 100. Combine with `yaxis.ticksuffix: "%"` for labelling.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    mode: "lines",
+    stackgroup: "one",
+    groupnorm: "percent",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    mode: "lines",
+    stackgroup: "one",
+    name: "Trace 2"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [1, 3, 2, 4, 2],
+    mode: "lines",
+    stackgroup: "one",
+    name: "Trace 3"
+  )
+)
+|> Figure.update_layout(
+  title: "Normalized Stacked Area Chart",
+  yaxis: %{ticksuffix: "%"}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Select Hover Points
+
+`hoveron: "points+fills"` makes both the marker points and the filled region trigger hover.
+Without `"fills"`, only the exact marker points trigger hover.
+`hoverinfo: "x+y"` controls what data is shown in the tooltip.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+x = [1, 2, 3, 4, 5]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [0, 2, 3, 5, 3],
+    mode: "lines",
+    fill: "tozeroy",
+    hoveron: "points+fills",
+    hoverinfo: "x+y",
+    name: "Trace 1"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [3, 5, 1, 7, 3],
+    mode: "lines",
+    fill: "tonexty",
+    hoveron: "points+fills",
+    hoverinfo: "x+y",
+    name: "Trace 2"
+  )
+)
+|> Figure.update_layout(title: "Select Hover Points on Filled Area")
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Horizontal Bar Chart
+
+`orientation: "h"` flips the bar chart. With horizontal bars, `x` holds the values and `y` holds the categories.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    y: ["giraffes", "orangutans", "monkeys"],
+    x: [20, 14, 23],
+    orientation: "h"
+  )
+)
+|> Figure.update_layout(title: "Basic Horizontal Bar Chart")
+|> Plotly.show()
+```
+
+## Basic Charts > Colored Bar Chart
+
+Combine `orientation: "h"` with `marker.color` (rgba string) and `marker.line` for a styled grouped horizontal bar chart.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    y: ["giraffes", "orangutans", "monkeys"],
+    x: [20, 14, 23],
+    name: "SF Zoo",
+    orientation: "h",
+    marker: %{
+      color: "rgba(55, 128, 191, 0.6)",
+      line: %{color: "rgba(55, 128, 191, 1.0)", width: 3}
+    }
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    y: ["giraffes", "orangutans", "monkeys"],
+    x: [12, 18, 29],
+    name: "LA Zoo",
+    orientation: "h",
+    marker: %{
+      color: "rgba(255, 153, 51, 0.6)",
+      line: %{color: "rgba(255, 153, 51, 1.0)", width: 3}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Colored Horizontal Bar Chart",
+  barmode: "group"
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Bar Chart with Line Plot
+
+Combine `Bar` and `Scatter` traces on the same figure. Use a secondary y-axis (`yaxis: "y2"`) when the scales differ.
+Set `yaxis2: %{overlaying: "y", side: "right"}` in layout to overlay the second axis.
+
+```elixir
+alias Plotly.{Figure, Bar, Scatter}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: x,
+    y: [20, 14, 23, 18, 30, 25],
+    name: "Bar Data"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: x,
+    y: [19, 16, 21, 20, 28, 24],
+    mode: "lines+markers",
+    name: "Line Data",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Bar Chart with Line Plot",
+  yaxis: %{title: "Bar Values"},
+  yaxis2: %{overlaying: "y", side: "right", title: "Line Values"}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > A Contour and Scatter Plot
+
+Multiple trace types can be combined in a single figure by adding them to the same `Figure`.
+Here a `Contour` heatmap background is overlaid with `Scatter` points.
+
+```elixir
+alias Plotly.{Figure, Contour, Scatter}
+
+# A 20x20 z-matrix: sin/cos pattern for a visually interesting contour
+z =
+  for i <- 0..19 do
+    for j <- 0..19 do
+      :math.sin(i * 0.3) * :math.cos(j * 0.3)
+    end
+  end
+
+Figure.new()
+|> Figure.add_trace(
+  Contour.new(
+    z: z,
+    colorscale: "Jet",
+    showscale: false,
+    name: "Contour"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [2, 5, 8, 12, 15, 18],
+    y: [5, 10, 5, 14, 10, 17],
+    mode: "markers",
+    name: "Points",
+    marker: %{color: "white", size: 10, line: %{color: "black", width: 2}}
+  )
+)
+|> Figure.update_layout(title: "Contour and Scatter Plot")
+|> Plotly.show()
+```
+
+## Basic Charts > Line Chart and a Bar Chart
+
+`Bar` and `Scatter` (line mode) share the same x-axis naturally. No special config needed when the y ranges are similar.
+
+```elixir
+alias Plotly.{Figure, Bar, Scatter}
+
+x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+bar_y = [20, 14, 25, 16, 18, 22, 19, 15, 12, 16, 14, 17]
+line_y = [19, 15, 22, 20, 18, 23, 21, 18, 14, 18, 16, 20]
+
+Figure.new()
+|> Figure.add_trace(Bar.new(x: x, y: bar_y, name: "Bar Data"))
+|> Figure.add_trace(Scatter.new(x: x, y: line_y, mode: "lines+markers", name: "Line Data"))
+|> Figure.update_layout(title: "Line Chart and a Bar Chart")
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Sunburst Chart
+
+`Sunburst.new/1` takes `labels:`, `parents:`, and optionally `values:`.
+Each label's parent is set by the matching entry in `parents`. The root node has `parent: ""`.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"],
+    parents: ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"],
+    values: [10, 14, 12, 10, 2, 6, 6, 4, 4]
+  )
+)
+|> Figure.update_layout(title: "Basic Sunburst Chart")
+|> Plotly.show()
+```
+
+## Basic Charts > Branchvalues
+
+`branchvalues` controls how a parent node's `values` entry is interpreted:
+
+* `"remainder"` (default): the parent's `values` entry is the node's *own* contribution;
+  its sector size = its value + sum of children's values.
+* `"total"`: the parent's `values` entry is the *total* including all descendants;
+  the displayed sector equals exactly that value.
+
+Use `"total"` when your data already encodes the full subtree size.
+Use `"remainder"` when your data encodes only the leaf/own contribution.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+labels = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values = [65, 14, 12, 10, 2, 6, 6, 4, 4]
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "total",
+    domain: %{column: 0}
+  )
+)
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "remainder",
+    domain: %{column: 1}
+  )
+)
+|> Figure.update_layout(
+  title: "branchvalues: \"total\" vs \"remainder\"",
+  grid: %{columns: 2, rows: 1},
+  annotations: [
+    %{text: "total", x: 0.2, y: -0.05, showarrow: false, font: %{size: 14}},
+    %{text: "remainder", x: 0.8, y: -0.05, showarrow: false, font: %{size: 14}}
+  ]
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Sunburst with Repeated Labels
+
+If the same label string appears under multiple parents (e.g. "Petroleum" under both "North America" and "Europe"),
+Plotly cannot distinguish them by label alone. Use `ids:` to assign a unique ID per node.
+`labels:` can then repeat freely — they are display names only.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    ids: [
+      "North America", "Europe", "Australia",
+      "North America - Petroleum", "North America - Coal",
+      "Europe - Petroleum", "Europe - Coal",
+      "Australia - Petroleum", "Australia - Coal"
+    ],
+    labels: [
+      "North America", "Europe", "Australia",
+      "Petroleum", "Coal",
+      "Petroleum", "Coal",
+      "Petroleum", "Coal"
+    ],
+    parents: [
+      "", "", "",
+      "North America", "North America",
+      "Europe", "Europe",
+      "Australia", "Australia"
+    ],
+    values: [0, 0, 0, 50, 25, 40, 30, 20, 10],
+    branchvalues: "remainder"
+  )
+)
+|> Figure.update_layout(title: "Sunburst with Repeated Labels")
+|> Plotly.show()
+```
+
+## Basic Charts > Large Number of Slices
+
+`maxdepth` limits how many levels are rendered at once. The full hierarchy is still navigable —
+clicking a node drills into it and displays its children up to `maxdepth` levels deep.
+Set `maxdepth: -1` to show all levels.
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+labels = [
+  "Root",
+  "A", "B", "C",
+  "A1", "A2", "A3",
+  "B1", "B2",
+  "C1", "C2", "C3",
+  "A1a", "A1b", "A2a"
+]
+
+parents = [
+  "",
+  "Root", "Root", "Root",
+  "A", "A", "A",
+  "B", "B",
+  "C", "C", "C",
+  "A1", "A1", "A2"
+]
+
+values = [0, 0, 0, 0, 4, 3, 5, 6, 4, 2, 7, 3, 2, 2, 3]
+
+Figure.new()
+|> Figure.add_trace(
+  Sunburst.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "remainder",
+    maxdepth: 2
+  )
+)
+|> Figure.update_layout(title: "Sunburst with maxdepth: 2 (click a node to drill down)")
+|> Plotly.show()
+```
+
+## Basic Charts > Control Text Orientation Inside Sunburst Chart Sectors
+
+`insidetextorientation` controls the rotation of labels inside sectors:
+
+* `"auto"` (default) — Plotly picks the best fit
+* `"horizontal"` — always horizontal
+* `"radial"` — radiates outward from the centre
+* `"tangential"` — perpendicular to the radius
+
+```elixir
+alias Plotly.{Figure, Sunburst}
+
+labels = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values = [10, 14, 12, 10, 2, 6, 6, 4, 4]
+
+for orientation <- ["auto", "horizontal", "radial", "tangential"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Sunburst.new(
+      labels: labels,
+      parents: parents,
+      values: values,
+      insidetextorientation: orientation
+    )
+  )
+  |> Figure.update_layout(
+    title: "insidetextorientation: \"#{orientation}\"",
+    height: 400,
+    width: 500
+  )
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```
+
+## Basic Charts > Basic Sankey Diagram
+
+`Sankey.new/1` takes `node:` and `link:` as plain maps.
+`node.label` — list of node names. Nodes are referenced by zero-based index in `link`.
+`link.source` / `link.target` — index into the node list. `link.value` — flow magnitude.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"]
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(title: "Basic Sankey Diagram")
+|> Plotly.show()
+```
+
+## Reverse direction and preserve input order
+
+Plotly.js v4 adds `direction: "reversed"` and `node.sort` / `link.sort`.
+Set both sorts to `"input"` to preserve the supplied ordering rather than
+letting the automatic arrangement sort the flows.
+
+```elixir
+Figure.new()
+|> Figure.add_trace(Sankey.new(
+  direction: "reversed",
+  node: %{label: ["Coal", "Natural Gas", "Electricity", "Losses"], sort: "input"},
+  link: %{
+    source: [0, 0, 1, 1], target: [2, 3, 2, 3],
+    value: [25, 10, 20, 15], sort: "input"
+  }
+))
+|> Figure.update_layout(title: "Reversed Sankey with input ordering")
+|> Plotly.show()
+```
+
+## Basic Charts > Create Sankey Canvas
+
+Before styling individual elements, set the overall canvas size and font via `layout`.
+`layout.font` sets the default text size for all node labels.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"]},
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Energy Flow",
+  width: 800,
+  height: 500,
+  font: %{size: 12}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Add Nodes
+
+Style nodes via `node.color`, `node.pad` (spacing between nodes), `node.thickness`,
+and `node.line` (border around each node block).
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color: ["black", "blue", "brown", "gold", "gray"],
+      pad: 20,
+      thickness: 30,
+      line: %{color: "black", width: 0.5}
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(title: "Sankey — Styled Nodes", width: 800, height: 500)
+|> Plotly.show()
+```
+
+## Basic Charts > Add Links
+
+Style links via `link.color` (list of rgba strings) and `link.label` (list of hover labels).
+Use `rgba(r, g, b, a)` with low alpha (e.g. 0.4) for transparent flows.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color: ["black", "blue", "brown", "gold", "gray"],
+      pad: 20,
+      thickness: 30,
+      line: %{color: "black", width: 0.5}
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15],
+      color: [
+        "rgba(0,0,0,0.4)",
+        "rgba(0,0,255,0.4)",
+        "rgba(139,69,19,0.4)",
+        "rgba(0,0,0,0.2)",
+        "rgba(0,0,255,0.2)"
+      ],
+      label: [
+        "Coal → Electricity",
+        "Gas → Electricity",
+        "Oil → Electricity",
+        "Coal → Losses",
+        "Gas → Losses"
+      ]
+    }
+  )
+)
+|> Figure.update_layout(title: "Sankey — Styled Links", width: 800, height: 500)
+|> Plotly.show()
+```
+
+## Basic Charts > Style Sankey Diagram
+
+Combine all node and link styling into a fully styled diagram.
+`layout.paper_bgcolor` and `layout.plot_bgcolor` set the background.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    valueformat: ".0f",
+    valuesuffix: " TWh",
+    node: %{
+      label: ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color: ["black", "steelblue", "saddlebrown", "goldenrod", "dimgray"],
+      pad: 20,
+      thickness: 25,
+      line: %{color: "white", width: 1}
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15],
+      color: [
+        "rgba(0,0,0,0.35)",
+        "rgba(70,130,180,0.35)",
+        "rgba(139,69,19,0.35)",
+        "rgba(0,0,0,0.2)",
+        "rgba(70,130,180,0.2)"
+      ]
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Styled Sankey Diagram",
+  width: 800,
+  height: 500,
+  font: %{size: 12, color: "white"},
+  paper_bgcolor: "#1a1a2e",
+  plot_bgcolor: "#1a1a2e"
+)
+|> Plotly.show()
+```
+
+## Basic Charts > Define Node Position
+
+`node.x` and `node.y` set explicit positions (0–1 relative to canvas).
+`arrangement: "fixed"` is required to honour the specified positions; otherwise Plotly ignores x/y.
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+Figure.new()
+|> Figure.add_trace(
+  Sankey.new(
+    arrangement: "fixed",
+    node: %{
+      label:  ["Coal", "Natural Gas", "Oil", "Electricity", "Losses"],
+      color:  ["black", "blue", "brown", "gold", "gray"],
+      pad: 20,
+      thickness: 30,
+      x: [0.1, 0.1, 0.1, 0.7, 0.9],
+      y: [0.1, 0.4, 0.7, 0.4, 0.3]
+    },
+    link: %{
+      source: [0, 1, 2, 0, 1],
+      target: [3, 3, 3, 4, 4],
+      value:  [25, 20, 30, 10, 15]
+    }
+  )
+)
+|> Figure.update_layout(title: "Sankey with Fixed Node Positions", width: 800, height: 500)
+|> Plotly.show()
+```
+
+## Basic Charts > Node Alignment
+
+`arrangement` controls how nodes are positioned:
+
+* `"snap"` (default) — nodes snap to the closest column
+* `"perpendicular"` — nodes are constrained to vertical columns, draggable along column
+* `"freeform"` — nodes can be dragged freely anywhere
+* `"fixed"` — nodes stay at x/y positions; not draggable
+
+```elixir
+alias Plotly.{Figure, Sankey}
+
+for arrangement <- ["snap", "perpendicular", "freeform", "fixed"] do
+  Figure.new()
+  |> Figure.add_trace(
+    Sankey.new(
+      arrangement: arrangement,
+      node: %{
+        label: ["A", "B", "C", "D", "E"],
+        x: [0.1, 0.1, 0.1, 0.6, 0.9],
+        y: [0.1, 0.4, 0.7, 0.4, 0.5],
+        pad: 15
+      },
+      link: %{
+        source: [0, 1, 2, 0, 1],
+        target: [3, 3, 3, 4, 4],
+        value:  [8, 5, 6, 3, 4]
+      }
+    )
+  )
+  |> Figure.update_layout(title: "arrangement: \"#{arrangement}\"", width: 600, height: 400)
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```
+
+## Basic Charts > Basic Treemap
+
+`Treemap.new/1` shares the same `labels`/`parents`/`values` API as Sunburst.
+The root node has `parents: [""]`. Area of each rectangle is proportional to `values`.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"],
+    parents: ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"],
+    values: [10, 14, 12, 10, 2, 6, 6, 4, 4]
+  )
+)
+|> Figure.update_layout(title: "Basic Treemap")
+|> Plotly.show()
+```
+
+## Basic Charts > Set Different Attributes in Treemap
+
+`tiling.packing` controls the layout algorithm:
+
+* `"squarify"` (default) — tries to make rectangles close to square
+* `"binary"` — binary subdivision
+* `"dice"` — horizontal slices only
+* `"slice"` — vertical slices only
+
+`textinfo` controls what text appears inside rectangles:
+`"label"`, `"value"`, `"percent parent"`, `"percent root"` — combine with `"+"`.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+labels  = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values  = [10, 14, 12, 10, 2, 6, 6, 4, 4]
+
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    tiling: %{packing: "squarify"},
+    textinfo: "label+value+percent parent"
+  )
+)
+|> Figure.update_layout(title: "Treemap with Custom Tiling and Text")
+|> Plotly.show()
+```
+
+## Basic Charts > Set Color of Treemap Sectors
+
+`marker.colors` assigns a color to each node (one entry per label).
+Colors can be CSS strings or numeric values — use numeric values with `marker.colorscale` for a continuous palette.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+labels  = ["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"]
+parents = ["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"]
+values  = [10, 14, 12, 10, 2, 6, 6, 4, 4]
+
+# CSS color strings
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    marker: %{
+      colors: ["pink", "royalblue", "lightgreen", "purple", "gold",
+               "cyan", "salmon", "lime", "lavender"]
+    }
+  )
+)
+|> Figure.update_layout(title: "Treemap — Custom Sector Colors")
+|> Plotly.show()
+```
+
+```elixir
+# Numeric values + colorscale
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    marker: %{
+      colors: [0, 14, 12, 10, 2, 6, 6, 4, 4],
+      colorscale: "RdBu",
+      showscale: true
+    }
+  )
+)
+|> Figure.update_layout(title: "Treemap — Colorscale")
+|> Plotly.show()
+```
+
+## Basic Charts > Nested Layers in Treemap
+
+Deep hierarchies work the same way — just extend `labels`/`parents`/`values`.
+`branchvalues: "total"` means each non-leaf's `values` entry is the total including all descendants.
+`maxdepth` limits how many levels are shown at once (click to drill).
+`pathbar` shows a breadcrumb path bar above the chart.
+
+```elixir
+alias Plotly.{Figure, Treemap}
+
+labels = [
+  "World",
+  "North America", "Europe", "Asia",
+  "USA", "Canada", "UK", "Germany", "China", "Japan",
+  "California", "Texas"
+]
+
+parents = [
+  "",
+  "World", "World", "World",
+  "North America", "North America", "Europe", "Europe", "Asia", "Asia",
+  "USA", "USA"
+]
+
+values = [0, 0, 0, 0, 0, 15, 12, 11, 60, 20, 40, 30]
+
+Figure.new()
+|> Figure.add_trace(
+  Treemap.new(
+    labels: labels,
+    parents: parents,
+    values: values,
+    branchvalues: "remainder",
+    maxdepth: 3,
+    pathbar: %{visible: true}
+  )
+)
+|> Figure.update_layout(title: "Nested Layers in Treemap")
+|> Plotly.show()
+```
+
+## Basic Charts > Basic Table
+
+`Plotly.Table.new/1` takes `header:` and `cells:` as plain maps.
+`header.values` — list of column header strings.
+`cells.values` — **list of columns** (not rows): each element is a list of values for that column.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{values: ["Name", "Age", "City"]},
+    cells: %{
+      values: [
+        ["Alice", "Bob", "Charlie", "Diana"],
+        [25, 30, 35, 28],
+        ["New York", "Los Angeles", "Chicago", "Houston"]
+      ]
+    }
+  )
+)
+|> Figure.update_layout(title: "Basic Table")
+|> Plotly.show()
+```
+
+## Basic Charts > Styled Table
+
+Style `header` and `cells` independently using `fill`, `font`, `line`, and `align` sub-maps.
+`align` can be `"left"`, `"center"`, or `"right"`.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{
+      values: ["<b>Name</b>", "<b>Age</b>", "<b>City</b>"],
+      fill: %{color: "#4472C4"},
+      font: %{color: "white", size: 13},
+      line: %{color: "white", width: 1},
+      align: "center"
+    },
+    cells: %{
+      values: [
+        ["Alice", "Bob", "Charlie", "Diana"],
+        [25, 30, 35, 28],
+        ["New York", "Los Angeles", "Chicago", "Houston"]
+      ],
+      fill: %{color: "#D9E2F3"},
+      font: %{color: "black", size: 12},
+      line: %{color: "white", width: 1},
+      align: "left"
+    }
+  )
+)
+|> Figure.update_layout(title: "Styled Table")
+|> Plotly.show()
+```
+
+## Basic Charts > Table From a CSV
+
+In Elixir, CSV data can be read with `File.stream!/1` + `String.split/2`.
+The `Table` trace expects `cells.values` as a list of columns.
+Here we use inline data and show how to transpose rows→columns with `Enum.zip_with`.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+# Simulated CSV rows (header + data)
+headers = ["Country", "Population (M)", "GDP (T$)", "Life Expectancy"]
+
+rows = [
+  ["United States", 331, 23.0, 78.5],
+  ["China",         1440, 17.7, 77.3],
+  ["Germany",       83,   4.2, 81.2],
+  ["Brazil",        213,  1.6, 75.9],
+  ["Japan",         126,  5.1, 84.3]
+]
+
+# Transpose: list of rows → list of columns
+columns = Enum.zip_with(rows, &Function.identity/1)
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{values: headers, fill: %{color: "lightgrey"}, align: "center"},
+    cells: %{values: columns, align: "left"}
+  )
+)
+|> Figure.update_layout(title: "Table from CSV-like Data")
+|> Plotly.show()
+```
+
+## Basic Charts > Changing Size of Rows and Columns
+
+`columnwidth` sets the relative width of each column (a list of numbers — ratios, not pixels).
+`cells.height` and `header.height` set the row height in pixels.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    columnwidth: [3, 1, 2],
+    header: %{
+      values: ["Description", "Count", "Category"],
+      height: 40,
+      fill: %{color: "#3F51B5"},
+      font: %{color: "white", size: 13},
+      align: "center"
+    },
+    cells: %{
+      values: [
+        ["Long description text here", "Short", "Another long item"],
+        [42, 7, 128],
+        ["Alpha", "Beta", "Gamma"]
+      ],
+      height: 30,
+      align: "left"
+    }
+  )
+)
+|> Figure.update_layout(title: "Changing Size of Rows and Columns")
+|> Plotly.show()
+```
+
+## Basic Charts > Alternating Row Colors
+
+`cells.fill.color` accepts a **2D list** — one list of colors per column, each with N colors for N rows.
+To alternate row colors across all columns, build a single `row_colors` list and repeat it once per column.
+
+```elixir
+alias Plotly.{Figure, Table}
+
+headers = ["Rank", "Country", "Gold", "Silver", "Bronze"]
+
+data = [
+  [1, "USA",    39, 41, 33],
+  [2, "China",  38, 32, 18],
+  [3, "UK",     22, 21, 22],
+  [4, "Japan",  27, 14, 17],
+  [5, "Germany", 10, 11, 16]
+]
+
+columns = Enum.zip_with(data, &Function.identity/1)
+n_rows = length(data)
+n_cols = length(headers)
+
+# Alternate white and light blue by row index
+row_colors =
+  Enum.map(0..(n_rows - 1), fn i ->
+    if rem(i, 2) == 0, do: "white", else: "#EBF5FB"
+  end)
+
+# Repeat the row_colors list once per column
+fill_colors = List.duplicate(row_colors, n_cols)
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    header: %{
+      values: headers,
+      fill: %{color: "#2E4057"},
+      font: %{color: "white", size: 13},
+      align: "center"
+    },
+    cells: %{
+      values: columns,
+      fill: %{color: fill_colors},
+      align: ["center", "left", "center", "center", "center"]
+    }
+  )
+)
+|> Figure.update_layout(title: "Alternating Row Colors")
+|> Plotly.show()
+```
+
+## Basic Charts > Table Subplots
+
+Use `domain:` on a `Table` trace to restrict it to part of the canvas.
+Place a `Scatter` trace on the remaining area by restricting the axis domains in layout.
+
+```elixir
+alias Plotly.{Figure, Table, Scatter}
+
+years    = [2019, 2020, 2021, 2022, 2023]
+revenue  = [42, 38, 55, 61, 70]
+profit   = [8, 5, 12, 15, 18]
+
+Figure.new()
+|> Figure.add_trace(
+  Table.new(
+    domain: %{x: [0, 0.45], y: [0, 1]},
+    header: %{
+      values: ["Year", "Revenue ($M)", "Profit ($M)"],
+      fill: %{color: "#2196F3"},
+      font: %{color: "white"}
+    },
+    cells: %{
+      values: [years, revenue, profit],
+      fill: %{color: "#E3F2FD"}
+    }
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: revenue,
+    mode: "lines+markers",
+    name: "Revenue",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: years,
+    y: profit,
+    mode: "lines+markers",
+    name: "Profit",
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Table and Chart Subplot",
+  xaxis2: %{domain: [0.55, 1.0]},
+  yaxis2: %{domain: [0.0, 1.0], title: "Amount ($M)"}
+)
+|> Plotly.show()
+```
+
+## Basic Charts > WebGL with 100,000 Points
+
+`Scattergl` uses WebGL rendering instead of SVG. The API is identical to `Scatter`,
+but WebGL handles hundreds of thousands of points without degrading browser performance.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n = 100_000
+x = for _ <- 1..n, do: :rand.uniform()
+y = for _ <- 1..n, do: :rand.uniform()
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergl.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{size: 2, color: "steelblue", opacity: 0.5}
+  )
+)
+|> Figure.update_layout(title: "WebGL with 100,000 Points")
+|> Plotly.show()
+```
+
+## Basic Charts > WebGL with 1 Million Points
+
+Generating 1 million points takes a few seconds in Elixir. WebGL renders them
+fluidly in the browser; SVG would freeze the page.
+
+Note: Sending 1M floats over the Kino wire takes a moment — this is expected.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n = 1_000_000
+x = for _ <- 1..n, do: :rand.uniform()
+y = for _ <- 1..n, do: :rand.uniform()
+
+Figure.new()
+|> Figure.add_trace(
+  Scattergl.new(
+    x: x,
+    y: y,
+    mode: "markers",
+    marker: %{size: 1, color: "rgba(50, 100, 200, 0.3)"}
+  )
+)
+|> Figure.update_layout(title: "WebGL with 1 Million Points")
+|> Plotly.show()
+```
+
+## Basic Charts > WebGL with Many Traces
+
+WebGL also handles many separate traces efficiently.
+Here 10 traces of 1,000 points each — SVG would create 10,000 DOM elements;
+WebGL renders all in a single GPU pass.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n_traces = 10
+n_per_trace = 1_000
+
+fig =
+  Enum.reduce(1..n_traces, Figure.new(), fn i, fig ->
+    x = for _ <- 1..n_per_trace, do: :rand.uniform()
+    y = for _ <- 1..n_per_trace, do: :rand.uniform()
+
+    Figure.add_trace(fig, Scattergl.new(
+      x: x,
+      y: y,
+      mode: "markers",
+      name: "Trace #{i}",
+      marker: %{size: 3}
+    ))
+  end)
+
+fig
+|> Figure.update_layout(title: "WebGL with 10 Traces × 1,000 Points")
+|> Plotly.show()
+```
+
+## Basic Charts > Multiple WebGL Contexts
+
+Multiple Livebook cells can each render a separate WebGL figure.
+Browsers limit the number of simultaneous WebGL contexts (typically 8–16),
+so don't create hundreds of `Scattergl` figures on the same page.
+
+```elixir
+alias Plotly.{Figure, Scattergl}
+
+n = 50_000
+
+for label <- ["Dataset A", "Dataset B"] do
+  x = for _ <- 1..n, do: :rand.uniform()
+  y = for _ <- 1..n, do: :rand.uniform()
+
+  Figure.new()
+  |> Figure.add_trace(Scattergl.new(x: x, y: y, mode: "markers", marker: %{size: 2}))
+  |> Figure.update_layout(title: label)
+  |> Plotly.show()
+end
+|> Kino.Layout.grid(columns: 2)
+```

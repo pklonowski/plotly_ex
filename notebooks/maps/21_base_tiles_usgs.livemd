@@ -1,0 +1,47 @@
+# Base Tiles from the USGS
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`style: "white-bg"` provides a blank canvas. Add the USGS National Map as a
+raster layer via `layout.map.layers`. The tile URL uses `{z}/{y}/{x}` template
+placeholders that Plotly.js substitutes at render time.
+
+```elixir
+alias Plotly.{Figure, Scattermap}
+
+Figure.new()
+|> Figure.add_trace(
+  Scattermap.new(
+    lat: [39.7392, 40.7128, 34.0522],
+    lon: [-104.9903, -74.0060, -118.2437],
+    mode: "markers+text",
+    text: ["Denver", "New York", "Los Angeles"],
+    textposition: "top right",
+    marker: %{size: 10, color: "darkred"}
+  )
+)
+|> Figure.update_layout(
+  title: "Base Tiles from the USGS National Map",
+  map: %{
+    style: "white-bg",
+    center: %{lat: 39.5, lon: -98.35},
+    zoom: 3,
+    layers: [
+      %{
+        below: "traces",
+        sourcetype: "raster",
+        source: ["https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"],
+        opacity: 1.0
+      }
+    ]
+  }
+)
+|> Plotly.show()
+```

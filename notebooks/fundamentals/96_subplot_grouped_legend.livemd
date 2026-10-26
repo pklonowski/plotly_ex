@@ -1,0 +1,67 @@
+# Subplot Grouped Legend
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When using subplots, assign the same `legendgroup` across traces in different
+subplot axes. Clicking a legend group hides/shows all traces with that group
+across all subplots simultaneously.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [2, 4, 3],
+    name: "Series A",
+    mode: "lines",
+    legendgroup: "A",
+    legendgrouptitle: %{text: "Series A"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [4, 2, 5],
+    name: "Series B",
+    mode: "lines",
+    legendgroup: "B",
+    legendgrouptitle: %{text: "Series B"}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [20, 40, 30],
+    name: "Series A (subplot)",
+    mode: "lines",
+    legendgroup: "A",
+    showlegend: false,
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: [1, 2, 3], y: [40, 20, 50],
+    name: "Series B (subplot)",
+    mode: "lines",
+    legendgroup: "B",
+    showlegend: false,
+    xaxis: "x2",
+    yaxis: "y2"
+  )
+)
+|> Figure.update_layout(
+  title: "Subplot Grouped Legend",
+  xaxis: %{domain: [0, 0.45]},
+  xaxis2: %{domain: [0.55, 1]},
+  yaxis2: %{anchor: "x2"}
+)
+|> Plotly.show()
+```

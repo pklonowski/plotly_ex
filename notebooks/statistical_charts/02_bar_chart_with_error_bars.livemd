@@ -1,0 +1,36 @@
+# Bar Chart with Error Bars
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`error_y` works on `Bar` traces too. Multiple bar groups can each carry independent error bars.
+
+```elixir
+alias Plotly.{Figure, Bar}
+
+Figure.new()
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Trial 1", "Trial 2", "Trial 3"],
+    y: [3, 6, 4],
+    name: "Control",
+    error_y: %{type: "data", array: [1, 0.5, 1.5], visible: true}
+  )
+)
+|> Figure.add_trace(
+  Bar.new(
+    x: ["Trial 1", "Trial 2", "Trial 3"],
+    y: [4, 7, 3],
+    name: "Experiment",
+    error_y: %{type: "data", array: [0.5, 1.0, 0.8], visible: true}
+  )
+)
+|> Figure.update_layout(title: "Bar Chart with Error Bars", barmode: "group")
+|> Plotly.show()
+```

@@ -1,0 +1,74 @@
+# Horizontal Waterfall Chart
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`orientation: "h"` flips the waterfall chart horizontally. Roles are swapped:
+`y:` holds the category labels, `x:` holds the numeric values. `nil` y values for `"total"`
+bars still work the same way. `connector: %{mode: "between", line:}` draws connector lines
+between bar ends. `yaxis.autorange: "reversed"` lists categories top-to-bottom.
+
+```elixir
+alias Plotly.{Figure, Waterfall}
+
+Figure.new()
+|> Figure.add_trace(
+  Waterfall.new(
+    name: "2018",
+    orientation: "h",
+    measure: [
+      "relative",
+      "relative",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "relative",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "relative",
+      "total",
+      "relative",
+      "total"
+    ],
+    y: [
+      "Sales",
+      "Consulting",
+      "Maintenance",
+      "Other revenue",
+      "Net revenue",
+      "Purchases",
+      "Material expenses",
+      "Personnel expenses",
+      "Other expenses",
+      "Operating profit",
+      "Investment income",
+      "Financial income",
+      "Profit before tax",
+      "Income tax (15%)",
+      "Profit after tax"
+    ],
+    x: [375, 128, 78, 27, nil, -327, -12, -78, -12, nil, 32, 89, nil, -45, nil],
+    connector: %{
+      mode: "between",
+      line: %{width: 4, color: "rgb(0, 0, 0)", dash: 0}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Profit and Loss Statement 2018",
+  yaxis: %{type: "category", autorange: "reversed"},
+  xaxis: %{type: "linear"},
+  margin: %{l: 150},
+  showlegend: true
+)
+|> Plotly.show()
+```

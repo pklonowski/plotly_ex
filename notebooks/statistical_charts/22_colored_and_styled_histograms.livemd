@@ -1,0 +1,42 @@
+# Colored and Styled Histograms
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`marker.color` sets the bar fill colour (CSS string or rgba).
+`marker.line.color` and `marker.line.width` style the bar border.
+
+```elixir
+alias Plotly.{Figure, Histogram}
+
+:rand.seed(:exsss, {1, 2, 3})
+
+x = for _ <- 1..500 do
+  (for _ <- 1..12, do: :rand.uniform()) |> Enum.sum() |> Kernel.-(6.0)
+end
+
+Figure.new()
+|> Figure.add_trace(
+  Histogram.new(
+    x: x,
+    marker: %{
+      color: "rgba(255, 100, 102, 0.7)",
+      line: %{color: "rgba(255, 100, 102, 1.0)", width: 1}
+    },
+    opacity: 0.75
+  )
+)
+|> Figure.update_layout(
+  title: "Colored and Styled Histogram",
+  xaxis: %{title: "Value"},
+  yaxis: %{title: "Count"},
+  bargap: 0.05
+)
+|> Plotly.show()
+```

@@ -1,0 +1,40 @@
+# Matching Named Template Container Items
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+When a figure item has a `templateitemname` that matches a template item's
+`name`, the figure item inherits all properties from the template item and can
+override them. Template items whose `name` has no matching figure item are not
+rendered.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+template = %{
+  layout: %{
+    annotations: [
+      %{name: "label_a", font: %{size: 18, color: "blue"}, showarrow: false},
+      %{name: "label_b", font: %{size: 14, color: "red"}, showarrow: false}
+    ]
+  }
+}
+
+Figure.new()
+|> Figure.add_trace(Scatter.new(x: [1, 2, 3], y: [1, 2, 1], mode: "markers"))
+|> Figure.update_layout(
+  title: "Matching Named Template Container Items",
+  template: template,
+  annotations: [
+    %{templateitemname: "label_a", text: "Alpha", x: 1, y: 1},
+    %{templateitemname: "label_b", text: "Beta", x: 3, y: 1}
+  ]
+)
+|> Plotly.show()
+```

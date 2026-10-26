@@ -1,0 +1,57 @@
+# Isosurface with Additional Slices
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+`slices: %{x: %{show: true, locations: [0]}, y: ..., z: ...}` cuts cross-section slices
+through the volume at the specified axis positions. The slice reveals the scalar field
+interior — useful for understanding the full 3D structure. Combine with an isosurface
+for context.
+
+```elixir
+alias Plotly.{Figure, Isosurface}
+
+n = 20
+vals = Enum.map(0..(n - 1), &(&1 / (n - 1) * 4 - 2))
+
+grid = for x <- vals, y <- vals, z <- vals, do: {x, y, z}
+
+xs = Enum.map(grid, &elem(&1, 0))
+ys = Enum.map(grid, &elem(&1, 1))
+zs = Enum.map(grid, &elem(&1, 2))
+
+values = Enum.map(grid, fn {x, y, z} -> x * x + y * y + z * z end)
+
+Figure.new()
+|> Figure.add_trace(
+  Isosurface.new(
+    x: xs, y: ys, z: zs,
+    value: values,
+    isomin: 1,
+    isomax: 4,
+    colorscale: "RdBu",
+    showscale: true,
+    opacity: 0.3,
+    slices: %{
+      x: %{show: true, locations: [0]},
+      y: %{show: true, locations: [0]},
+      z: %{show: true, locations: [0]}
+    }
+  )
+)
+|> Figure.update_layout(
+  title: "Isosurface with Cross-Section Slices",
+  scene: %{
+    xaxis: %{title: "X"},
+    yaxis: %{title: "Y"},
+    zaxis: %{title: "Z"}
+  }
+)
+|> Plotly.show()
+```

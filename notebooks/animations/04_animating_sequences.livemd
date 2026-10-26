@@ -1,0 +1,51 @@
+# Animating Sequences of Frames
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Pass a list of frame names as the first `args` element to play a specific
+sequence. `nil` plays all frames. Combine with `transition.duration` for smooth interpolation.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+# Build frames for a growing spiral
+frames =
+  for i <- 1..60 do
+    t = Enum.map(0..i, fn j -> j * 0.2 end)
+    x = Enum.map(t, fn ti -> ti * :math.cos(ti) end)
+    y = Enum.map(t, fn ti -> ti * :math.sin(ti) end)
+    %{name: "s#{i}", data: [%{x: x, y: y}]}
+  end
+
+odd_frames = for i <- 1..30, do: "s#{i * 2 - 1}"   # frames s1, s3, s5 ...
+even_frames = for i <- 1..30, do: "s#{i * 2}"       # frames s2, s4, s6 ...
+
+Figure.new(
+  data: [Scatter.new(x: [0], y: [0], mode: "lines", line: %{color: "steelblue"})],
+  layout: %{
+    title: "Spiral Animation — Sequence Selection",
+    xaxis: %{range: [-13, 13], autorange: false},
+    yaxis: %{range: [-13, 13], autorange: false},
+    updatemenus: [%{
+      type: "buttons",
+      buttons: [
+        %{label: "All frames", method: "animate",
+          args: [nil, %{frame: %{duration: 30, redraw: false}}]},
+        %{label: "Odd frames", method: "animate",
+          args: [odd_frames, %{frame: %{duration: 60}}]},
+        %{label: "Even frames", method: "animate",
+          args: [even_frames, %{frame: %{duration: 60}}]}
+      ]
+    }]
+  },
+  frames: frames
+)
+|> Plotly.show()
+```

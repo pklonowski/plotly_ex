@@ -1,0 +1,54 @@
+# Grouped Scatter Plot
+
+```elixir
+Mix.install([
+  {:plotly_ex, "~> 0.3"},
+  {:kino, "~> 0.18"}
+])
+```
+
+## Section
+
+Set `layout.scattermode: "group"` to display multiple scatter traces
+side-by-side at each categorical x-axis position, similar to grouped bar
+charts. Each trace needs the same x categories.
+
+```elixir
+alias Plotly.{Figure, Scatter}
+
+categories = ["Category 1", "Category 2", "Category 3", "Category 4"]
+
+Figure.new()
+|> Figure.add_trace(
+  Scatter.new(
+    x: categories,
+    y: [4, 3, 5, 2],
+    mode: "markers",
+    name: "Group A",
+    marker: %{size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: categories,
+    y: [3, 5, 2, 4],
+    mode: "markers",
+    name: "Group B",
+    marker: %{size: 12}
+  )
+)
+|> Figure.add_trace(
+  Scatter.new(
+    x: categories,
+    y: [5, 2, 4, 3],
+    mode: "markers",
+    name: "Group C",
+    marker: %{size: 12}
+  )
+)
+|> Figure.update_layout(
+  title: "Grouped Scatter Plot",
+  scattermode: "group"
+)
+|> Plotly.show()
+```
